@@ -1,0 +1,208 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
+import { auth, provider, facebookProvider } from "@/config/firebase"
+import { createUserProfile } from "@/lib/auth"
+import { useRouter } from "next/navigation"
+import toast, { Toaster } from "react-hot-toast"
+import Link from "next/link"
+import { FcGoogle } from "react-icons/fc"
+import { FaFacebook, FaEye, FaEyeSlash } from "react-icons/fa"
+
+const Signin = () => {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      await createUserProfile(userCredential.user)
+      toast.success("Signed in successfully!")
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || "Failed to sign in")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const result = await signInWithPopup(auth, provider)
+      await createUserProfile(result.user)
+      toast.success("Signed in with Google!")
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || "Failed to sign in with Google")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFacebookLogin = async () => {
+    setIsLoading(true)
+    try {
+      const result = await signInWithPopup(auth, facebookProvider)
+      await createUserProfile(result.user)
+      toast.success("Signed in with Facebook!")
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || "Failed to sign in with Facebook")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      <Toaster position="top-right" />
+
+      {/* Background with gradient and floating shapes */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-orange-500 to-yellow-400">
+        {/* Floating shapes */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-orange-300 rounded-full opacity-60 animate-pulse"></div>
+        <div className="absolute top-32 right-20 w-16 h-16 bg-yellow-300 rounded-full opacity-50 animate-bounce"></div>
+        <div className="absolute bottom-20 left-20 w-24 h-24 bg-orange-200 rounded-full opacity-40"></div>
+        <div className="absolute bottom-40 right-10 w-32 h-20 bg-yellow-200 rounded-2xl opacity-30 rotate-12"></div>
+        <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-orange-300 rounded-full opacity-20"></div>
+        <div className="absolute top-20 right-1/3 w-12 h-20 bg-yellow-400 rounded-xl opacity-40 rotate-45"></div>
+      </div>
+
+      {/* Main content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="flex w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+          {/* Left side - Branding */}
+          <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-slate-800 to-slate-900 p-8 flex-col justify-center text-white relative">
+            <div className="relative z-10">
+              <h1 className="text-3xl font-bold mb-2">IQ Resume</h1>
+              <p className="text-slate-300 mb-8">Excellent online builder</p>
+
+              <h2 className="text-2xl font-semibold mb-4">Welcome back to your account</h2>
+              <p className="text-slate-400 mb-8">
+                Sign in to access your resume analysis tools and continue improving your professional profile.
+              </p>
+            </div>
+
+            <div className="mt-auto">
+              <p className="text-slate-400">{"Don't have an account?"}</p>
+              <Link href="/signup" className="text-orange-400 hover:text-orange-300 font-medium">
+                Sign up
+              </Link>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="absolute top-10 right-10 w-16 h-16 bg-orange-500 rounded-full opacity-20"></div>
+            <div className="absolute bottom-20 right-20 w-12 h-12 bg-yellow-400 rounded-full opacity-30"></div>
+          </div>
+
+          {/* Right side - Sign in form */}
+          <div className="w-full md:w-1/2 p-8 md:p-12">
+            <div className="max-w-sm mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Sign in</h2>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Signing in..." : "Sign in"}
+                </button>
+              </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-3">
+                  <button
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    <FcGoogle className="w-5 h-5 mr-3" />
+                    <span className="text-gray-700 font-medium">Continue with Google</span>
+                  </button>
+
+                  <button
+                    onClick={handleFacebookLogin}
+                    disabled={isLoading}
+                    className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    <FaFacebook className="w-5 h-5 mr-3" />
+                    <span className="font-medium">Continue with Facebook</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-8 text-center md:hidden">
+                <p className="text-gray-600">{"Don't have an account?"}</p>
+                <Link href="/signup" className="text-orange-500 hover:text-orange-600 font-medium">
+                  Sign up
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Signin
