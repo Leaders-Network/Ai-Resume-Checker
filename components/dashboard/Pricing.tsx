@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, X, Zap, FileText, BarChart3, CircleUser, HelpCircle } from 'lucide-react';
+import { CheckCircle, X, Zap, FileText, BarChart3, CircleUser, HelpCircle, Sparkles } from 'lucide-react';
+
 
 // Toggle between monthly and annual billing
 function BillingToggle({ isAnnual, onChange }) {
@@ -32,14 +33,18 @@ function BillingToggle({ isAnnual, onChange }) {
 }
 
 // Price display with conditional annual discount
-function PriceDisplay({ price, isAnnual }) {
+function PriceDisplay({ price, isAnnual, showNaira = false }) {
   const monthlyPrice = isAnnual ? Math.round(price * 0.8) : price;
+  const currencySymbol = showNaira ? '₦' : '$';
+  
   return (
     <div className="flex items-baseline">
-      <span className="text-3xl font-bold">${monthlyPrice}</span>
+      <span className="text-3xl font-bold">{currencySymbol}{monthlyPrice}</span>
       <span className="text-muted-foreground ml-1">/month</span>
       {isAnnual && (
-        <span className="ml-2 text-xs text-muted-foreground line-through">${price}/mo</span>
+        <span className="ml-2 text-xs text-muted-foreground line-through">
+          {currencySymbol}{price}/mo
+        </span>
       )}
     </div>
   );
@@ -66,16 +71,19 @@ function Pricing() {
   
   const plans = [
     {
-      name: "Free",
-      description: "Basic resume checking for individuals",
-      price: 0,
+      name: "Basic",
+      description: "Essential resume analysis for individuals",
+      price: 3500,
       features: [
-        { included: true, text: "3 resume scans per month" },
-        { included: true, text: "Basic ATS compatibility check" },
-        { included: true, text: "Keyword analysis" },
-        { included: false, text: "Advanced content optimization" },
-        { included: false, text: "Industry comparison" },
-        { included: false, text: "Job description matching" },
+        { included: true, text: "10 resume analyses per month" },
+        { included: true, text: "Basic keyword matching" },
+        { included: true, text: "Score overview" },
+        { included: true, text: "PDF viewer" },
+        { included: true, text: "Email support" },
+        { included: true, text: "Resume comparison" },
+        { included: false, text: "Advanced analytics" },
+        { included: false, text: "AI-powered suggestions" },
+        { included: false, text: "Data visualization" },
         { included: false, text: "Priority support" },
       ],
       cta: "Get Started",
@@ -86,15 +94,18 @@ function Pricing() {
     {
       name: "Professional",
       description: "Advanced features for serious job seekers",
-      price: 29,
+      price: 7500,
       features: [
-        { included: true, text: "Unlimited resume scans" },
-        { included: true, text: "Advanced ATS compatibility check" },
-        { included: true, text: "Detailed keyword analysis" },
-        { included: true, text: "Content optimization suggestions" },
-        { included: true, text: "Industry benchmarking" },
-        { included: true, text: "Job description matching" },
-        { included: false, text: "Priority support" },
+        { included: true, text: "50 resume analyses per month" },
+        { included: true, text: "Advanced keyword matching" },
+        { included: true, text: "Detailed analytics & insights" },
+        { included: true, text: "AI-powered suggestions" },
+        { included: true, text: "Resume comparison tools" },
+        { included: true, text: "Data visualization" },
+        { included: true, text: "Priority email support" },
+        { included: true, text: "Export capabilities" },
+        { included: false, text: "API access" },
+        { included: false, text: "24/7 phone support" },
       ],
       cta: "Start Pro Trial",
       ctaLink: "/signup?plan=pro",
@@ -103,21 +114,24 @@ function Pricing() {
     },
     {
       name: "Enterprise",
-      description: "For teams and organizations",
-      price: 79,
+      description: "Comprehensive solution for teams and organizations",
+      price: 39500,
       features: [
-        { included: true, text: "Unlimited resume scans" },
-        { included: true, text: "Advanced ATS compatibility check" },
-        { included: true, text: "Detailed keyword analysis" },
-        { included: true, text: "Advanced content optimization" },
-        { included: true, text: "Industry and company benchmarking" },
-        { included: true, text: "Advanced job matching" },
-        { included: true, text: "Priority support & training" },
+        { included: true, text: "Unlimited resume analyses" },
+        { included: true, text: "Advanced AI recommendations" },
+        { included: true, text: "Custom keyword categories" },
+        { included: true, text: "Bulk processing" },
+        { included: true, text: "Team collaboration tools" },
+        { included: true, text: "Advanced reporting" },
+        { included: true, text: "API access" },
+        { included: true, text: "Dedicated account manager" },
+        { included: true, text: "24/7 phone support" },
+        { included: true, text: "Custom integrations" },
       ],
       cta: "Contact Sales",
       ctaLink: "/contact",
       popular: false,
-      icon: BarChart3
+      icon: Sparkles
     }
   ];
 
@@ -159,7 +173,7 @@ function Pricing() {
               <p className="text-muted-foreground mt-1.5 mb-4">{plan.description}</p>
               
               <div className="mb-6">
-                <PriceDisplay price={plan.price} isAnnual={isAnnual} />
+                <PriceDisplay price={plan.price} isAnnual={isAnnual} showNaira={true} />
                 {plan.price > 0 && (
                   <p className="text-sm text-muted-foreground mt-1">
                     {isAnnual ? 'Billed annually' : 'Billed monthly'}
@@ -203,15 +217,15 @@ function Pricing() {
           {[
             {
               q: "Can I switch plans later?",
-              a: "Yes, you can upgrade or downgrade your plan at any time. If you upgrade, you'll be charged the prorated difference. If you downgrade, you'll receive a prorated credit."
+              a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
             },
             {
-              q: "What payment methods do you accept?",
-              a: "We accept all major credit cards, PayPal, and Apple Pay. For Enterprise plans, we also offer invoicing options."
+              q: "What happens to unused credits?",
+              a: "Unused credits roll over to the next month for all paid plans."
             },
             {
               q: "Is there a free trial for paid plans?",
-              a: "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
+              a: "Yes, all new users get a 7-day free trial with unlimited access to all features."
             },
           ].map((item, idx) => (
             <div 
@@ -249,7 +263,7 @@ function Pricing() {
         <div className="flex flex-wrap justify-center gap-8 mb-6">
           <div className="flex items-center">
             <CheckCircle className="h-5 w-5 text-primary mr-2" />
-            <span>Free 14-day trial</span>
+            <span>Free 7-day trial</span>
           </div>
           <div className="flex items-center">
             <CheckCircle className="h-5 w-5 text-primary mr-2" />
