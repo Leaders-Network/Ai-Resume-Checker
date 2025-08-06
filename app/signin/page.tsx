@@ -65,55 +65,55 @@ const Signin = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
       <Toaster position="top-right" />
 
       {/* Background with gradient and floating shapes */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-orange-500 to-yellow-400">
-        {/* Floating shapes */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-orange-300 rounded-full opacity-60 animate-pulse"></div>
-        <div className="absolute top-32 right-20 w-16 h-16 bg-yellow-300 rounded-full opacity-50 animate-bounce"></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-orange-200 rounded-full opacity-40"></div>
-        <div className="absolute bottom-40 right-10 w-32 h-20 bg-yellow-200 rounded-2xl opacity-30 rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-orange-300 rounded-full opacity-20"></div>
-        <div className="absolute top-20 right-1/3 w-12 h-20 bg-yellow-400 rounded-xl opacity-40 rotate-45"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-background to-secondary/20">
+        {/* Floating shapes - updated with theme colors */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-primary/20 rounded-full opacity-60 animate-pulse"></div>
+        <div className="absolute top-32 right-20 w-16 h-16 bg-secondary/30 rounded-full opacity-50 animate-bounce"></div>
+        <div className="absolute bottom-20 left-20 w-24 h-24 bg-accent/20 rounded-full opacity-40"></div>
+        <div className="absolute bottom-40 right-10 w-32 h-20 bg-muted/30 rounded-2xl opacity-30 rotate-12"></div>
+        <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-primary/10 rounded-full opacity-20"></div>
+        <div className="absolute top-20 right-1/3 w-12 h-20 bg-secondary/20 rounded-xl opacity-40 rotate-45"></div>
       </div>
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="flex w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="flex w-full max-w-4xl bg-card rounded-3xl shadow-2xl overflow-hidden border border-border">
           {/* Left side - Branding */}
-          <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-slate-800 to-slate-900 p-8 flex-col justify-center text-white relative">
+          <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-background to-accent p-8 flex-col justify-center text-foreground relative">
             <div className="relative z-10">
               <h1 className="text-3xl font-bold mb-2">IQ Resume</h1>
-              <p className="text-slate-300 mb-8">Excellent online builder</p>
+              <p className="text-muted-foreground mb-8">Excellent online builder</p>
 
               <h2 className="text-2xl font-semibold mb-4">Welcome back to your account</h2>
-              <p className="text-slate-400 mb-8">
+              <p className="text-muted-foreground mb-8">
                 Sign in to access your resume analysis tools and continue improving your professional profile.
               </p>
             </div>
 
             <div className="mt-auto">
-              <p className="text-slate-400">{"Don't have an account?"}</p>
-              <Link href="/signup" className="text-orange-400 hover:text-orange-300 font-medium">
+              <p className="text-muted-foreground">{"Don't have an account?"}</p>
+              <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                 Sign up
               </Link>
             </div>
 
             {/* Decorative elements */}
-            <div className="absolute top-10 right-10 w-16 h-16 bg-orange-500 rounded-full opacity-20"></div>
-            <div className="absolute bottom-20 right-20 w-12 h-12 bg-yellow-400 rounded-full opacity-30"></div>
+            <div className="absolute top-10 right-10 w-16 h-16 bg-primary/30 rounded-full opacity-20"></div>
+            <div className="absolute bottom-20 right-20 w-12 h-12 bg-secondary/40 rounded-full opacity-30"></div>
           </div>
 
           {/* Right side - Sign in form */}
-          <div className="w-full md:w-1/2 p-8 md:p-12">
+          <div className="w-full md:w-1/2 p-8 md:p-12 bg-card">
             <div className="max-w-sm mx-auto">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">Sign in</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-8">Sign in</h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                     Email address
                   </label>
                   <input
@@ -123,12 +123,12 @@ const Signin = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                     Password
                   </label>
                   <div className="relative">
@@ -139,12 +139,12 @@ const Signin = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 pr-12 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
@@ -154,7 +154,7 @@ const Signin = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Signing in..." : "Sign in"}
                 </button>
@@ -163,10 +163,10 @@ const Signin = () => {
               <div className="mt-6">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+                    <div className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">OR</span>
+                    <span className="px-2 bg-card text-muted-foreground">OR</span>
                   </div>
                 </div>
 
@@ -174,10 +174,10 @@ const Signin = () => {
                   <button
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center px-4 py-3 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     <FcGoogle className="w-5 h-5 mr-3" />
-                    <span className="text-gray-700 font-medium">Continue with Google</span>
+                    <span className="text-foreground font-medium">Continue with Google</span>
                   </button>
 
                   <button
@@ -192,8 +192,8 @@ const Signin = () => {
               </div>
 
               <div className="mt-8 text-center md:hidden">
-                <p className="text-gray-600">{"Don't have an account?"}</p>
-                <Link href="/signup" className="text-orange-500 hover:text-orange-600 font-medium">
+                <p className="text-muted-foreground">{"Don't have an account?"}</p>
+                <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>
               </div>

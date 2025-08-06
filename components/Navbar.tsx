@@ -18,7 +18,7 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="flex items-center justify-between p-6">
+    <nav className="flex items-center justify-between p-6  shadow-md z-50">
       <div className="flex items-center space-x-2">
         <FileText className="h-8 w-8 text-blue-600" />
         <span className="text-xl font-bold">ResumeAI</span>
@@ -27,7 +27,7 @@ function Navbar() {
         <Button variant="ghost">Features</Button>
         {userName ? (
           <div className="flex items-center space-x-2">
-            {/* <User className="h-5 w-5" /> */} 
+            {/* <User className="h-5 w-5" /> */}
             <span className=" font-bold"><span className='font-medium'>Welcome,</span> {userName}</span>
           </div>
         ) : (
