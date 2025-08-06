@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle, X, Zap, FileText, BarChart3, CircleUser, HelpCircle, Sparkles } from 'lucide-react';
 
+interface PricingProps {
+  isAnnual?: boolean;
+  onChange?: (isAnnual: boolean) => void;
+}
 
 // Toggle between monthly and annual billing
 function BillingToggle({ isAnnual, onChange }) {
@@ -16,7 +20,7 @@ function BillingToggle({ isAnnual, onChange }) {
         role="switch"
         aria-checked={isAnnual}
       >
-        <span 
+        <span
           className={`${isAnnual ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-primary transition-transform`}
         />
       </button>
@@ -36,7 +40,7 @@ function BillingToggle({ isAnnual, onChange }) {
 function PriceDisplay({ price, isAnnual, showNaira = false }) {
   const monthlyPrice = isAnnual ? Math.round(price * 0.8) : price;
   const currencySymbol = showNaira ? '₦' : '$';
-  
+
   return (
     <div className="flex items-baseline">
       <span className="text-3xl font-bold">{currencySymbol}{monthlyPrice}</span>
@@ -68,7 +72,7 @@ function FeatureItem({ included, feature }) {
 
 function Pricing() {
   const [isAnnual, setIsAnnual] = useState(true);
-  
+
   const plans = [
     {
       name: "Basic",
@@ -144,17 +148,16 @@ function Pricing() {
         <p className="text-lg text-muted-foreground">
           Choose the plan that's right for your career goals, with no hidden fees or complicated tiers.
         </p>
-        
+
         <BillingToggle isAnnual={isAnnual} onChange={setIsAnnual} />
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {plans.map((plan) => (
-          <div 
+          <div
             key={plan.name}
-            className={`relative rounded-xl border ${
-              plan.popular ? 'border-primary shadow-lg' : 'border-border'
-            }`}
+            className={`relative rounded-xl border ${plan.popular ? 'border-primary shadow-lg' : 'border-border'
+              }`}
           >
             {plan.popular && (
               <div className="absolute -top-4 left-0 right-0 flex justify-center">
@@ -163,15 +166,15 @@ function Pricing() {
                 </span>
               </div>
             )}
-            
+
             <div className="p-6">
               <div className={`w-10 h-10 rounded-lg ${plan.popular ? 'bg-primary/20' : 'bg-muted'} flex items-center justify-center mb-4`}>
                 <plan.icon className={`h-5 w-5 ${plan.popular ? 'text-primary' : 'text-foreground'}`} />
               </div>
-              
+
               <h3 className="text-xl font-bold">{plan.name}</h3>
               <p className="text-muted-foreground mt-1.5 mb-4">{plan.description}</p>
-              
+
               <div className="mb-6">
                 <PriceDisplay price={plan.price} isAnnual={isAnnual} showNaira={true} />
                 {plan.price > 0 && (
@@ -180,26 +183,25 @@ function Pricing() {
                   </p>
                 )}
               </div>
-              
+
               <Link
                 href={plan.ctaLink}
-                className={`w-full flex items-center justify-center px-4 py-2.5 rounded-lg font-medium ${
-                  plan.popular 
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                className={`w-full flex items-center justify-center px-4 py-2.5 rounded-lg font-medium ${plan.popular
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                } transition-colors mb-6`}
+                  } transition-colors mb-6`}
               >
                 {plan.cta}
               </Link>
-              
+
               <div className="border-t border-border pt-4">
                 <p className="text-sm font-medium mb-3">Plan includes:</p>
                 <ul className="space-y-3">
                   {plan.features.map((feature, index) => (
-                    <FeatureItem 
-                      key={index} 
-                      included={feature.included} 
-                      feature={feature.text} 
+                    <FeatureItem
+                      key={index}
+                      included={feature.included}
+                      feature={feature.text}
                     />
                   ))}
                 </ul>
@@ -212,7 +214,7 @@ function Pricing() {
       {/* FAQ Section */}
       <div className="mt-20 max-w-3xl mx-auto">
         <h3 className="text-xl font-bold text-center mb-8">Frequently Asked Questions</h3>
-        
+
         <div className="space-y-4">
           {[
             {
@@ -228,8 +230,8 @@ function Pricing() {
               a: "Yes, all new users get a 7-day free trial with unlimited access to all features."
             },
           ].map((item, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="bg-card border border-border rounded-lg p-6"
             >
               <div className="flex gap-4">
@@ -242,22 +244,24 @@ function Pricing() {
             </div>
           ))}
         </div>
-        
+
         {/* Enterprise CTA */}
         <div className="mt-12 bg-accent/20 border border-border p-6 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <h4 className="text-lg font-bold mb-2">Need a custom solution?</h4>
             <p className="text-muted-foreground">Contact our sales team to discuss enterprise options.</p>
           </div>
-          <Link
-            href="/contact"
-            className="whitespace-nowrap px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-          >
-            Contact Sales
-          </Link>
+         <a
+  href="https://wa.me/2349157835182?text=Hello%2C%20I'm%20interested%20in%20your%20services"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="whitespace-nowrap px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+>
+  Contact Sales
+</a>
         </div>
       </div>
-      
+
       {/* Trust indicators */}
       <div className="mt-20 text-center">
         <div className="flex flex-wrap justify-center gap-8 mb-6">
@@ -274,7 +278,7 @@ function Pricing() {
             <span>Cancel anytime</span>
           </div>
         </div>
-        
+
         <div className="flex justify-center gap-1 pt-2">
           <CircleUser className="h-6 w-6 text-muted-foreground/70" />
           <CircleUser className="h-6 w-6 text-muted-foreground/70" />

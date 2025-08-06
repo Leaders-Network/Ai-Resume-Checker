@@ -173,12 +173,13 @@ function Features() {
             ))}
           </div>
           
-          <Link 
-            href="/dashboard" 
-            className="inline-flex items-center text-primary font-medium hover:underline mt-2"
-          >
-            Try it now <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
+        <Link 
+  href="/dashboard" 
+  className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-blue-500 bg-blue-100/30 backdrop-blur-md border border-blue-300/30 hover:bg-blue-100/50 hover:text-blue-600 transition-all duration-200 shadow-sm"
+>
+  Try it now <ArrowRight className="ml-2 h-4 w-4" />
+</Link>
+
         </div>
       </div>
 
