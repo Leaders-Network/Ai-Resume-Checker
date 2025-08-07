@@ -12,16 +12,13 @@ export default function DashboardLayout({
 }) {
   return (
     <Provider store={store}>
-    <DarkModeProvider>
-    
-    <div className="flex min-h-screen">
-
-         <Sidebar>
-         <main>{children}</main>
-         </Sidebar>
-
-    </div>
-    </DarkModeProvider>
+      <DarkModeProvider>
+        <div className="flex min-h-screen bg-background text-foreground">
+          <Sidebar>
+            <main className="w-full">{children}</main>
+          </Sidebar>
+        </div>
+      </DarkModeProvider>
     </Provider>
   );
 }

@@ -18,6 +18,7 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, updateUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 import { signOut } from "firebase/auth"
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 // PDF.js worker setup
 GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs"
@@ -233,7 +234,8 @@ const extractKeywords = (text: string) => {
 }
 
 export default function DashboardPage() {
-  const { theme } = useTheme()
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
+
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
@@ -502,12 +504,15 @@ export default function DashboardPage() {
         <Badge
           key={index}
           variant="secondary"
-          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#130F4D] dark:bg-[#130F4D] text-white dark:text-white"
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${isDarkMode
+            ? "bg-primary/90 text-primary-foreground"
+            : "bg-primary/90 text-primary-foreground"
+            }`}
         >
           {keyword}
           <button
             onClick={() => handleDeleteKeyword(category, keyword, index)}
-            className="ml-2 text-red-300 hover:text-red-100"
+            className="ml-2 text-primary-foreground/70 hover:text-primary-foreground"
           >
             ×
           </button>
@@ -704,71 +709,91 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#130F4D]"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6">
+    <div className={`min-h-screen w-full p-6 ${isDarkMode
+      ? "bg-background"
+      : "bg-gray-50"  // Light, clean background for light mode
+      }`}>
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-7xl mx-auto">
-        {/* Enhanced Header with user info */}
+        {/* Enhanced Header with user info - improved styling */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-            <div className="flex items-center space-x-6">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-[#130F4D]/20 shadow-lg">
-                  <AvatarImage
-                    src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
-                    alt="Profile"
-                  />
-                  <AvatarFallback className="bg-[#130F4D] text-white text-xl font-bold">
-                    {getUserInitials()}
-                  </AvatarFallback>
-                </Avatar>
-                {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1">
-                    <Crown className="h-4 w-4 text-white" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-orange-600 dark:text-orange-400">
-                  Welcome back, {userProfile?.displayName || user?.displayName || "User"}!
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">Ready to analyze some resumes today?</p>
-                <div className="flex items-center space-x-3 mt-3">
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                  >
-                    <User className="h-3 w-3 mr-1" />
-                    {subscriptionData?.isTrialActive ? "Free Trial" : subscriptionData?.activePlan || "Free"}
-                  </Badge>
-                  {subscriptionData?.isTrialActive && (
+          <div className={`rounded-xl p-6 ${isDarkMode
+            ? "bg-card shadow-md"
+            : "bg-white shadow-md"
+            }`}>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+              <div className="flex items-center space-x-6">
+                <div className="relative">
+                  <Avatar className={`h-20 w-20 shadow-lg ${isDarkMode
+                    ? "border-4 border-primary/20"
+                    : "border-4 border-primary/10"
+                    }`}>
+                    <AvatarImage
+                      src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
+                      alt="Profile"
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
+                    <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1">
+                      <Crown className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h1 className={`text-4xl font-bold ${isDarkMode
+                    ? "text-primary"
+                    : "text-gray-800"
+                    }`}>
+                    Welcome back, {userProfile?.displayName || user?.displayName || "User"}!
+                  </h1>
+                  <p className="text-muted-foreground mt-2 text-lg">Ready to analyze some resumes today?</p>
+                  <div className="flex items-center space-x-3 mt-3">
                     <Badge
                       variant="secondary"
-                      className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                      className={`${isDarkMode
+                        ? "bg-secondary/50 text-secondary-foreground"
+                        : "bg-blue-50 text-blue-700"
+                        }`}
                     >
-                      {getRemainingDays()} days left
+                      <User className="h-3 w-3 mr-1" />
+                      {subscriptionData?.isTrialActive ? "Free Trial" : subscriptionData?.activePlan || "Free"}
                     </Badge>
-                  )}
-                  {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                    <Badge variant="secondary" className="bg-orange-600 text-white">
-                      <Crown className="h-3 w-3 mr-1" />
-                      Premium Features
-                    </Badge>
-                  )}
+                    {subscriptionData?.isTrialActive && (
+                      <Badge
+                        variant="secondary"
+                        className={`${isDarkMode
+                          ? "bg-primary/20 text-primary"
+                          : "bg-amber-50 text-amber-700"
+                          }`}
+                      >
+                        {getRemainingDays()} days left
+                      </Badge>
+                    )}
+                    {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
+                      <Badge variant="secondary" className="bg-primary text-primary-foreground">
+                        <Crown className="h-3 w-3 mr-1" />
+                        Premium Features
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -778,54 +803,81 @@ export default function DashboardPage() {
         {/* Enhanced Stats Cards */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200 dark:border-blue-700 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
+              ? "bg-card border-border"
+              : "bg-white border-gray-200"
+              }`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+                <CardTitle className={`text-3xl font-bold ${isDarkMode
+                  ? "text-primary"
+                  : "text-primary"
+                  }`}>
                   {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-blue-800 dark:text-blue-200 font-medium text-lg">Resume Credits</p>
-                <p className="text-sm text-blue-600/80 dark:text-blue-300/80">Remaining analyses</p>
-                <div className="mt-3 w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                <p className={`font-medium text-lg ${isDarkMode
+                  ? "text-card-foreground"
+                  : "text-gray-800"
+                  }`}>Resume Credits</p>
+                <p className="text-sm text-muted-foreground">Remaining analyses</p>
+                <div className="mt-3 w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(((subscriptionData?.resumeLimit || 0) / 100) * 100, 100)}%` }}
                   ></div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-purple-200 dark:border-purple-700 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
+              ? "bg-card border-border"
+              : "bg-white border-gray-200"
+              }`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+                <CardTitle className={`text-3xl font-bold ${isDarkMode
+                  ? "text-primary"
+                  : "text-primary"
+                  }`}>
                   {files.length}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-purple-800 dark:text-purple-200 font-medium text-lg">Uploaded Resumes</p>
-                <p className="text-sm text-purple-600/80 dark:text-purple-300/80">Ready for analysis</p>
+                <p className={`font-medium text-lg ${isDarkMode
+                  ? "text-card-foreground"
+                  : "text-gray-800"
+                  }`}>Uploaded Resumes</p>
+                <p className="text-sm text-muted-foreground">Ready for analysis</p>
                 <div className="mt-3 flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm text-purple-600 dark:text-purple-400">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">
                     {files.length > 0 ? "Files ready" : "No files uploaded"}
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
+              ? "bg-card border-border"
+              : "bg-white border-gray-200"
+              }`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-3xl font-bold text-green-700 dark:text-green-300">
+                <CardTitle className={`text-3xl font-bold ${isDarkMode
+                  ? "text-primary"
+                  : "text-primary"
+                  }`}>
                   {Object.values(keywords).flat().length}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-green-800 dark:text-green-200 font-medium text-lg">Keywords</p>
-                <p className="text-sm text-green-600/80 dark:text-green-300/80">Added for matching</p>
+                <p className={`font-medium text-lg ${isDarkMode
+                  ? "text-card-foreground"
+                  : "text-gray-800"
+                  }`}>Keywords</p>
+                <p className="text-sm text-muted-foreground">Added for matching</p>
                 <div className="mt-3 flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600 dark:text-green-400">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">
                     {Object.values(keywords).flat().length > 0 ? "Keywords configured" : "No keywords added"}
                   </span>
                 </div>
@@ -833,6 +885,7 @@ export default function DashboardPage() {
             </Card>
           </div>
         </motion.div>
+
 
         {/* Trial Expiry Warning */}
         {subscriptionData?.isTrialActive && getRemainingDays() <= 3 && (
@@ -842,21 +895,21 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className="border-2 border-orange-300 dark:border-orange-600 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30">
-                <CardTitle className="flex items-center text-orange-800 dark:text-orange-300">
+            <Card className="border-2 border-primary/30 shadow-lg">
+              <CardHeader className="pb-2 bg-primary/5">
+                <CardTitle className="flex items-center text-primary">
                   <Crown className="mr-2 h-5 w-5" />
                   Trial Ending Soon
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <p className="text-orange-700 dark:text-orange-400 mb-4">
+                <p className="text-card-foreground mb-4">
                   Your free trial expires in {getRemainingDays()} days. Upgrade now to continue enjoying all premium
                   features!
                 </p>
                 <Button
                   onClick={() => router.push("/dashboard/subscription")}
-                  className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   🚀 Upgrade Now
                 </Button>
@@ -872,10 +925,10 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className="border-2 border-amber-300 dark:border-amber-600 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
-                <CardTitle className="flex items-center text-amber-800 dark:text-amber-300">
-                  <Lightbulb className="mr-2 h-5 w-5" />
+            <Card className="border-2 border-secondary/30 shadow-lg">
+              <CardHeader className="pb-2 bg-secondary/5">
+                <CardTitle className="flex items-center text-card-foreground">
+                  <Lightbulb className="mr-2 h-5 w-5 text-secondary" />
                   AI Suggested Keywords
                 </CardTitle>
               </CardHeader>
@@ -888,13 +941,13 @@ export default function DashboardPage() {
 
                     return (
                       <div key={category} className="space-y-2">
-                        <h3 className="font-medium">{categoryLabels[typedCategory]}</h3>
+                        <h3 className="font-medium text-foreground">{categoryLabels[typedCategory]}</h3>
                         <div className="flex flex-wrap gap-2">
                           {suggestions.map((keyword, idx) => (
                             <Badge
                               key={idx}
                               variant="outline"
-                              className="cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-800/50 transition-colors"
+                              className="cursor-pointer bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground border-secondary/30 transition-colors"
                               onClick={() => handleAddSuggestedKeyword(typedCategory, keyword)}
                             >
                               + {keyword}
@@ -912,7 +965,7 @@ export default function DashboardPage() {
                       variant="default"
                       size="sm"
                       onClick={handleAddAllSuggestions}
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
+                      className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
                     >
                       Add All Suggestions
                     </Button>
@@ -923,109 +976,131 @@ export default function DashboardPage() {
           </motion.div>
         )}
 
+        {/* Main content cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card className="border-2 border-[#130F4D]/10 h-full shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
-                <CardTitle className="flex items-center text-xl">
-                  <Upload className="mr-2 h-6 w-6 text-[#130F4D]" />
+            <Card className={`shadow-lg h-full ${isDarkMode
+              ? "border-2 border-border"
+              : "border border-gray-200"
+              }`}>
+              <CardHeader className={`pb-2 ${isDarkMode
+                ? "bg-card"
+                : "bg-white"
+                }`}>
+                <CardTitle className={`flex items-center text-xl ${isDarkMode
+                  ? "text-card-foreground"
+                  : "text-gray-800"
+                  }`}>
+                  <Upload className="mr-2 h-6 w-6 text-primary" />
                   Upload Resumes
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className={`pt-6 ${isDarkMode
+                ? ""
+                : "bg-white"
+                }`}>
                 {!canUploadResumes() && (
-                  <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                  <div className="mb-6 p-4 bg-destructive/10 rounded-xl border border-destructive/20">
                     <div className="flex items-center space-x-3 mb-3">
-                      <Crown className="h-6 w-6 text-red-600" />
-                      <h3 className="font-semibold text-red-800 dark:text-red-300">
+                      <Crown className="h-6 w-6 text-primary" />
+                      <h3 className="font-semibold text-foreground">
                         {subscriptionData?.isTrialActive ? "Trial Limit Reached" : "Upgrade Required"}
                       </h3>
                     </div>
-                    <p className="text-sm text-red-700 dark:text-red-400 mb-4">
+                    <p className="text-sm text-muted-foreground mb-4">
                       {subscriptionData?.isTrialActive
                         ? "You've used all your trial credits. Upgrade to continue analyzing resumes."
                         : "You've reached your resume limit. Upgrade to continue analyzing resumes."}
                     </p>
                     <Button
                       onClick={() => router.push("/dashboard/subscription")}
-                      className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       🚀 Upgrade to Premium
                     </Button>
                   </div>
                 )}
 
-                <div
-                  onClick={() => canUploadResumes() && fileInputRef.current?.click()}
-                  onDragEnter={handleDragEnter}
-                  onDragLeave={handleDragLeave}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  className={`border-4 border-dashed rounded-xl p-8 cursor-pointer bg-gradient-to-br transition-all duration-300 ${
-                    canUploadResumes()
-                      ? isDragOver
-                        ? "border-green-500 dark:border-green-400 from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 scale-105 shadow-lg"
-                        : "border-[#130F4D] dark:border-gray-600 from-[#F0F4F7] to-blue-50 dark:from-gray-700 dark:to-gray-600 hover:border-[#0f0d40] hover:shadow-lg"
-                      : "border-gray-300 dark:border-gray-700 from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 cursor-not-allowed opacity-50"
-                  }`}
-                >
-                  <Upload
-                    className={`mx-auto h-16 w-16 mb-4 ${
-                      canUploadResumes()
-                        ? isDragOver
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-[#130F4D] dark:text-white"
-                        : "text-gray-400"
-                    }`}
-                  />
-                  <p
-                    className={`text-center text-lg font-medium ${
-                      canUploadResumes()
-                        ? isDragOver
-                          ? "text-green-700 dark:text-green-300"
-                          : "text-[#130F4D] dark:text-white"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {canUploadResumes()
-                      ? isDragOver
-                        ? "Drop PDF files here!"
-                        : "Drag & drop PDF files or click to upload"
-                      : "Upgrade to upload resumes"}
-                  </p>
-                  <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    {canUploadResumes()
-                      ? "Supports PDF files up to 10MB each • Multiple files supported"
-                      : "Premium feature required"}
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".pdf"
-                    multiple
-                    onChange={handleFileUpload}
-                    disabled={!canUploadResumes()}
-                  />
-                </div>
+               {/* Upload area */}
+<div
+  onClick={() => canUploadResumes() && fileInputRef.current?.click()}
+  onDragEnter={handleDragEnter}
+  onDragLeave={handleDragLeave}
+  onDragOver={handleDragOver}
+  onDrop={handleDrop}
+  className={`border-4 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-300 ${
+    canUploadResumes()
+      ? isDragOver
+        ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
+        : isDarkMode
+          ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
+          : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
+      : isDarkMode
+        ? "border-border bg-muted cursor-not-allowed opacity-50"
+        : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
+  }`}
+>
+  <Upload
+    className={`mx-auto h-16 w-16 mb-4 ${
+      canUploadResumes()
+        ? isDragOver
+          ? "text-primary"
+          : "text-gray-400 dark:text-gray-500"
+        : "text-gray-400 dark:text-gray-500"
+    }`}
+  />
+  <p
+    className={`text-center text-lg font-medium ${
+      canUploadResumes()
+        ? isDragOver
+          ? "text-primary"
+          : "text-gray-700 dark:text-gray-300"
+        : "text-gray-500 dark:text-gray-500"
+    }`}
+  >
+    {canUploadResumes()
+      ? isDragOver
+        ? "Drop PDF files here!"
+        : "Drag & drop PDF files or click to upload"
+      : "Upgrade to upload resumes"}
+  </p>
+  <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+    {canUploadResumes()
+      ? "Supports PDF files up to 10MB each • Multiple files supported"
+      : "Premium feature required"}
+  </p>
+  <input
+    ref={fileInputRef}
+    type="file"
+    className="hidden"
+    accept=".pdf"
+    multiple
+    onChange={handleFileUpload}
+    disabled={!canUploadResumes()}
+  />
+</div>
 
+                {/* File list */}
                 <animated.ul style={fileAnimation} className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {files.map((file, index) => (
                     <li
                       key={index}
-                      className="flex items-center justify-between p-4 bg-[#130F4D] dark:from-gray-700 dark:to-gray-600 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                      className={`flex items-center justify-between p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow ${isDarkMode
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-primary text-primary-foreground"
+                        }`}
                     >
                       <div className="flex items-center flex-1 min-w-0">
-                        <FileText className="h-5 w-5 mr-3 text-white flex-shrink-0" />
-                        <span className="text-white dark:text-white truncate font-medium">{file.fileName}</span>
+                        <FileText className="h-5 w-5 mr-3 text-primary-foreground flex-shrink-0" />
+                        <span className="text-primary-foreground truncate font-medium">{file.fileName}</span>
                       </div>
                       <button
                         onClick={() => handleFileDelete(index)}
-                        className="text-red-300 hover:text-red-100 ml-3 p-1 rounded transition-colors"
+                        className="text-primary-foreground/70 hover:text-primary-foreground ml-3 p-1 rounded transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -1041,25 +1116,43 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="border-2 border-[#130F4D]/10 h-full shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
-                <CardTitle className="flex items-center text-xl">
-                  <CheckCircle className="mr-2 h-6 w-6 text-[#130F4D]" />
+            <Card className={`shadow-lg h-full ${isDarkMode
+              ? "border-2 border-border"
+              : "border border-gray-200"
+              }`}>
+              <CardHeader className={`pb-2 ${isDarkMode
+                ? "bg-card"
+                : "bg-white"
+                }`}>
+                <CardTitle className={`flex items-center text-xl ${isDarkMode
+                  ? "text-card-foreground"
+                  : "text-gray-800"
+                  }`}>
+                  <CheckCircle className="mr-2 h-6 w-6 text-primary" />
                   Keywords
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className={`pt-6 ${isDarkMode
+                ? ""
+                : "bg-white"
+                }`}>
                 <div className="space-y-6">
                   {Object.keys(categoryLabels).map((category) => (
                     <div key={category} className="space-y-3">
-                      <label className="block text-lg font-semibold text-[#130F4D] dark:text-gray-300">
+                      <label className={`block text-lg font-semibold ${isDarkMode
+                        ? "text-foreground"
+                        : "text-gray-800"
+                        }`}>
                         {categoryLabels[category as keyof KeywordCategory]}
                       </label>
                       {category === "experience" ? (
                         <>
                           <select
                             onChange={handleExperienceSelect}
-                            className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-lg p-3 dark:bg-gray-700 dark:text-white focus:border-[#130F4D] transition-colors"
+                            className={`w-full border-2 rounded-lg p-3 focus:border-primary transition-colors ${isDarkMode
+                              ? "border-border bg-input text-foreground"
+                              : "border-gray-300 bg-gray-50 text-gray-800 focus:border-primary"
+                              }`}
                           >
                             <option value="">Select Experience Level</option>
                             <option value="0-1 years">0-1 years</option>
@@ -1077,7 +1170,10 @@ export default function DashboardPage() {
                               type="text"
                               placeholder={`Enter ${categoryLabels[category as keyof KeywordCategory]} and press Enter`}
                               onKeyDown={(e) => handleKeywordInput(category as keyof KeywordCategory, e)}
-                              className="w-full h-12 border-2 border-gray-200 dark:border-gray-600 focus:border-[#130F4D] dark:bg-gray-700 dark:text-white transition-colors"
+                              className={`w-full h-12 border-2 focus:border-primary transition-colors ${isDarkMode
+                                ? "border-border bg-input text-foreground"
+                                : "border-gray-300 bg-gray-50 text-gray-800 focus:border-primary"
+                                }`}
                             />
                           </div>
                           <KeywordDisplay category={category as keyof KeywordCategory} />
@@ -1091,6 +1187,7 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
+        {/* Submit button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1100,7 +1197,7 @@ export default function DashboardPage() {
           <Button
             onClick={navigateToResults}
             disabled={isLoading}
-            className="w-full bg-orange-600 dark:text-white hover:bg-orange-400  text-white py-4 rounded-xl text-xl font-bold h-16 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 rounded-xl text-xl font-bold h-16 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -1109,7 +1206,7 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <CheckCircle className="mr-3 inline-block h-6 w-6 " />
+                <CheckCircle className="mr-3 inline-block h-6 w-6" />
                 Analyze Resumes
               </>
             )}
