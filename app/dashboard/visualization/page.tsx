@@ -40,6 +40,7 @@ import {
   MapPin,
   Briefcase,
 } from "lucide-react"
+import { useTheme } from "next-themes"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { toast, Toaster } from "react-hot-toast"
@@ -78,6 +79,7 @@ export default function VisualizationPage() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
+  const { theme } = useTheme()
 
   useEffect(() => {
     const storedResumes = sessionStorage.getItem("resumes")
@@ -212,7 +214,24 @@ export default function VisualizationPage() {
     coverage: Math.round((resume.matches.length / (resume.matches.length + resume.missing.length)) * 100),
   }))
 
-  const COLORS = ["#130F4D", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4"]
+  const chartColors = {
+    primary: theme === 'dark' ? '#FFFFFF' : '#130F4D',
+    green: '#10B981',
+    blue: '#3B82F6',
+    yellow: '#F59E0B',
+    red: '#EF4444',
+    purple: '#8B5CF6',
+    teal: '#14B8A6'
+  }
+
+  const PIE_COLORS = [chartColors.green, chartColors.blue, chartColors.yellow, chartColors.red, chartColors.purple, chartColors.teal];
+
+  const RADAR_COLORS = {
+    skills: chartColors.blue,
+    experience: chartColors.purple,
+    location: chartColors.yellow,
+    certification: chartColors.green,
+  }
 
   const handleExportChart = () => {
     toast.success("Chart export functionality would be implemented here", {
@@ -304,17 +323,13 @@ export default function VisualizationPage() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Button
-                onClick={handleExportChart}
-                variant="outline"
-                className="border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent"
-              >
+              <Button onClick={handleExportChart} variant="outline">
                 <Download className="h-4 w-4 mr-2" />
                 Export Charts
               </Button>
               <div className="text-right">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Credits Remaining</p>
-                <p className="text-2xl font-bold text-[#130F4D] dark:text-white">
+                <p className="text-sm text-muted-foreground">Credits Remaining</p>
+                <p className="text-2xl font-bold text-primary">
                   {subscriptionData?.resumeLimit || 0}
                 </p>
               </div>
@@ -431,7 +446,7 @@ export default function VisualizationPage() {
                               formatter={(value, name) => [value, name === "score" ? "Score (%)" : name]}
                               labelFormatter={(label) => `Resume: ${label}`}
                             />
-                            <Bar dataKey="score" fill="#130F4D" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="score" fill={chartColors.primary} radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -458,7 +473,6 @@ export default function VisualizationPage() {
                               }
                               outerRadius={80}
                               fill="#8884d8"
-                              dataKey="count"
                             >
                               {scoreRangeData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -483,7 +497,7 @@ export default function VisualizationPage() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-[#130F4D] dark:text-white">{item.count}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">resumes</div>
+                              <p className="text-sm text-muted-foreground">An overview of your resume scores</p>
                             </div>
                           </div>
                         ))}
@@ -542,19 +556,10 @@ export default function VisualizationPage() {
                             <PolarGrid />
                             <PolarAngleAxis dataKey="resume" />
                             <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                            <Radar name="Skills" dataKey="skills" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.1} />
-                            <Radar
-                              name="Experience"
-                              dataKey="experience"
-                              stroke="#10B981"
-                              fill="#10B981"
-                              fillOpacity={0.1}
-                            />
-                            <Radar
-                              name="Location"
-                              dataKey="location"
-                              stroke="#F59E0B"
-                              fill="#F59E0B"
+                            <Radar name="Skills" dataKey="skills" stroke={RADAR_COLORS.skills} fill={RADAR_COLORS.skills} fillOpacity={0.6} />
+                            <Radar name="Experience" dataKey="experience" stroke={RADAR_COLORS.experience} fill={RADAR_COLORS.experience} fillOpacity={0.6} />
+                            <Radar name="Location" dataKey="location" stroke={RADAR_COLORS.location} fill={RADAR_COLORS.location} fillOpacity={0.6} />
+                            <Radar name="Certification" dataKey="certification" stroke={RADAR_COLORS.certification} fill={RADAR_COLORS.certification} fillOpacity={0.6} />
                               fillOpacity={0.1}
                             />
                             <Radar
@@ -583,9 +588,9 @@ export default function VisualizationPage() {
                             <Line
                               type="monotone"
                               dataKey="score"
-                              stroke="#130F4D"
+                              stroke={chartColors.primary}
                               strokeWidth={3}
-                              dot={{ fill: "#130F4D", strokeWidth: 2, r: 6 }}
+                              dot={{ fill: chartColors.primary, strokeWidth: 2, r: 6 }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
@@ -616,7 +621,7 @@ export default function VisualizationPage() {
                                 return label
                               }}
                             />
-                            <Scatter dataKey="matched" fill="#130F4D" />
+                            <Scatter dataKey="matched" fill={chartColors.primary} />
                           </ScatterChart>
                         </ResponsiveContainer>
                       </div>
@@ -640,7 +645,7 @@ export default function VisualizationPage() {
                                 return label
                               }}
                             />
-                            <Bar dataKey="coverage" fill="#10B981" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="coverage" fill={chartColors.green} radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -660,10 +665,7 @@ export default function VisualizationPage() {
           className="mt-8 flex justify-between"
         >
           <Link href="/dashboard/result">
-            <Button
-              variant="outline"
-              className="border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent"
-            >
+            <Button variant="outline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Results
             </Button>

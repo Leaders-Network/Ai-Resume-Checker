@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ScoreProgressBar } from "@/components/ui/score-progress-bar"
 import { motion } from "framer-motion"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
@@ -152,21 +153,6 @@ export default function ResultPage() {
       <div className="max-w-7xl mx-auto">
 
         {/* Enhanced Stats Cards */}
-        {/* Page Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Your Results</h1>
-            <p className="text-muted-foreground">A summary of your resume analysis.</p>
-          </div>
-          {subscriptionData?.role === "premium" && (
-            <Badge variant="secondary" className="bg-yellow text-yellow-foreground border-yellow/30">
-              <Crown className="h-4 w-4 mr-1" />
-              Premium User
-            </Badge>
-          )}
-        </div>
-
-        {/* Enhanced Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -208,7 +194,8 @@ export default function ResultPage() {
               <CardTitle className="text-3xl font-bold text-red-700 dark:text-red-300">{barelyMatched}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-red-800 dark:text-red-200 font-medium text-lg">Low Matches</p>
+              <h1 className="text-3xl font-bold text-foreground">Your Results</h1>
+              <p className="text-muted-foreground">A summary of your resume analysis.</p>
               <p className="text-sm text-red-600/80 dark:text-red-300/80">0-39% match score</p>
               <div className="mt-3 w-full bg-red-200 dark:bg-red-800 rounded-full h-2">
                 <div
@@ -324,26 +311,14 @@ export default function ResultPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-24 bg-muted rounded-full h-3">
-                              <div
-                                className={`rounded-full h-3 transition-all duration-300 ${
-                                  resume.score >= 70
-                                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                                    : resume.score >= 40
-                                      ? "bg-yellow"
-                                       : "bg-gradient-to-r from-red-500 to-red-500"
-                                }`}
-                                style={{ width: `${resume.score}%` }}
-                              />
-                            </div>
+                            <ScoreProgressBar score={resume.score} className="h-3 w-24" />
                             <span
-                              className={`font-bold text-lg ${
-                                resume.score >= 70
+                              className={`font-bold text-lg w-12 text-right ${resume.score >= 70
                                   ? "text-green-600 dark:text-green-400"
                                   : resume.score >= 40
-                                    ? "text-yellow-foreground"
-                                     : "text-red-600 dark:text-red-400"
-                              }`}
+                                    ? "text-yellow-600 dark:text-yellow-400"
+                                    : "text-red-600 dark:text-red-400"
+                                }`}
                             >
                               {Math.round(resume.score)}%
                             </span>

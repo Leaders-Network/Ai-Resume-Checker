@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { ScoreProgressBar } from "@/components/ui/score-progress-bar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -17,6 +17,8 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+
+
 
 interface Resume {
   fileName: string
@@ -187,7 +189,7 @@ export default function CompareResumesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6 w-full">
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -264,63 +266,51 @@ export default function CompareResumesPage() {
               <CardContent className="pt-4">
                 <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
                   {resumes.map((resume, index) => (
-                    <div
+                    <label
                       key={index}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+                      htmlFor={`resume-${index}`}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-start space-x-3 ${
                         selectedResumes.some((r) => r.fileName === resume.fileName)
-                          ? "border-[#130F4D] bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5 shadow-md"
-                          : "border-gray-200 dark:border-gray-700 hover:border-[#130F4D]/50"
+                          ? "border-primary bg-primary/10 shadow-lg"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
                       }`}
                     >
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={selectedResumes.some((r) => r.fileName === resume.fileName)}
-                          onCheckedChange={() => handleToggleResume(resume)}
-                          id={`resume-${index}`}
-                          className="border-2 border-[#130F4D]"
-                        />
-                        <label htmlFor={`resume-${index}`} className="flex-1 cursor-pointer">
-                          <div className="font-medium text-[#130F4D] dark:text-white truncate mb-2">
-                            {resume.fileName}
+                      <Checkbox
+                        checked={selectedResumes.some((r) => r.fileName === resume.fileName)}
+                        onCheckedChange={() => handleToggleResume(resume)}
+                        id={`resume-${index}`}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-foreground truncate mb-2">{resume.fileName}</div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <ScoreProgressBar score={resume.score} className="h-1.5" />
                           </div>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  resume.score >= 70
-                                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                                    : resume.score >= 40
-                                      ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                                      : "bg-gradient-to-r from-red-500 to-pink-500"
-                                }`}
-                                style={{ width: `${resume.score}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-bold text-[#130F4D] dark:text-white min-w-[3rem]">
-                              {Math.round(resume.score)}%
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span>{resume.matches.length} matches</span>
-                            <span>•</span>
-                            <span>{resume.missing.length} missing</span>
-                          </div>
-                        </label>
+                          <span className="text-sm font-bold text-foreground min-w-[3rem]">
+                            {Math.round(resume.score)}%
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                          <span>{resume.matches.length} matches</span>
+                          <span>•</span>
+                          <span>{resume.missing.length} missing</span>
+                        </div>
                       </div>
-                    </div>
+                    </label>
                   ))}
                 </div>
                 <div className="mt-6 space-y-3">
                   <Button
                     variant="outline"
-                    className="w-full border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent"
+                    className="w-full"
                     onClick={() => router.push("/dashboard/result")}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Results
                   </Button>
                   <Button
-                    className="w-full bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white shadow-md"
+                    className="w-full"
                     disabled={selectedResumes.length === 0}
                     onClick={handleExportComparison}
                   >
@@ -404,23 +394,7 @@ export default function CompareResumesPage() {
                                   {Math.round(resume.score)}%
                                 </span>
                               </div>
-                              <Progress
-                                value={resume.score}
-                                className={`h-3 ${
-                                  resume.score >= 70
-                                    ? "bg-green-100 dark:bg-green-900/30"
-                                    : resume.score >= 40
-                                      ? "bg-yellow-100 dark:bg-yellow-900/30"
-                                      : "bg-red-100 dark:bg-red-900/30"
-                                }`}
-                                indicatorClassName={
-                                  resume.score >= 70
-                                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
-                                    : resume.score >= 40
-                                      ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                                      : "bg-gradient-to-r from-red-500 to-pink-500"
-                                }
-                              />
+                              <ScoreProgressBar score={resume.score} />
                             </div>
                           ))}
                         </div>
@@ -444,11 +418,7 @@ export default function CompareResumesPage() {
                                   {Math.round(resume.categoryScores?.skills || 0)}%
                                 </span>
                               </div>
-                              <Progress
-                                value={resume.categoryScores?.skills || 0}
-                                className="h-3 bg-blue-100 dark:bg-blue-900/30"
-                                indicatorClassName="bg-gradient-to-r from-blue-500 to-indigo-500"
-                              />
+                              <ScoreProgressBar score={resume.categoryScores?.skills || 0} />
                             </div>
                           ))}
                         </div>
@@ -472,11 +442,7 @@ export default function CompareResumesPage() {
                                   {Math.round(resume.categoryScores?.experience || 0)}%
                                 </span>
                               </div>
-                              <Progress
-                                value={resume.categoryScores?.experience || 0}
-                                className="h-3 bg-purple-100 dark:bg-purple-900/30"
-                                indicatorClassName="bg-gradient-to-r from-purple-500 to-pink-500"
-                              />
+                              <ScoreProgressBar score={resume.categoryScores?.experience || 0} />
                             </div>
                           ))}
                         </div>
@@ -500,11 +466,7 @@ export default function CompareResumesPage() {
                                   {Math.round(resume.categoryScores?.location || 0)}%
                                 </span>
                               </div>
-                              <Progress
-                                value={resume.categoryScores?.location || 0}
-                                className="h-3 bg-orange-100 dark:bg-orange-900/30"
-                                indicatorClassName="bg-gradient-to-r from-orange-500 to-red-500"
-                              />
+                              <ScoreProgressBar score={resume.categoryScores?.location || 0} />
                             </div>
                           ))}
                         </div>
@@ -528,11 +490,7 @@ export default function CompareResumesPage() {
                                   {Math.round(resume.categoryScores?.certification || 0)}%
                                 </span>
                               </div>
-                              <Progress
-                                value={resume.categoryScores?.certification || 0}
-                                className="h-3 bg-teal-100 dark:bg-teal-900/30"
-                                indicatorClassName="bg-gradient-to-r from-teal-500 to-cyan-500"
-                              />
+                              <ScoreProgressBar score={resume.categoryScores?.certification || 0} />
                             </div>
                           ))}
                         </div>
@@ -556,10 +514,12 @@ export default function CompareResumesPage() {
                                   {resume.matches.length} / {resume.matches.length + resume.missing.length}
                                 </span>
                               </div>
-                              <Progress
-                                value={(resume.matches.length / (resume.matches.length + resume.missing.length)) * 100}
-                                className="h-3 bg-indigo-100 dark:bg-indigo-900/30"
-                                indicatorClassName="bg-gradient-to-r from-indigo-500 to-blue-500"
+                              <ScoreProgressBar
+                                score={
+                                  (resume.matches.length /
+                                    (resume.matches.length + resume.missing.length)) *
+                                  100
+                                }
                               />
                             </div>
                           ))}
@@ -592,7 +552,7 @@ export default function CompareResumesPage() {
                                         <Badge
                                           key={idx}
                                           variant="secondary"
-                                          className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                                          className="bg-yellow/20 text-yellow-foreground"
                                         >
                                           {keyword}
                                         </Badge>
@@ -605,17 +565,17 @@ export default function CompareResumesPage() {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-base mb-3 flex items-center text-red-700 dark:text-red-400">
+                                  <h3 className="font-semibold text-base mb-3 flex items-center text-destructive">
                                     <XCircle className="h-5 w-5 mr-2" />
                                     Missing Keywords ({resume.missing.length})
                                   </h3>
-                                  <div className="flex flex-wrap gap-2 p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg min-h-[120px] border border-red-200 dark:border-red-800">
+                                  <div className="flex flex-wrap gap-2 p-4 bg-destructive/10 rounded-lg min-h-[120px] border border-destructive/20">
                                     {resume.missing.length > 0 ? (
                                       resume.missing.map((keyword, idx) => (
                                         <Badge
                                           key={idx}
                                           variant="outline"
-                                          className="border-red-200 text-red-800 dark:border-red-900 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                          className="border-destructive/30 text-destructive"
                                         >
                                           {keyword}
                                         </Badge>
@@ -647,7 +607,7 @@ export default function CompareResumesPage() {
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6">
-                              <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 max-h-[400px] overflow-y-auto">
+                              <div className="bg-background rounded-lg border border-border p-6 max-h-[400px] overflow-y-auto">
                                 <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                                   {resume.content}
                                 </pre>
