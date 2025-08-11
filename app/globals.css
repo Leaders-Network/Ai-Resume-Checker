@@ -4,49 +4,29 @@
 
 @layer base {
   :root {
-    /* Base Backgrounds */
-    --background: 200 30% 10%; /* Based on #0f2027 */
-    --foreground: 0 0% 100%; /* white */
-
-    --card: 200 28% 15%; /* darker than bg */
-    --card-foreground: 0 0% 100%;
-
-    --popover: 200 28% 15%;
-    --popover-foreground: 0 0% 100%;
-
-    /* Primary (Calls to Action) */
-    --primary: 28 94% 56%; /* #f4791f in HSL */
-    --primary-foreground: 0 0% 100%;
-
-    /* Secondary / Subtle backgrounds */
-    --secondary: 187 17% 50%; /* #659999 */
-    --secondary-foreground: 0 0% 100%;
-
-    /* Muted, Neutral Info */
-    --muted: 200 20% 25%; /* darker gray-blue */
-    --muted-foreground: 187 17% 80%;
-
-    --accent: 210 15% 30%;
-    --accent-foreground: 0 0% 100%;
-
-    /* Destructive actions */
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* Borders & Inputs */
-    --border: 200 15% 25%;
-    --input: 200 15% 25%;
-
-    --ring: 28 94% 56%;
-
-    /* Chart palette */
-    --chart-1: 28 94% 56%;   /* orange */
-    --chart-2: 187 17% 50%;  /* teal */
-    --chart-3: 210 15% 30%;  /* muted blue */
-    --chart-4: 340 65% 47%;  /* reddish-pink */
-    --chart-5: 280 85% 65%;  /* violet */
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 47.4% 11.2%;
     --radius: 0.5rem;
+
+    --yellow: 45 93% 57%;
+    --yellow-foreground: 45 93% 10%;
   }
 
   .dark {
@@ -78,6 +58,9 @@
     --input: 200 10% 20%;
 
     --ring: 28 94% 56%;
+
+    --yellow: 45 93% 52%;
+    --yellow-foreground: 45 93% 15%;
 
     --chart-1: 28 94% 56%;
     --chart-2: 187 17% 45%;

@@ -152,6 +152,21 @@ export default function ResultPage() {
       <div className="max-w-7xl mx-auto">
 
         {/* Enhanced Stats Cards */}
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Your Results</h1>
+            <p className="text-muted-foreground">A summary of your resume analysis.</p>
+          </div>
+          {subscriptionData?.role === "premium" && (
+            <Badge variant="secondary" className="bg-yellow text-yellow-foreground border-yellow/30">
+              <Crown className="h-4 w-4 mr-1" />
+              Premium User
+            </Badge>
+          )}
+        </div>
+
+        {/* Enhanced Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,9 +190,7 @@ export default function ResultPage() {
           </Card>
           <Card className="bg-gradient-to-br from-yellow-50 to-orange-100 dark:from-yellow-900/30 dark:to-orange-800/30 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-2">
-              <CardTitle className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">
-                {partiallyMatched}
-              </CardTitle>
+              <CardTitle className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{partiallyMatched}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-yellow-800 dark:text-yellow-200 font-medium text-lg">Partial Matches</p>
@@ -214,7 +227,7 @@ export default function ResultPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-6"
         >
-          <Card className="border-2 border-[#130F4D]/10 shadow-lg">
+          <Card className="border-2 border-border/10 shadow-lg bg-card">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
@@ -223,12 +236,12 @@ export default function ResultPage() {
                     placeholder="Search by filename or keywords..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600"
+                    className="pl-10 h-12 border-2 border-input focus:border-primary bg-transparent"
                   />
                 </div>
                 <div className="w-full md:w-64">
                   <Select value={filterScore} onValueChange={setFilterScore}>
-                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600">
+                    <SelectTrigger className="h-12 border-2 border-input focus:border-primary bg-transparent">
                       <div className="flex items-center">
                         <Filter size={18} className="mr-2" />
                         <SelectValue placeholder="Filter by score" />
@@ -253,17 +266,17 @@ export default function ResultPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="overflow-hidden border-2 border-[#130F4D]/10 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5 border-b">
+          <Card className="overflow-hidden border-2 border-border/10 shadow-lg bg-card">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border">
               <CardTitle className="text-xl">Analysis Results</CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">
+                  <tr className="bg-secondary/20">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       <div
-                        className="flex items-center space-x-2 cursor-pointer hover:text-[#130F4D] transition-colors"
+                        className="flex items-center space-x-2 cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort("fileName")}
                       >
                         <span>Filename</span>
@@ -271,9 +284,9 @@ export default function ResultPage() {
                           (sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       <div
-                        className="flex items-center space-x-2 cursor-pointer hover:text-[#130F4D] transition-colors"
+                        className="flex items-center space-x-2 cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort("score")}
                       >
                         <span>Match Score</span>
@@ -281,10 +294,10 @@ export default function ResultPage() {
                           (sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
                       </div>
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Keywords
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-200">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Actions
                     </th>
                   </tr>
@@ -294,16 +307,16 @@ export default function ResultPage() {
                     sortedResumes.map((resume, index) => (
                       <tr
                         key={index}
-                        className="border-t dark:border-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/20 transition-all duration-200"
+                        className="border-t border-border hover:bg-secondary/20 transition-all duration-200"
                       >
-                        <td className="px-6 py-4 dark:text-gray-200">
+                        <td className="px-6 py-4 text-foreground">
                           <div className="flex items-center">
-                            <div className="p-2 bg-gradient-to-br from-[#130F4D]/10 to-blue-500/10 rounded-lg mr-3">
-                              <FileText className="h-5 w-5 text-[#130F4D]" />
+                            <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mr-3">
+                              <FileText className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <span className="font-medium text-[#130F4D] dark:text-white">{resume.fileName}</span>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span className="font-medium text-primary">{resume.fileName}</span>
+                              <p className="text-xs text-muted-foreground mt-1">
                                 {resume.matches.length} matches • {resume.missing.length} missing
                               </p>
                             </div>
@@ -311,14 +324,14 @@ export default function ResultPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                            <div className="w-24 bg-muted rounded-full h-3">
                               <div
                                 className={`rounded-full h-3 transition-all duration-300 ${
                                   resume.score >= 70
                                     ? "bg-gradient-to-r from-green-500 to-emerald-500"
                                     : resume.score >= 40
-                                      ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                                      : "bg-gradient-to-r from-red-500 to-red-500"
+                                      ? "bg-yellow"
+                                       : "bg-gradient-to-r from-red-500 to-red-500"
                                 }`}
                                 style={{ width: `${resume.score}%` }}
                               />
@@ -328,8 +341,8 @@ export default function ResultPage() {
                                 resume.score >= 70
                                   ? "text-green-600 dark:text-green-400"
                                   : resume.score >= 40
-                                    ? "text-yellow-600 dark:text-yellow-400"
-                                    : "text-red-600 dark:text-red-400"
+                                    ? "text-yellow-foreground"
+                                     : "text-red-600 dark:text-red-400"
                               }`}
                             >
                               {Math.round(resume.score)}%
@@ -342,7 +355,7 @@ export default function ResultPage() {
                               <Badge
                                 key={idx}
                                 variant="secondary"
-                                className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs"
+                                className="bg-yellow/20 text-yellow-foreground text-xs"
                               >
                                 {match}
                               </Badge>
@@ -358,7 +371,7 @@ export default function ResultPage() {
                           <div className="flex gap-2">
                             <Button
                               onClick={() => handleViewSummary(resume)}
-                              className=" bg-orange-600 text-white hover:from-[#0F0B3E] hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all "
+                              className="bg-yellow text-yellow-foreground hover:bg-yellow/90 shadow-md hover:shadow-lg transition-all"
                               size="sm"
                             >
                               View Analysis
@@ -367,7 +380,7 @@ export default function ResultPage() {
                               <Button
                                 variant="outline"
                                 onClick={() => handleViewPDF(resume)}
-                                className="border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white transition-all"
+                                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
                                 size="sm"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -382,14 +395,14 @@ export default function ResultPage() {
                     <tr>
                       <td colSpan={4} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center space-y-4">
-                          <div className="p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full">
-                            <FileText className="h-12 w-12 text-gray-400" />
+                          <div className="p-4 bg-gradient-to-br from-secondary/20 to-accent/20 rounded-full">
+                            <FileText className="h-12 w-12 text-muted-foreground" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                               {searchTerm || filterScore !== "all" ? "No matching results" : "No resumes analyzed yet"}
                             </h3>
-                            <p className="text-gray-500 dark:text-gray-500">
+                            <p className="text-muted-foreground">
                               {searchTerm || filterScore !== "all"
                                 ? "Try adjusting your search criteria"
                                 : "Upload and analyze resumes to see results here"}
