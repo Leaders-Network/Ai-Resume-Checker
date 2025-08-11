@@ -287,7 +287,7 @@ const SettingsPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#130F4D]"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading settings...</p>
         </div>
       </div>
@@ -307,15 +307,15 @@ const SettingsPage = () => {
         <div className="mb-8">
           <div className="flex items-center space-x-6 mb-6">
             <div className="relative">
-              <Avatar className="h-24 w-24 border-4 border-[#130F4D]/20 shadow-lg">
+              <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-lg">
                 <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
-                <AvatarFallback className="bg-gradient-to-br from-[#130F4D] to-blue-600 text-white text-2xl font-bold">
+                <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
               <Button
                 size="sm"
-                className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-[#130F4D] hover:bg-[#0F0B3E] shadow-lg"
+                className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-primary hover:bg-primary/90 shadow-lg"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingImage}
               >
@@ -328,20 +328,17 @@ const SettingsPage = () => {
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-[#130F4D] dark:text-white">
+              <h1 className="text-4xl font-bold text-primary">
                 {userProfile?.displayName || user?.displayName || "User"}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">{user?.email}</p>
               <div className="flex items-center space-x-4 mt-3">
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                >
+                <Badge variant="outline">
                   <Shield className="h-3 w-3 mr-1" />
                   Verified Account
                 </Badge>
                 {subscriptionData?.isActive && (
-                  <Badge variant="secondary" className="bg-[#130F4D] text-white">
+                  <Badge variant="default">
                     <CreditCard className="h-3 w-3 mr-1" />
                     {subscriptionData.activePlan}
                   </Badge>
@@ -352,28 +349,19 @@ const SettingsPage = () => {
         </div>
 
         {/* Settings Tabs */}
-        <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5 border-b">
+        <Card className="border-2 border-primary/10 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-blue-500/5 border-b">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-800">
-                <TabsTrigger
-                  value="profile"
-                  className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white flex items-center space-x-2"
-                >
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="profile" className="flex items-center space-x-2">
                   <User className="h-4 w-4" />
                   <span>Profile</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="security"
-                  className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white flex items-center space-x-2"
-                >
+                <TabsTrigger value="security" className="flex items-center space-x-2">
                   <Lock className="h-4 w-4" />
                   <span>Security</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="subscription"
-                  className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white flex items-center space-x-2"
-                >
+                <TabsTrigger value="subscription" className="flex items-center space-x-2">
                   <CreditCard className="h-4 w-4" />
                   <span>Subscription</span>
                 </TabsTrigger>
@@ -399,14 +387,14 @@ const SettingsPage = () => {
 
                     {/* Profile Image Section */}
                     <div className="flex items-center space-x-6 p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-xl">
-                      <Avatar className="h-20 w-20 border-4 border-[#130F4D]/20">
+                      <Avatar className="h-20 w-20 border-4 border-primary/20">
                         <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
-                        <AvatarFallback className="bg-gradient-to-br from-[#130F4D] to-blue-600 text-white text-xl font-bold">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
                           {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-2">Profile Picture</h3>
+                        <h3 className="text-lg font-semibold text-primary mb-2">Profile Picture</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                           Upload a new profile picture. Recommended size: 400x400px, max 5MB.
                         </p>
@@ -415,7 +403,6 @@ const SettingsPage = () => {
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploadingImage}
                             variant="outline"
-                            className="border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white"
                           >
                             {isUploadingImage ? (
                               <>
@@ -477,7 +464,7 @@ const SettingsPage = () => {
 
                     {/* Account Information */}
                     <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4 flex items-center">
+                      <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
                         <Calendar className="h-5 w-5 mr-2" />
                         Account Information
                       </h3>
@@ -587,7 +574,7 @@ const SettingsPage = () => {
                     <Button
                       onClick={handlePasswordUpdate}
                       disabled={isUpdating || !currentPassword || !newPassword || !confirmPassword}
-                      className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
+                      variant="primary"
                     >
                       <Lock className="h-5 w-5 mr-2" />
                       {isUpdating ? "Updating..." : "Update Password"}
@@ -644,27 +631,27 @@ const SettingsPage = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                            <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">
+                          <div className="p-6 bg-background rounded-xl border border-muted-foreground">
+                            <h3 className="font-semibold text-muted-foreground mb-2">
                               Subscription Date
                             </h3>
-                            <p className="text-lg font-semibold text-[#130F4D] dark:text-white mt-3">
+                            <p className="text-lg font-semibold text-primary mt-3">
                               {formatDate(subscriptionData.subscriptionDate)}
                             </p>
                           </div>
-                          <div className="p-6 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200 dark:border-orange-800">
-                            <h3 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">Days Remaining</h3>
-                            <p className="text-3xl font-bold text-[#130F4D] dark:text-white mt-3">
+                          <div className="p-6 bg-background rounded-xl border border-muted-foreground">
+                            <h3 className="font-semibold text-muted-foreground mb-2">Days Remaining</h3>
+                            <p className="text-3xl font-bold text-primary mt-3">
                               {subscriptionData.expirationDate
                                 ? getDaysRemaining(subscriptionData.expirationDate)
                                 : "∞"}
                             </p>
-                            <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">days left</p>
+                            <p className="text-sm text-muted-foreground mt-1">days left</p>
                           </div>
                         </div>
 
-                        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
-                          <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center">
+                        <div className="p-6 bg-background rounded-xl border">
+                          <h3 className="font-semibold text-muted-foreground mb-4 flex items-center">
                             <Shield className="h-5 w-5 mr-2" />
                             Subscription Status
                           </h3>
@@ -674,12 +661,12 @@ const SettingsPage = () => {
                                 subscriptionData.isActive ? "bg-green-500" : "bg-red-500"
                               }`}
                             ></div>
-                            <span className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                            <span className="text-lg font-semibold text-primary">
                               {subscriptionData.isActive ? "Active" : "Inactive"}
                             </span>
                           </div>
                           {subscriptionData.expirationDate && (
-                            <p className="text-sm text-blue-600 dark:text-blue-400 mt-3">
+                            <p className="text-sm text-muted-foreground mt-3">
                               Expires on: {formatDate(subscriptionData.expirationDate)}
                             </p>
                           )}
@@ -687,12 +674,12 @@ const SettingsPage = () => {
                       </div>
                     ) : (
                       <div className="text-center py-12">
-                        <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <CreditCard className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-                          <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-3">
+                        <div className="p-6 bg-background rounded-xl border">
+                          <CreditCard className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
+                          <h3 className="text-xl font-semibold text-muted-foreground mb-3">
                             No Subscription Found
                           </h3>
-                          <p className="text-gray-500 dark:text-gray-500 mb-6">
+                          <p className="text-muted-foreground mb-6">
                             You don't have an active subscription yet.
                           </p>
                         </div>
@@ -703,7 +690,7 @@ const SettingsPage = () => {
                     <div className="flex space-x-4">
                       <Button
                         onClick={() => (window.location.href = "/dashboard/subscription")}
-                        className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
+                        className="px-8 py-3 h-12 text-base font-semibold shadow-lg"
                       >
                         <CreditCard className="h-5 w-5 mr-2" />
                         {subscriptionData?.isActive ? "Upgrade Plan" : "Subscribe Now"}
