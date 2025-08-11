@@ -466,6 +466,7 @@ export default function VisualizationPage() {
                             <Pie
                             
                               data={scoreRangeData}
+                              dataKey="count"
                               cx="50%"
                               cy="50%"
                               labelLine={false}
@@ -561,15 +562,6 @@ export default function VisualizationPage() {
                             <Radar name="Experience" dataKey="experience" stroke={RADAR_COLORS.experience} fill={RADAR_COLORS.experience} fillOpacity={0.6} />
                             <Radar name="Location" dataKey="location" stroke={RADAR_COLORS.location} fill={RADAR_COLORS.location} fillOpacity={0.6} />
                             <Radar name="Certification" dataKey="certification" stroke={RADAR_COLORS.certification} fill={RADAR_COLORS.certification} fillOpacity={0.6} />
-                              fillOpacity={0.1}
-                            />
-                            <Radar
-                              name="Certification"
-                              dataKey="certification"
-                              stroke="#EF4444"
-                              fill="#EF4444"
-                              fillOpacity={0.1}
-                            />
                             <Tooltip />
                           </RadarChart>
                         </ResponsiveContainer>

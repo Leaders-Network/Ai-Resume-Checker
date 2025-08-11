@@ -172,82 +172,84 @@ const Signup = () => {
   }
 
   return (
-    <div className="h-screen relative overflow-hidden bg-background text-foreground">
+    <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
       <Toaster position="top-right" />
-      
+
       {/* Background with gradient and floating shapes */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-background to-secondary/20">
-        {/* Floating shapes with theme colors */}
+        {/* Floating shapes */}
         <div className="absolute top-10 left-10 w-20 h-20 bg-primary/20 rounded-full opacity-60 animate-pulse"></div>
         <div className="absolute top-32 right-20 w-16 h-16 bg-secondary/30 rounded-full opacity-50 animate-bounce"></div>
         <div className="absolute bottom-20 left-20 w-24 h-24 bg-accent/20 rounded-full opacity-40"></div>
         <div className="absolute bottom-40 right-10 w-32 h-20 bg-muted/30 rounded-2xl opacity-30 rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-primary/10 rounded-full opacity-20"></div>
-        <div className="absolute top-20 right-1/3 w-12 h-20 bg-secondary/20 rounded-xl opacity-40 rotate-45"></div>
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 h-full flex items-center justify-center p-4">
-        <div className="flex w-full max-w-5xl bg-card rounded-3xl shadow-2xl overflow-hidden h-[90vh] border border-border">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="flex w-full max-w-4xl bg-card rounded-3xl shadow-2xl overflow-hidden border border-border">
           {/* Left side - Branding */}
-          <div className="hidden md:flex md:w-2/5 bg-gradient-to-br from-background to-accent p-6 flex-col justify-center text-foreground relative">
+          <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-background to-accent p-8 flex-col justify-center text-foreground relative">
             <div className="relative z-10">
               <h1 className="text-3xl font-bold mb-2">IQ Resume</h1>
-              <p className="text-muted-foreground mb-6">Excellent online builder</p>
-              <h2 className="text-xl font-semibold mb-3">Create your best resume right now</h2>
-              <p className="text-muted-foreground mb-6">{"100k+ users already have most professional resume"}</p>
+              <p className="text-muted-foreground mb-8">Excellent online builder</p>
+
+              <h2 className="text-2xl font-semibold mb-4">Create your account</h2>
+              <p className="text-muted-foreground mb-8">
+                Join our platform to access powerful resume analysis and building tools.
+              </p>
+
+              <div className="mt-auto text-center">
+                <p className="text-muted-foreground">Already have an account?</p>
+                <Link href="/signin" className="text-primary hover:text-primary/80 font-medium">
+                  Sign in
+                </Link>
+              </div>
             </div>
-            <div className="mt-auto">
-              <p className="text-muted-foreground">Already have an account?</p>
-              <Link href="/signin" className="text-primary hover:text-primary/80 font-medium">
-                Sign in
-              </Link>
-            </div>
-            {/* Decorative elements */}
-            <div className="absolute top-10 right-10 w-16 h-16 bg-primary/30 rounded-full opacity-20"></div>
-            <div className="absolute bottom-20 right-20 w-12 h-12 bg-secondary/40 rounded-full opacity-30"></div>
           </div>
 
-          {/* Right side - Sign up form */}
-          <div className="w-full md:w-3/5 p-6 overflow-y-auto bg-card">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Sign up</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Profile Image Upload */}
+          {/* Right side - Form */}
+          <div className="w-full md:w-1/2 p-8 flex items-center justify-center bg-card">
+            <div className="w-full max-w-md">
+              <h2 className="text-2xl font-bold text-center text-foreground mb-6">Sign Up</h2>
+
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-muted border-2 border-border flex items-center justify-center overflow-hidden">
+                    <div
+                      className="w-24 h-24 rounded-full bg-input border-2 border-dashed border-border flex items-center justify-center cursor-pointer overflow-hidden"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       {profileImagePreview ? (
                         <img
-                          src={profileImagePreview || "/placeholder.svg"}
-                          alt="Profile preview"
+                          src={profileImagePreview}
+                          alt="Profile Preview"
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <FaUser className="w-6 h-6 text-muted-foreground" />
+                        <FaUser className="w-10 h-10 text-muted-foreground" />
                       )}
                     </div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      className="hidden"
+                      accept="image/*"
+                      disabled={isLoading}
+                    />
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-colors"
+                      className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90"
                       disabled={isLoading}
                     >
                       <FaCamera className="w-3 h-3" />
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                      disabled={isLoading}
-                    />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
+                  <label htmlFor="name" className="block text-xs font-medium text-foreground mb-1">
                     Full Name
                   </label>
                   <input
@@ -256,15 +258,15 @@ const Signup = () => {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Nancy Johnson"
-                    className="w-full px-3 py-2 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    placeholder="Enter your full name"
+                    className="w-full px-3 py-2 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                     disabled={isLoading}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-                    Email address
+                  <label htmlFor="email" className="block text-xs font-medium text-foreground mb-1">
+                    Email
                   </label>
                   <input
                     id="email"
@@ -272,15 +274,15 @@ const Signup = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="nancyjon@gmail.com"
-                    className="w-full px-3 py-2 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    placeholder="Enter your email"
+                    className="w-full px-3 py-2 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                     disabled={isLoading}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-                    Set password
+                  <label htmlFor="password" className="block text-xs font-medium text-foreground mb-1">
+                    Password
                   </label>
                   <div className="relative">
                     <input
@@ -289,8 +291,8 @@ const Signup = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
-                      className="w-full px-3 py-2 pr-10 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      placeholder="Enter password (min. 6 characters)"
+                      className="w-full px-3 py-2 pr-10 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                       disabled={isLoading}
                     />
                     <button
@@ -305,8 +307,8 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
-                    Confirm password
+                  <label htmlFor="confirmPassword" className="block text-xs font-medium text-foreground mb-1">
+                    Confirm Password
                   </label>
                   <div className="relative">
                     <input
@@ -316,7 +318,7 @@ const Signup = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm password"
-                      className="w-full px-3 py-2 pr-10 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 pr-10 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                       disabled={isLoading}
                     />
                     <button
@@ -361,10 +363,10 @@ const Signup = () => {
                   <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
-                    <FaFacebook className="w-4 h-4 mr-2" />
-                    <span className="font-medium">Continue with Facebook</span>
+                    <FaFacebook className="w-4 h-4 mr-2 text-blue-600" />
+                    <span className="text-foreground font-medium">Continue with Facebook</span>
                   </button>
                 </div>
               </div>
@@ -393,7 +395,7 @@ const Signup = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Signup

@@ -75,8 +75,6 @@ const Signin = () => {
         <div className="absolute top-32 right-20 w-16 h-16 bg-secondary/30 rounded-full opacity-50 animate-bounce"></div>
         <div className="absolute bottom-20 left-20 w-24 h-24 bg-accent/20 rounded-full opacity-40"></div>
         <div className="absolute bottom-40 right-10 w-32 h-20 bg-muted/30 rounded-2xl opacity-30 rotate-12"></div>
-        <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-primary/10 rounded-full opacity-20"></div>
-        <div className="absolute top-20 right-1/3 w-12 h-20 bg-secondary/20 rounded-xl opacity-40 rotate-45"></div>
       </div>
 
       {/* Main content */}
@@ -90,31 +88,27 @@ const Signin = () => {
 
               <h2 className="text-2xl font-semibold mb-4">Welcome back to your account</h2>
               <p className="text-muted-foreground mb-8">
-                Sign in to access your resume analysis tools and continue improving your professional profile.
+                Sign in to continue managing your professional profile and career opportunities.
               </p>
-            </div>
 
-            <div className="mt-auto">
-              <p className="text-muted-foreground">{"Don't have an account?"}</p>
-              <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
-                Sign up
-              </Link>
+              <div className="mt-auto text-center">
+                <p className="text-muted-foreground">Don't have an account?</p>
+                <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
+                  Sign up
+                </Link>
+              </div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute top-10 right-10 w-16 h-16 bg-primary/30 rounded-full opacity-20"></div>
-            <div className="absolute bottom-20 right-20 w-12 h-12 bg-secondary/40 rounded-full opacity-30"></div>
           </div>
 
-          {/* Right side - Sign in form */}
-          <div className="w-full md:w-1/2 p-8 md:p-12 bg-card">
-            <div className="max-w-sm mx-auto">
-              <h2 className="text-2xl font-bold text-foreground mb-8">Sign in</h2>
+          {/* Right side - Form */}
+          <div className="w-full md:w-1/2 p-8 flex items-center justify-center bg-card">
+            <div className="w-full max-w-md">
+              <h2 className="text-2xl font-bold text-center text-foreground mb-6">Sign In</h2>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                    Email address
+                    Email
                   </label>
                   <input
                     id="email"
@@ -123,7 +117,7 @@ const Signin = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-3 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -139,7 +133,7 @@ const Signin = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
-                      className="w-full px-4 py-3 pr-12 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 pr-12 bg-input text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow focus:border-transparent transition-all"
                     />
                     <button
                       type="button"
@@ -183,16 +177,16 @@ const Signin = () => {
                   <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center px-4 py-3 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
-                    <FaFacebook className="w-5 h-5 mr-3" />
-                    <span className="font-medium">Continue with Facebook</span>
+                    <FaFacebook className="w-5 h-5 mr-3 text-blue-600" />
+                    <span className="text-foreground font-medium">Continue with Facebook</span>
                   </button>
                 </div>
               </div>
 
               <div className="mt-8 text-center md:hidden">
-                <p className="text-muted-foreground">{"Don't have an account?"}</p>
+                <p className="text-muted-foreground">Don't have an account?</p>
                 <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>
