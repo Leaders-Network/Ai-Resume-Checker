@@ -723,6 +723,8 @@ export default function DashboardPage() {
       ? "bg-background"
       : "bg-gray-50"  // Light, clean background for light mode
       }`}>
+
+
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with user info - improved styling */}
@@ -764,7 +766,7 @@ export default function DashboardPage() {
                     }`}>
                     Welcome back, {userProfile?.displayName || user?.displayName || "User"}!
                   </h1>
-                  <p className="text-muted-foreground mt-2 text-lg">Ready to analyze some resumes today?</p>
+                  <p className={`${isDarkMode ? 'text-gray-300' : 'text-blue-700'} mb-4`}>Ready to analyze some resumes today?</p>
                   <div className="flex items-center space-x-3 mt-3">
                     <Badge
                       variant="secondary"
@@ -895,9 +897,9 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className="border-2 border-primary/30 shadow-lg">
+            <Card className={`border-2 border-primary/30 shadow-lg ${isDarkMode ? 'bg-card' : 'bg-blue-50'}`}>
               <CardHeader className="pb-2 bg-primary/5">
-                <CardTitle className="flex items-center text-primary">
+                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-blue-800'}`}>
                   <Crown className="mr-2 h-5 w-5" />
                   Trial Ending Soon
                 </CardTitle>
@@ -911,7 +913,7 @@ export default function DashboardPage() {
                   onClick={() => router.push("/dashboard/subscription")}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
-                  🚀 Upgrade Now
+                  Upgrade Now
                 </Button>
               </CardContent>
             </Card>
@@ -925,10 +927,10 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className="border-2 border-secondary/30 shadow-lg">
+            <Card className={`shadow-lg border ${isDarkMode ? 'border-border bg-card' : 'border-gray-200 bg-blue-50'}`}>
               <CardHeader className="pb-2 bg-secondary/5">
-                <CardTitle className="flex items-center text-card-foreground">
-                  <Lightbulb className="mr-2 h-5 w-5 text-secondary" />
+                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-blue-800'}`}>
+                  <Lightbulb className={`mr-2 h-6 w-6 ${isDarkMode ? 'text-primary' : 'text-blue-500'}`} />
                   AI Suggested Keywords
                 </CardTitle>
               </CardHeader>
@@ -941,13 +943,13 @@ export default function DashboardPage() {
 
                     return (
                       <div key={category} className="space-y-2">
-                        <h3 className="font-medium text-foreground">{categoryLabels[typedCategory]}</h3>
+                        <h3 className={`font-medium text-lg ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>{categoryLabels[typedCategory]}</h3>
                         <div className="flex flex-wrap gap-2">
                           {suggestions.map((keyword, idx) => (
                             <Badge
                               key={idx}
                               variant="outline"
-                              className="cursor-pointer bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground border-secondary/30 transition-colors"
+                              className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'}`}
                               onClick={() => handleAddSuggestedKeyword(typedCategory, keyword)}
                             >
                               + {keyword}
@@ -965,7 +967,7 @@ export default function DashboardPage() {
                       variant="default"
                       size="sm"
                       onClick={handleAddAllSuggestions}
-                      className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                      className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'}`}
                     >
                       Add All Suggestions
                     </Button>
@@ -977,13 +979,14 @@ export default function DashboardPage() {
         )}
 
         {/* Main content cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
+
           >
-            <Card className={`shadow-lg h-full ${isDarkMode
+            <Card className={`shadow-lg ${isDarkMode
               ? "border-2 border-border"
               : "border border-gray-200"
               }`}>
@@ -1007,7 +1010,7 @@ export default function DashboardPage() {
                   <div className="mb-6 p-4 bg-destructive/10 rounded-xl border border-destructive/20">
                     <div className="flex items-center space-x-3 mb-3">
                       <Crown className="h-6 w-6 text-primary" />
-                      <h3 className="font-semibold text-foreground">
+                      <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>ground"
                         {subscriptionData?.isTrialActive ? "Trial Limit Reached" : "Upgrade Required"}
                       </h3>
                     </div>
@@ -1020,78 +1023,75 @@ export default function DashboardPage() {
                       onClick={() => router.push("/dashboard/subscription")}
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
-                      🚀 Upgrade to Premium
+                      Upgrade to Premium
                     </Button>
                   </div>
                 )}
 
-               {/* Upload area */}
-<div
-  onClick={() => canUploadResumes() && fileInputRef.current?.click()}
-  onDragEnter={handleDragEnter}
-  onDragLeave={handleDragLeave}
-  onDragOver={handleDragOver}
-  onDrop={handleDrop}
-  className={`border-4 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-300 ${
-    canUploadResumes()
-      ? isDragOver
-        ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
-        : isDarkMode
-          ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
-          : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
-      : isDarkMode
-        ? "border-border bg-muted cursor-not-allowed opacity-50"
-        : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
-  }`}
->
-  <Upload
-    className={`mx-auto h-16 w-16 mb-4 ${
-      canUploadResumes()
-        ? isDragOver
-          ? "text-primary"
-          : "text-gray-400 dark:text-gray-500"
-        : "text-gray-400 dark:text-gray-500"
-    }`}
-  />
-  <p
-    className={`text-center text-lg font-medium ${
-      canUploadResumes()
-        ? isDragOver
-          ? "text-primary"
-          : "text-gray-700 dark:text-gray-300"
-        : "text-gray-500 dark:text-gray-500"
-    }`}
-  >
-    {canUploadResumes()
-      ? isDragOver
-        ? "Drop PDF files here!"
-        : "Drag & drop PDF files or click to upload"
-      : "Upgrade to upload resumes"}
-  </p>
-  <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-    {canUploadResumes()
-      ? "Supports PDF files up to 10MB each • Multiple files supported"
-      : "Premium feature required"}
-  </p>
-  <input
-    ref={fileInputRef}
-    type="file"
-    className="hidden"
-    accept=".pdf"
-    multiple
-    onChange={handleFileUpload}
-    disabled={!canUploadResumes()}
-  />
-</div>
+                {/* Upload area */}
+                <div
+                  onClick={() => canUploadResumes() && fileInputRef.current?.click()}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  className={`border-4 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
+                      ? isDragOver
+                        ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
+                        : isDarkMode
+                          ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
+                          : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
+                      : isDarkMode
+                        ? "border-border bg-muted cursor-not-allowed opacity-50"
+                        : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
+                    }`}
+                >
+                  <Upload
+                    className={`mx-auto h-16 w-16 mb-4 ${canUploadResumes()
+                        ? isDragOver
+                          ? "text-primary"
+                          : "text-gray-400 dark:text-gray-500"
+                        : "text-gray-400 dark:text-gray-500"
+                      }`}
+                  />
+                  <p
+                    className={`text-center text-lg font-medium ${canUploadResumes()
+                        ? isDragOver
+                          ? "text-primary"
+                          : "text-gray-700 dark:text-gray-300"
+                        : "text-gray-500 dark:text-gray-500"
+                      }`}
+                  >
+                    {canUploadResumes()
+                      ? isDragOver
+                        ? "Drop PDF files here!"
+                        : "Drag & drop PDF files or click to upload"
+                      : "Upgrade to upload resumes"}
+                  </p>
+                  <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    {canUploadResumes()
+                      ? "Supports PDF files up to 10MB each • Multiple files supported"
+                      : "Premium feature required"}
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept=".pdf"
+                    multiple
+                    onChange={handleFileUpload}
+                    disabled={!canUploadResumes()}
+                  />
+                </div>
 
                 {/* File list */}
-                <animated.ul style={fileAnimation} className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                <animated.ul style={fileAnimation} className="mt-6 border  space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {files.map((file, index) => (
                     <li
                       key={index}
                       className={`flex items-center justify-between p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow ${isDarkMode
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-primary text-primary-foreground"
                         }`}
                     >
                       <div className="flex items-center flex-1 min-w-0">

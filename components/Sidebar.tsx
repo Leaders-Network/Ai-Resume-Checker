@@ -149,7 +149,7 @@ export function Sidebar({ className, children }: SidebarProps) {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
         className={cn(
-          "bg-white dark:bg-gray-800 transition-all duration-300 fixed z-30 h-full border-r shadow-md overflow-hidden",
+          "bg-white dark:bg-gray-800 transition-all duration-300 fixed z-30 h-full  shadow-md overflow-hidden",
           isOpen ? "w-64" : "w-20",
           "flex flex-col",
         )}
@@ -166,7 +166,7 @@ export function Sidebar({ className, children }: SidebarProps) {
 
         {/* User Profile Section */}
         {user && isOpen && (
-          <div className="px-4 py-2 border-b">
+          <div className="px-4 py-2">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
                 {userProfile?.profileImage || userProfile?.photoURL || user.photoURL ? (
@@ -207,14 +207,14 @@ export function Sidebar({ className, children }: SidebarProps) {
           ))}
         </div>
 
-        <div className="p-4 space-y-2 border-t">
+        <div className="p-4 space-y-2">
           <Button
             onClick={toggleDarkMode}
             variant="ghost"
             className={cn("w-full justify-start items-center", !isOpen && "justify-center px-0")}
           >
             {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-blue-700" />}
-            {isOpen && <span className="ml-3">{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
+            {isOpen && <span className={`ml-3 ${isDarkMode ? "text-yellow-500" : "text-blue-700"}`}>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
           </Button>
           <Button
             onClick={handleSignOut}
