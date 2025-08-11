@@ -1085,7 +1085,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* File list */}
-                <animated.ul style={fileAnimation} className="mt-6 border  space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                <motion.ul style={fileAnimation} className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {files.map((file, index) => (
                     <li
                       key={index}
@@ -1106,7 +1106,7 @@ export default function DashboardPage() {
                       </button>
                     </li>
                   ))}
-                </animated.ul>
+                </motion.ul>
               </CardContent>
             </Card>
           </motion.div>
