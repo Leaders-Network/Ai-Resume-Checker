@@ -574,7 +574,7 @@ export default function PDFViewerPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-3 pt-4 border-t">
+                <div className="space-y-3 pt-4 border-t ">
                   <Button
                     className="w-full bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white shadow-md"
                     onClick={handleDownload}
@@ -586,9 +586,9 @@ export default function PDFViewerPage() {
                   <Link href="/dashboard/result">
                     <Button
                       variant="outline"
-                      className="w-full border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent"
+                      className="w-full border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent mt-4"
                     >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      <ArrowLeft className="mr-2 h-4 w-4 " />
                       Back to Results
                     </Button>
                   </Link>
