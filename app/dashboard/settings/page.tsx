@@ -12,12 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { auth, db, storage } from "@/config/firebase"
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth"
 import { doc, updateDoc, getDoc } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
 import { useAuthState } from "react-firebase-hooks/auth"
 import toast, { Toaster } from "react-hot-toast"
 import { motion } from "framer-motion"
 import { User, Lock, CreditCard, Save, Camera, Upload, Mail, Calendar, Shield, Trash2 } from "lucide-react"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+
+
 
 interface UserProfile {
   uid: string
@@ -123,71 +125,99 @@ const SettingsPage = () => {
     }
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !user) return
+const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0]
+  if (!file || !user) return
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file")
-      return
-    }
+  // Validate file type
+  if (!file.type.startsWith("image/")) {
+    toast.error("Please select a valid image file")
+    return
+  }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB")
-      return
-    }
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error("Image size should be less than 5MB")
+    return
+  }
 
-    setIsUploadingImage(true)
-    try {
-      // Create a unique filename
-      const timestamp = Date.now()
-      const fileExtension = file.name.split(".").pop()
-      const fileName = `profile-${timestamp}.${fileExtension}`
+  setIsUploadingImage(true)
 
-      // Create a reference to the storage location
-      const imageRef = ref(storage, `profile-images/${user.uid}/${fileName}`)
+  try {
+    // Ensure user is authenticated and get fresh token
+    await user.getIdToken(true)
 
-      // Upload the file
-      const snapshot = await uploadBytes(imageRef, file)
+    // Create a unique filename
+    const timestamp = Date.now()
+    const fileExtension = file.name.split(".").pop()
+    const fileName = `profile-${timestamp}.${fileExtension}`
 
-      // Get the download URL
-      const downloadURL = await getDownloadURL(snapshot.ref)
+    // Create a reference to the storage location
+    const imageRef = ref(storage, `profile-images/${user.uid}/${fileName}`)
 
-      // Update preview immediately
-      setProfileImagePreview(downloadURL)
+    // Upload the file using uploadBytesResumable
+    const uploadTask = uploadBytesResumable(imageRef, file)
 
-      // Update Firebase Auth profile
-      await updateProfile(user, { photoURL: downloadURL })
+    // Handle the upload with promise
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          // Progress monitoring (optional)
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          console.log('Upload is ' + progress + '% done')
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          console.error('Upload failed:', error)
+          reject(error)
+        },
+        async () => {
+          // Upload completed successfully
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+            
+            // Update preview immediately
+            setProfileImagePreview(downloadURL)
 
-      // Update Firestore document
-      const userDocRef = doc(db, "users", user.uid)
-      await updateDoc(userDocRef, {
-        profileImage: downloadURL,
-        photoURL: downloadURL,
-        lastUpdated: new Date().toISOString(),
-      })
+            // Update Firebase Auth profile
+            await updateProfile(user, { photoURL: downloadURL })
 
-      // Update local state
-      setUserProfile((prev) =>
-        prev
-          ? {
-              ...prev,
+            // Update Firestore document
+            const userDocRef = doc(db, "users", user.uid)
+            await updateDoc(userDocRef, {
               profileImage: downloadURL,
               photoURL: downloadURL,
-            }
-          : null,
-      )
+              lastUpdated: new Date().toISOString(),
+            })
 
-      toast.success("Profile image updated successfully!")
-    } catch (error: any) {
-      console.error("Error uploading image:", error)
-      toast.error(error.message || "Failed to upload image")
-    } finally {
-      setIsUploadingImage(false)
-    }
+            // Update local state
+            setUserProfile((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    profileImage: downloadURL,
+                    photoURL: downloadURL,
+                  }
+                : null,
+            )
+
+            toast.success("Profile image updated successfully!")
+            resolve(downloadURL)
+          } catch (error) {
+            reject(error)
+          }
+        }
+      )
+    })
+
+  } catch (error: any) {
+    console.error("Error uploading image:", error)
+    toast.error(error.message || "Failed to upload image")
+  } finally {
+    setIsUploadingImage(false)
   }
+}
+
 
   const handleRemoveImage = async () => {
     if (!user) return

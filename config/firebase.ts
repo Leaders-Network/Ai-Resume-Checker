@@ -4,15 +4,18 @@ import { getFirestore } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage"; // ✅
 
+
+// Firebase configuration
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDNJygE_PYTwdA6ijOCFfowR6Japf2Z-WY",
-  authDomain: "ai-resume-checker-74c1a.firebaseapp.com",
-  projectId: "ai-resume-checker-74c1a",
-  storageBucket: "ai-resume-checker-74c1a.appspot.com", // ✅ MUST be .appspot.com
-  messagingSenderId: "23063429760",
-  appId: "1:23063429760:web:09aa18a9cbc8757a551c65",
-  measurementId: "G-ZJQH54PNQJ",
-  databaseURL: "https://ai-resume-checker-74c1a-default-rtdb.firebaseio.com/",
+  apiKey: "AIzaSyDTyqck8VKB2DX7Y6r_CXC3-HpR7zcHX1c",
+  authDomain: "ai-resume-checker-3abb1.firebaseapp.com",
+  projectId: "ai-resume-checker-ac609",
+  storageBucket: "ai-resume-checker-ac609.appspot.com", // ✅ MUST be .appspot.com
+  messagingSenderId: "1052080896087",
+  appId: "1:1052080896087:web:21934f2c66f7028b6ccb12",
+  measurementId: "G-DDBYMYNLCF",
+  databaseURL: "https://ai-resume-checker-ac609-default-rtdb.firebaseio.com/", 
 };
 
 const app = initializeApp(firebaseConfig);
@@ -21,7 +24,6 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const realtimeDb = getDatabase(app);
 export const storage = getStorage(app); // ✅
-
 export const provider = new GoogleAuthProvider();
 export const facebookProvider = new FacebookAuthProvider();
 
