@@ -4,8 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown } from "lucide-react"
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist"
 import { useRouter } from "next/navigation"
-import { useSpring, animated } from "react-spring"
-import { useTheme } from "next-themes"
 import toast, { Toaster } from "react-hot-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,8 +15,9 @@ import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, updateUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
-import { signOut } from "firebase/auth"
+// import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
+// import { TextItem } from "pdfjs-dist/types/src/display/api"
 
 // PDF.js worker setup
 GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs"
@@ -40,6 +39,20 @@ interface UserProfile {
   lastLoginAt: string
   trialStartDate?: string
   trialEndDate?: string
+}
+
+interface UploadedFile {
+  id: string
+  name: string
+  size: number
+  type: string
+  url?: string
+  uploadDate: Date
+  status: 'uploading' | 'completed' | 'error'
+  fileName?: string
+  content?: string
+  file?: File
+  blob?: Blob
 }
 
 // Common skills for auto-extraction
@@ -130,6 +143,7 @@ const commonCertifications = [
   "red hat certified",
 ]
 
+
 const extractTextFromPDF = async (file: File) => {
   const fileReader = new FileReader()
   return new Promise<string>((resolve, reject) => {
@@ -141,7 +155,7 @@ const extractTextFromPDF = async (file: File) => {
         for (let i = 0; i < pdf.numPages; i++) {
           const page = await pdf.getPage(i + 1)
           const text = await page.getTextContent()
-          textContent += text.items.map((item: any) => item.str).join(" ")
+          textContent += text.items.map((item: Record<string, unknown>) => item.str).join(" ")
         }
         resolve(textContent)
       } catch (error) {
@@ -234,12 +248,11 @@ const extractKeywords = (text: string) => {
 }
 
 export default function DashboardPage() {
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
-
+  const { isDarkMode } = useDarkMode();
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
-  const [files, setFiles] = useState<any[]>([])
+  const [files, setFiles] = useState<UploadedFile[]>([])
   const [keywords, setKeywords] = useState<KeywordCategory>(() => {
     if (typeof window !== "undefined") {
       const savedKeywords = sessionStorage.getItem("keywords")
@@ -265,18 +278,12 @@ export default function DashboardPage() {
   })
   const router = useRouter()
 
-  const fileAnimation = useSpring({
-    opacity: files.length ? 1 : 0,
-    transform: files.length ? "translateY(0)" : "translateY(20px)",
-    config: { tension: 180, friction: 12 },
-  })
+  // const fileAnimation = useSpring({
+  //   opacity: files.length ? 1 : 0,
+  //   transform: files.length ? "translateY(0)" : "translateY(20px)",
+  //   config: { tension: 180, friction: 12 },
+  // })
 
-  useEffect(() => {
-    if (user) {
-      loadUserProfile()
-      loadSubscriptionData()
-    }
-  }, [user])
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -284,38 +291,48 @@ export default function DashboardPage() {
     }
   }, [keywords])
 
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
+
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
       }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
     }
-  }
 
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
     }
-  }
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth)
-      router.push("/signin")
-    } catch (error) {
-      console.error("Error signing out:", error)
-      toast.error("Failed to sign out")
+    if (user) {
+      loadUserProfile()
+      loadSubscriptionData()
     }
-  }
+  }, [user])
+
+  //handle sign out unused
+  // const handleSignOut = async () => {
+  //   try {
+  //     await signOut(auth)
+  //     router.push("/signin")
+  //   } catch (error) {
+  //     console.error("Error signing out:", error)
+  //     toast.error("Failed to sign out")
+  //   }
+  // }
 
   const getUserInitials = () => {
     const name = userProfile?.displayName || user?.displayName || user?.email || "User"
@@ -395,7 +412,7 @@ export default function DashboardPage() {
 
   const processFiles = async (uploadedFiles: File[]) => {
     const uniqueFiles = uploadedFiles.filter(
-      (file) => !files.some((existingFile) => existingFile.fileName === file.name),
+      (file) => !files.some((existingFile) => (existingFile.fileName ?? existingFile.name) === file.name),
     )
 
     if (uniqueFiles.length === 0) {
@@ -404,7 +421,7 @@ export default function DashboardPage() {
     }
 
     try {
-      const processedFiles = await Promise.all(
+      const processedFiles: Array<UploadedFile | null> = await Promise.all(
         uniqueFiles.map(async (file) => {
           try {
             const content = await extractTextFromPDF(file)
@@ -433,8 +450,14 @@ export default function DashboardPage() {
             const fileUrl = URL.createObjectURL(fileBlob)
 
             return {
-              fileName: file.name,
+              id: `${file.name}-${Date.now()}`,
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              uploadDate: new Date(),
+              status: 'completed',
               url: fileUrl,
+              fileName: file.name,
               content,
               file,
               blob: fileBlob,
@@ -446,7 +469,7 @@ export default function DashboardPage() {
         }),
       )
 
-      const validFiles = processedFiles.filter(Boolean)
+      const validFiles = processedFiles.filter((f): f is UploadedFile => f !== null)
       setFiles((prevFiles) => [...prevFiles, ...validFiles])
 
       // Update subscription data
@@ -455,10 +478,9 @@ export default function DashboardPage() {
         await updateUserSubscription(user.uid, { resumeLimit: updatedLimit })
         setSubscriptionData((prev) => (prev ? { ...prev, resumeLimit: updatedLimit } : null))
       }
-
       toast.success("✅ Files uploaded successfully!")
     } catch (error) {
-      toast.error("❌ Failed to process files.")
+      toast.error(`❌ Failed to process files. ${error}`)
     }
   }
 
@@ -618,35 +640,36 @@ export default function DashboardPage() {
     const allKeywords = [...keywords.skills, ...keywords.experience, ...keywords.location, ...keywords.certification]
 
     const filesWithKeywords = files.map((file) => {
+      const fileContent = file.content ?? ""
       const matches = allKeywords.filter((keyword) => {
         if (keywords.experience.includes(keyword)) {
           if (keyword === "1-3 years") {
             const regex =
               /\b([1-3]|one|two|three)[\s-]*(year|yr)s?\b|\b([1-3]|one|two|three)[\s-]*to[\s-]*([1-3]|one|two|three)[\s-]*(year|yr)s?\b/i
-            return regex.test(file.content)
+            return regex.test(fileContent)
           } else if (keyword === "3-5 years") {
             const regex =
               /\b([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b([3-5]|three|four|five)[\s-]*to[\s-]*([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b(3|three)\+[\s-]*(year|yr)s?\b/i
-            return regex.test(file.content)
+            return regex.test(fileContent)
           } else if (keyword === "5+ years") {
             const regex =
               /\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)[\s-]*(year|yr)s?\b|\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)\+[\s-]*(year|yr)s?\b/i
-            return regex.test(file.content)
+            return regex.test(fileContent)
           } else if (keyword === "0-1 years") {
             const regex =
               /\b(0|1|zero|one)[\s-]*(year|yr)s?\b|\b(0|zero)[\s-]*to[\s-]*(1|one)[\s-]*(year|yr)s?\b|\bless than (1|one)[\s-]*(year|yr)s?\b/i
-            return regex.test(file.content)
+            return regex.test(fileContent)
           }
-          return file.content.toLowerCase().includes(keyword.toLowerCase())
+          return fileContent.toLowerCase().includes(keyword.toLowerCase())
         }
-        return file.content.toLowerCase().includes(keyword.toLowerCase())
+        return fileContent.toLowerCase().includes(keyword.toLowerCase())
       })
 
       const missing = allKeywords.filter((keyword) => !matches.includes(keyword))
 
       const categoryMatches = {
         skills:
-          (keywords.skills.filter((keyword) => file.content.toLowerCase().includes(keyword.toLowerCase())).length /
+          (keywords.skills.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase())).length /
             Math.max(1, keywords.skills.length)) *
           100,
         experience:
@@ -654,30 +677,30 @@ export default function DashboardPage() {
             if (keyword === "1-3 years") {
               const regex =
                 /\b([1-3]|one|two|three)[\s-]*(year|yr)s?\b|\b([1-3]|one|two|three)[\s-]*to[\s-]*([1-3]|one|two|three)[\s-]*(year|yr)s?\b/i
-              return regex.test(file.content)
+              return regex.test(fileContent)
             } else if (keyword === "3-5 years") {
               const regex =
                 /\b([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b([3-5]|three|four|five)[\s-]*to[\s-]*([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b(3|three)\+[\s-]*(year|yr)s?\b/i
-              return regex.test(file.content)
+              return regex.test(fileContent)
             } else if (keyword === "5+ years") {
               const regex =
                 /\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)[\s-]*(year|yr)s?\b|\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)\+[\s-]*(year|yr)s?\b/i
-              return regex.test(file.content)
+              return regex.test(fileContent)
             } else if (keyword === "0-1 years") {
               const regex =
                 /\b(0|1|zero|one)[\s-]*(year|yr)s?\b|\b(0|zero)[\s-]*to[\s-]*(1|one)[\s-]*(year|yr)s?\b|\bless than (1|one)[\s-]*(year|yr)s?\b/i
-              return regex.test(file.content)
+              return regex.test(fileContent)
             }
-            return file.content.toLowerCase().includes(keyword.toLowerCase())
+            return fileContent.toLowerCase().includes(keyword.toLowerCase())
           }).length /
             Math.max(1, keywords.experience.length)) *
           100,
         location:
-          (keywords.location.filter((keyword) => file.content.toLowerCase().includes(keyword.toLowerCase())).length /
+          (keywords.location.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase())).length /
             Math.max(1, keywords.location.length)) *
           100,
         certification:
-          (keywords.certification.filter((keyword) => file.content.toLowerCase().includes(keyword.toLowerCase()))
+          (keywords.certification.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase()))
             .length /
             Math.max(1, keywords.certification.length)) *
           100,
@@ -748,6 +771,7 @@ export default function DashboardPage() {
                     <AvatarImage
                       src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
                       alt="Profile"
+                      className="object-cover"
                     />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
                       {getUserInitials()}
@@ -1010,7 +1034,7 @@ export default function DashboardPage() {
                   <div className="mb-6 p-4 bg-destructive/10 rounded-xl border border-destructive/20">
                     <div className="flex items-center space-x-3 mb-3">
                       <Crown className="h-6 w-6 text-primary" />
-                      <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>ground"
+                      <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>ground
                         {subscriptionData?.isTrialActive ? "Trial Limit Reached" : "Upgrade Required"}
                       </h3>
                     </div>
@@ -1036,30 +1060,30 @@ export default function DashboardPage() {
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   className={`border-4 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
-                      ? isDragOver
-                        ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
-                        : isDarkMode
-                          ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
-                          : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
+                    ? isDragOver
+                      ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
                       : isDarkMode
-                        ? "border-border bg-muted cursor-not-allowed opacity-50"
-                        : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
+                        ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
+                        : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
+                    : isDarkMode
+                      ? "border-border bg-muted cursor-not-allowed opacity-50"
+                      : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
                     }`}
                 >
                   <Upload
                     className={`mx-auto h-16 w-16 mb-4 ${canUploadResumes()
-                        ? isDragOver
-                          ? "text-primary"
-                          : "text-gray-400 dark:text-gray-500"
+                      ? isDragOver
+                        ? "text-primary"
                         : "text-gray-400 dark:text-gray-500"
+                      : "text-gray-400 dark:text-gray-500"
                       }`}
                   />
                   <p
                     className={`text-center text-lg font-medium ${canUploadResumes()
-                        ? isDragOver
-                          ? "text-primary"
-                          : "text-gray-700 dark:text-gray-300"
-                        : "text-gray-500 dark:text-gray-500"
+                      ? isDragOver
+                        ? "text-primary"
+                        : "text-gray-700 dark:text-gray-300"
+                      : "text-gray-500 dark:text-gray-500"
                       }`}
                   >
                     {canUploadResumes()
@@ -1085,7 +1109,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* File list */}
-                <motion.ul style={fileAnimation} className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {files.map((file, index) => (
                     <li
                       key={index}
@@ -1096,7 +1120,7 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center flex-1 min-w-0">
                         <FileText className="h-5 w-5 mr-3 text-primary-foreground flex-shrink-0" />
-                        <span className="text-primary-foreground truncate font-medium">{file.fileName}</span>
+                        <span className="text-primary-foreground truncate font-medium">{file.fileName ?? file.name}</span>
                       </div>
                       <button
                         onClick={() => handleFileDelete(index)}
@@ -1106,7 +1130,7 @@ export default function DashboardPage() {
                       </button>
                     </li>
                   ))}
-                </motion.ul>
+                </ul>
               </CardContent>
             </Card>
           </motion.div>
@@ -1166,7 +1190,9 @@ export default function DashboardPage() {
                         <>
                           <div className="flex space-x-2">
                             <Input
-                              ref={(el) => (keywordInputRefs.current[category as keyof KeywordCategory] = el)}
+                              ref={(el) => {
+                                keywordInputRefs.current[category as keyof KeywordCategory] = el
+                              }}
                               type="text"
                               placeholder={`Enter ${categoryLabels[category as keyof KeywordCategory]} and press Enter`}
                               onKeyDown={(e) => handleKeywordInput(category as keyof KeywordCategory, e)}

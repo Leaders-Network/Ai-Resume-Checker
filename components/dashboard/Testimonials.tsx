@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Star, Quote, Award, TrendingUp, Clock, Check } from 'lucide-react';
-import Image from 'next/image';
+
 
 // Sample testimonial data with more detailed info
 const testimonials = [
@@ -222,7 +222,7 @@ function Testimonials() {
                       
                       {/* Testimonial quote */}
                       <blockquote className="text-xl leading-relaxed mb-8">
-                        "{testimonial.content}"
+                        {testimonial.content}
                       </blockquote>
                       
                       {/* Author info with company */}
@@ -363,7 +363,7 @@ function Testimonials() {
                 </div>
                 
                 <blockquote className="text-sm mb-4 line-clamp-4">
-                  "{testimonial.content}"
+                  {testimonial.content}
                 </blockquote>
                 
                 <div className="flex items-center justify-between">

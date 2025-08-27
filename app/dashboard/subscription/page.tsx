@@ -25,6 +25,7 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, updateUserSubscription, type SubscriptionData } from "@/lib/auth"
+import { LucideIcon } from 'lucide-react'
 
 interface UserProfile {
   uid: string
@@ -44,17 +45,11 @@ interface PricingPlan {
   resumeLimit: number
   features: string[]
   popular?: boolean
-  icon: any
+  icon: LucideIcon
   color: string
   gradient: string
 }
 
-// Paystack configuration
-declare global {
-  interface Window {
-    PaystackPop: any
-  }
-}
 
 export default function SubscriptionPage() {
   const [user] = useAuthState(auth)
@@ -64,25 +59,7 @@ export default function SubscriptionPage() {
   const [processingPlan, setProcessingPlan] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user) {
-      loadUserProfile()
-      loadSubscriptionData()
-    }
-    setLoading(false)
-
-    // Load Paystack script
-    const script = document.createElement("script")
-    script.src = "https://js.paystack.co/v1/inline.js"
-    script.async = true
-    document.body.appendChild(script)
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
-      }
-    }
-  }, [user])
-
+    
   const loadUserProfile = async () => {
     if (!user) return
     try {
@@ -105,6 +82,25 @@ export default function SubscriptionPage() {
       console.error("Error loading subscription data:", error)
     }
   }
+
+    if (user) {
+      loadUserProfile()
+      loadSubscriptionData()
+    }
+    setLoading(false)
+
+    // Load Paystack script
+    const script = document.createElement("script")
+    script.src = "https://js.paystack.co/v1/inline.js"
+    script.async = true
+    document.body.appendChild(script)
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
+    }
+  }, [user])
 
   const getUserInitials = () => {
     const name = userProfile?.displayName || user?.displayName || user?.email || "User"
@@ -206,7 +202,7 @@ export default function SubscriptionPage() {
           },
         ],
       },
-      callback: (response: any) => {
+      callback: (response) => {
         // Payment successful
         handlePaymentSuccess(plan, response.reference)
       },
@@ -492,7 +488,7 @@ export default function SubscriptionPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {pricingPlans.map((plan, index) => {
+          {pricingPlans.map((plan) => {
             const IconComponent = plan.icon
             const isCurrentPlan = subscriptionData?.activePlan === plan.name
             const isProcessing = processingPlan === plan.id

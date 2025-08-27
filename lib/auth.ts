@@ -1,4 +1,4 @@
-import { db, realtimeDb } from "@/config/firebase"
+import { db } from "@/config/firebase"
 import type { User } from "firebase/auth"
 import { doc, setDoc, getDoc } from "firebase/firestore"
 import { ref, set, get } from "firebase/database"
@@ -27,7 +27,7 @@ export interface SubscriptionData {
   paymentReference?: string
 }
 
-export const createUserProfile = async (user: User, additionalData?: any) => {
+export const createUserProfile = async (user: User, additionalData?: Partial<UserProfile>) => {
   if (!user) return
 
   const userRef = doc(db, "users", user.uid)

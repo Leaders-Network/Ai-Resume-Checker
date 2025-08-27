@@ -82,20 +82,8 @@ export default function VisualizationPage() {
   const { theme } = useTheme()
 
   useEffect(() => {
-    const storedResumes = sessionStorage.getItem("resumes")
-    if (storedResumes) {
-      setResumes(JSON.parse(storedResumes))
-    }
 
-    if (user) {
-      loadUserProfile()
-      loadSubscriptionData()
-    }
-
-    setLoading(false)
-  }, [user])
-
-  const loadUserProfile = async () => {
+      const loadUserProfile = async () => {
     if (!user) return
     try {
       const userDocRef = doc(db, "users", user.uid)
@@ -117,6 +105,21 @@ export default function VisualizationPage() {
       console.error("Error loading subscription data:", error)
     }
   }
+
+
+    const storedResumes = sessionStorage.getItem("resumes")
+    if (storedResumes) {
+      setResumes(JSON.parse(storedResumes))
+    }
+
+    if (user) {
+      loadUserProfile()
+      loadSubscriptionData()
+    }
+
+    setLoading(false)
+  }, [user])
+
 
   const getUserInitials = () => {
     const name = userProfile?.displayName || user?.displayName || user?.email || "User"
@@ -224,7 +227,7 @@ export default function VisualizationPage() {
     teal: '#14B8A6'
   }
 
-  const PIE_COLORS = [chartColors.green, chartColors.blue, chartColors.yellow, chartColors.red, chartColors.purple, chartColors.teal];
+// const PIE_COLORS = [chartColors.green, chartColors.blue, chartColors.yellow, chartColors.red, chartColors.purple, chartColors.teal];
 
   const RADAR_COLORS = {
     skills: chartColors.blue,

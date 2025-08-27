@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, X, Zap, FileText, BarChart3, CircleUser, HelpCircle, Sparkles } from 'lucide-react';
+import { CheckCircle, X, Zap, FileText,  CircleUser, HelpCircle, Sparkles } from 'lucide-react';
 
 interface PricingProps {
   isAnnual?: boolean;
@@ -8,7 +8,7 @@ interface PricingProps {
 }
 
 // Toggle between monthly and annual billing
-function BillingToggle({ isAnnual, onChange }) {
+function BillingToggle({ isAnnual, onChange } : PricingProps) {
   return (
     <div className="flex items-center justify-center gap-3 mb-8">
       <span className={`text-sm font-medium ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -146,7 +146,7 @@ function Pricing() {
           Simple, transparent pricing
         </h2>
         <p className="text-lg text-muted-foreground">
-          Choose the plan that's right for your career goals, with no hidden fees or complicated tiers.
+          Choose the plan that&quot;s right for your career goals, with no hidden fees or complicated tiers.
         </p>
 
         <BillingToggle isAnnual={isAnnual} onChange={setIsAnnual} />

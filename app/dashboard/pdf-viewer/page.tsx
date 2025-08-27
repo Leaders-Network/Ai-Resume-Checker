@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,7 @@ import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist"
+import type { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api"
 
 // PDF.js worker setup
 GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs"
@@ -75,11 +76,37 @@ export default function PDFViewerPage() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const pdfDocRef = useRef<any>(null)
+  const pdfDocRef = useRef<PDFDocumentProxy | null>(null)
+
+
 
   useEffect(() => {
     // Load resumes from session storage
     const storedResumes = sessionStorage.getItem("resumes")
+
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
+    }
+
     if (storedResumes) {
       const parsedResumes = JSON.parse(storedResumes)
       setResumes(parsedResumes)
@@ -105,46 +132,34 @@ export default function PDFViewerPage() {
     setLoading(false)
   }, [user])
 
-  useEffect(() => {
-    if (selectedResume) {
-      loadPDF()
-    }
-  }, [selectedResume])
+  const renderPage = useCallback(async (pageNumber: number) => {
+    if (!pdfDocRef.current || !canvasRef.current) return
 
-  const loadUserProfile = async () => {
-    if (!user) return
     try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
+      const page = await pdfDocRef.current.getPage(pageNumber)
+      const canvas = canvasRef.current
+      const context = canvas.getContext("2d")
+      if (!context) {
+        return
       }
+
+      const viewport = page.getViewport({ scale: zoom, rotation })
+      canvas.height = viewport.height
+      canvas.width = viewport.width
+
+      const renderContext = {
+        canvasContext: context as CanvasRenderingContext2D,
+        viewport: viewport,
+      }
+
+      await page.render(renderContext).promise
     } catch (error) {
-      console.error("Error loading user profile:", error)
+      console.error("Error rendering page:", error)
+      toast.error("Failed to render page")
     }
-  }
+  }, [zoom, rotation])
 
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
-    }
-  }
-
-  const getUserInitials = () => {
-    const name = userProfile?.displayName || user?.displayName || user?.email || "User"
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  const loadPDF = async () => {
+  const loadPDF = useCallback(async () => {
     if (!selectedResume || !canvasRef.current) return
 
     // Check if user has access to PDF viewer
@@ -179,31 +194,28 @@ export default function PDFViewerPage() {
     } finally {
       setPdfLoading(false)
     }
-  }
+  }, [selectedResume, subscriptionData, renderPage])
 
-  const renderPage = async (pageNumber: number) => {
-    if (!pdfDocRef.current || !canvasRef.current) return
+  useEffect(() => {
 
-    try {
-      const page = await pdfDocRef.current.getPage(pageNumber)
-      const canvas = canvasRef.current
-      const context = canvas.getContext("2d")
-
-      const viewport = page.getViewport({ scale: zoom, rotation })
-      canvas.height = viewport.height
-      canvas.width = viewport.width
-
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-      }
-
-      await page.render(renderContext).promise
-    } catch (error) {
-      console.error("Error rendering page:", error)
-      toast.error("Failed to render page")
+    if (selectedResume) {
+      loadPDF()
     }
+  }, [selectedResume, loadPDF])
+
+
+
+  const getUserInitials = () => {
+    const name = userProfile?.displayName || user?.displayName || user?.email || "User"
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
   }
+
+
 
   const handleZoomIn = () => {
     if (!checkFeatureAccess(subscriptionData, "basic")) {

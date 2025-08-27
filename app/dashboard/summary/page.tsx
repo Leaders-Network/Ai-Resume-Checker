@@ -30,6 +30,7 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+import { LucideIcon } from 'lucide-react'
 
 interface Resume {
   fileName: string
@@ -60,7 +61,7 @@ interface ImprovementSuggestion {
   title: string
   description: string
   priority: "high" | "medium" | "low"
-  icon: any
+  icon: LucideIcon
 }
 
 export default function SummaryPage() {
@@ -78,15 +79,7 @@ export default function SummaryPage() {
       setSelectedResume(JSON.parse(storedResume))
     }
 
-    if (user) {
-      loadUserProfile()
-      loadSubscriptionData()
-    }
-
-    setLoading(false)
-  }, [user])
-
-  const loadUserProfile = async () => {
+     const loadUserProfile = async () => {
     if (!user) return
     try {
       const userDocRef = doc(db, "users", user.uid)
@@ -108,6 +101,16 @@ export default function SummaryPage() {
       console.error("Error loading subscription data:", error)
     }
   }
+
+    if (user) {
+      loadUserProfile()
+      loadSubscriptionData()
+    }
+
+    setLoading(false)
+  }, [user])
+
+ 
 
   const getUserInitials = () => {
     const name = userProfile?.displayName || user?.displayName || user?.email || "User"
@@ -189,12 +192,6 @@ export default function SummaryPage() {
     if (score >= 70) return "text-green-600 dark:text-green-400"
     if (score >= 40) return "text-yellow-600 dark:text-yellow-400"
     return "text-red-600 dark:text-red-400"
-  }
-
-  const getScoreGradient = (score: number) => {
-    if (score >= 70) return "bg-gradient-to-r from-green-500 to-emerald-500"
-    if (score >= 40) return "bg-gradient-to-r from-yellow-500 to-orange-500"
-    return "bg-gradient-to-r from-red-500 to-pink-500"
   }
 
   const getPriorityColor = (priority: string) => {

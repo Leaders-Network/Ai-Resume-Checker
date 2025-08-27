@@ -31,6 +31,46 @@ interface UserProfile {
   lastLoginAt: string
 }
 
+// Add proper types for Paystack
+interface PaystackResponse {
+  reference: string
+  status: string
+  trans: string
+  transaction: string
+  message: string
+  redirecturl: string
+}
+
+interface PaystackHandler {
+  openIframe: () => void
+}
+
+interface PaystackPop {
+  setup: (config: {
+    key: string
+    email: string | null
+    amount: number
+    currency: string
+    ref: string
+    metadata: {
+      custom_fields: Array<{
+        display_name: string
+        variable_name: string
+        value: string
+      }>
+    }
+    callback: (response: PaystackResponse) => void
+    onClose: () => void
+  }) => PaystackHandler
+}
+
+// Update global declaration with proper types
+declare global {
+  interface Window {
+    PaystackPop: PaystackPop
+  }
+}
+
 const SettingsPage = () => {
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -46,7 +86,39 @@ const SettingsPage = () => {
   const [profileImagePreview, setProfileImagePreview] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+
+
+
   useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          const profileData = userDoc.data() as UserProfile
+          setUserProfile(profileData)
+          // Use the most recent profile image
+          const latestPhotoURL = profileData.profileImage || profileData.photoURL || user.photoURL
+          if (latestPhotoURL) {
+            setProfileImagePreview(latestPhotoURL)
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
+    }
+
     if (user) {
       setDisplayName(user.displayName || "")
       setEmail(user.email || "")
@@ -56,34 +128,7 @@ const SettingsPage = () => {
     }
   }, [user])
 
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        const profileData = userDoc.data() as UserProfile
-        setUserProfile(profileData)
-        // Use the most recent profile image
-        const latestPhotoURL = profileData.profileImage || profileData.photoURL || user.photoURL
-        if (latestPhotoURL) {
-          setProfileImagePreview(latestPhotoURL)
-        }
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
-    }
-  }
 
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
-    }
-  }
 
   const handleProfileUpdate = async () => {
     if (!user) return
@@ -108,115 +153,103 @@ const SettingsPage = () => {
       setUserProfile((prev) =>
         prev
           ? {
-              ...prev,
-              displayName,
-              profileImage: profileImagePreview,
-              photoURL: profileImagePreview,
-            }
+            ...prev,
+            displayName,
+            profileImage: profileImagePreview,
+            photoURL: profileImagePreview,
+          }
           : null,
       )
 
       toast.success("Profile updated successfully!")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating profile:", error)
-      toast.error(error.message || "Failed to update profile")
+      const message = error instanceof Error ? error.message : "Failed to update profile"
+      toast.error(message)
     } finally {
       setIsUpdating(false)
     }
   }
 
-const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const file = event.target.files?.[0]
-  if (!file || !user) return
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !user) return
 
-  // Validate file type
-  if (!file.type.startsWith("image/")) {
-    toast.error("Please select a valid image file")
-    return
-  }
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file")
+      return
+    }
 
-  // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    toast.error("Image size should be less than 5MB")
-    return
-  }
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB")
+      return
+    }
 
-  setIsUploadingImage(true)
+    setIsUploadingImage(true)
 
-  try {
-    // Ensure user is authenticated and get fresh token
-    await user.getIdToken(true)
+    try {
+      // Create unique filename
+      const timestamp = Date.now()
+      const fileExtension = file.name.split(".").pop()
+      const fileName = `profile-${timestamp}.${fileExtension}`
 
-    // Create a unique filename
-    const timestamp = Date.now()
-    const fileExtension = file.name.split(".").pop()
-    const fileName = `profile-${timestamp}.${fileExtension}`
+      // Reference to storage path
+      const imageRef = ref(storage, `profile-images/${user.uid}/${fileName}`)
 
-    // Create a reference to the storage location
-    const imageRef = ref(storage, `profile-images/${user.uid}/${fileName}`)
+      // Start upload
+      const uploadTask = uploadBytesResumable(imageRef, file)
 
-    // Upload the file using uploadBytesResumable
-    const uploadTask = uploadBytesResumable(imageRef, file)
-
-    // Handle the upload with promise
-    await new Promise((resolve, reject) => {
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          // Progress monitoring (optional)
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          console.log('Upload is ' + progress + '% done')
-        },
-        (error) => {
-          // Handle unsuccessful uploads
-          console.error('Upload failed:', error)
-          reject(error)
-        },
-        async () => {
-          // Upload completed successfully
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-            
-            // Update preview immediately
-            setProfileImagePreview(downloadURL)
-
-            // Update Firebase Auth profile
-            await updateProfile(user, { photoURL: downloadURL })
-
-            // Update Firestore document
-            const userDocRef = doc(db, "users", user.uid)
-            await updateDoc(userDocRef, {
-              profileImage: downloadURL,
-              photoURL: downloadURL,
-              lastUpdated: new Date().toISOString(),
-            })
-
-            // Update local state
-            setUserProfile((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    profileImage: downloadURL,
-                    photoURL: downloadURL,
-                  }
-                : null,
-            )
-
-            toast.success("Profile image updated successfully!")
-            resolve(downloadURL)
-          } catch (error) {
-            reject(error)
+      // Wrap in a Promise so we can await completion
+      const downloadURL: string = await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            console.log("Upload is " + progress + "% done")
+          },
+          (error) => reject(error),
+          async () => {
+            try {
+              const url = await getDownloadURL(uploadTask.snapshot.ref)
+              resolve(url)
+            } catch (err) {
+              reject(err)
+            }
           }
-        }
-      )
-    })
+        )
+      })
 
-  } catch (error: any) {
-    console.error("Error uploading image:", error)
-    toast.error(error.message || "Failed to upload image")
-  } finally {
-    setIsUploadingImage(false)
+      // Update preview immediately
+      setProfileImagePreview(downloadURL)
+
+      // Update Firebase Auth profile
+      await updateProfile(user, { photoURL: downloadURL })
+
+      // Update Firestore user doc
+      const userDocRef = doc(db, "users", user.uid)
+      await updateDoc(userDocRef, {
+        profileImage: downloadURL,
+        photoURL: downloadURL,
+        lastUpdated: new Date().toISOString(),
+      })
+
+      // Update local state
+      setUserProfile((prev) =>
+        prev ? { ...prev, profileImage: downloadURL, photoURL: downloadURL } : null
+      )
+
+      toast.success("Profile image updated successfully!")
+    } catch (error: unknown) {
+      console.error("Error uploading image:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to upload image")
+    } finally {
+      setIsUploadingImage(false)
+    }
   }
-}
+
+
 
 
   const handleRemoveImage = async () => {
@@ -242,17 +275,18 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
       setUserProfile((prev) =>
         prev
           ? {
-              ...prev,
-              profileImage: undefined,
-              photoURL: undefined,
-            }
+            ...prev,
+            profileImage: undefined,
+            photoURL: undefined,
+          }
           : null,
       )
 
       toast.success("Profile image removed successfully!")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error removing image:", error)
-      toast.error(error.message || "Failed to remove image")
+      const message = error instanceof Error ? error.message : "Failed to remove image"
+      toast.error(message)
     } finally {
       setIsUploadingImage(false)
     }
@@ -281,9 +315,10 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
       setNewPassword("")
       setConfirmPassword("")
       toast.success("Password updated successfully!")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating password:", error)
-      toast.error(error.message || "Failed to update password")
+      const message = error instanceof Error ? error.message : "Failed to update password"
+      toast.error(message)
     } finally {
       setIsUpdating(false)
     }
@@ -604,7 +639,6 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                     <Button
                       onClick={handlePasswordUpdate}
                       disabled={isUpdating || !currentPassword || !newPassword || !confirmPassword}
-                      variant="primary"
                     >
                       <Lock className="h-5 w-5 mr-2" />
                       {isUpdating ? "Updating..." : "Update Password"}
@@ -687,9 +721,8 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                           </h3>
                           <div className="flex items-center space-x-3">
                             <div
-                              className={`w-4 h-4 rounded-full ${
-                                subscriptionData.isActive ? "bg-green-500" : "bg-red-500"
-                              }`}
+                              className={`w-4 h-4 rounded-full ${subscriptionData.isActive ? "bg-green-500" : "bg-red-500"
+                                }`}
                             ></div>
                             <span className="text-lg font-semibold text-primary">
                               {subscriptionData.isActive ? "Active" : "Inactive"}
@@ -710,7 +743,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                             No Subscription Found
                           </h3>
                           <p className="text-muted-foreground mb-6">
-                            You don't have an active subscription yet.
+                            You do not have an active subscription yet.
                           </p>
                         </div>
                       </div>

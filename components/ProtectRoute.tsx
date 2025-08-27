@@ -1,23 +1,31 @@
+import React, { useEffect, ReactNode } from 'react';
 import useAuth from '@/app/hooks/useAuth';
-import { useEffect } from 'react';
 
-const ProtectRoute = (WrappedComponent) => {
-  return (props) => {
-    const { user, loading } = useAuth();
+interface ProtectRouteProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
 
-    useEffect(() => {
-      if (!loading && !user) {
-        window.location.replace('/signin');
-      }
-    }, [loading, user]);
+const ProtectRoute: React.FC<ProtectRouteProps> = ({ 
+  children, 
+  fallback = null 
+}) => {
+  const { user, loading } = useAuth();
 
-    // Return null to prevent content flash
-    if (loading || !user) {
-      return null;
+  useEffect(() => {
+    if (!loading && !user) {
+      window.location.replace('/signin');
     }
+  }, [loading, user]);
 
-    return <WrappedComponent {...props} />;
-  };
+  // Show loading or redirect state
+  if (loading || !user) {
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
 };
+
+ProtectRoute.displayName = 'ProtectRoute';
 
 export default ProtectRoute;

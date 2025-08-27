@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { FileText, User } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 

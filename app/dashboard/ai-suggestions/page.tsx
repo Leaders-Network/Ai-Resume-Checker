@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Sparkles, Copy, CheckCircle, XCircle, Lightbulb } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { toast, Toaster } from "react-hot-toast"
 
 interface Resume {
@@ -40,7 +40,6 @@ interface Suggestion {
 }
 
 export default function AISuggestionsPage() {
-  const router = useRouter()
   const [resumes, setResumes] = useState<Resume[]>([])
   const [keywords, setKeywords] = useState<KeywordCategory | null>(null)
   const [selectedResume, setSelectedResume] = useState<string | null>(null)
@@ -489,7 +488,7 @@ export default function AISuggestionsPage() {
       <Sparkles className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600" />
       <h3 className="mt-4 text-lg font-medium">No Suggestions Yet</h3>
       <p className="mt-2 text-gray-500 dark:text-gray-400">
-        Click "Generate Suggestions" to get AI-powered recommendations
+        Click &quot;Generate Suggestions&quot; to get AI-powered recommendations
       </p>
     </div>
   ) : (

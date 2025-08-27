@@ -28,6 +28,7 @@ import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { signOut } from "firebase/auth"
+import Image from "next/image"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode
@@ -43,17 +44,15 @@ interface UserProfile {
   lastLoginAt: string
 }
 
-export function Sidebar({ className, children }: SidebarProps) {
+export function Sidebar({ children }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true)
   const pathname = usePathname()
   const { isDarkMode, toggleDarkMode } = useDarkMode()
-  const [isMobile, setIsMobile] = useState(false)
-  const [user, loading] = useAuthState(auth)
+  const [user] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768)
       if (window.innerWidth < 768) {
         setIsOpen(false)
       }
@@ -64,23 +63,26 @@ export function Sidebar({ className, children }: SidebarProps) {
   }, [])
 
   useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
     if (user) {
+
       loadUserProfile()
     }
   }, [user])
 
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
-    }
-  }
+
 
   const routes = [
     {
@@ -170,9 +172,11 @@ export function Sidebar({ className, children }: SidebarProps) {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
                 {userProfile?.profileImage || userProfile?.photoURL || user.photoURL ? (
-                  <img
+                  <Image
                     src={userProfile?.profileImage || userProfile?.photoURL || user.photoURL || "/placeholder.svg"}
                     alt="Profile"
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 ) : (

@@ -2,8 +2,7 @@
 import type React from "react"
 import { useState, useRef } from "react"
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from "firebase/auth"
-import { auth, provider, facebookProvider, storage } from "@/config/firebase"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { auth, provider, facebookProvider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
@@ -12,6 +11,10 @@ import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaEye, FaEyeSlash, FaCamera, FaUser } from "react-icons/fa"
 import { doc, updateDoc } from "firebase/firestore"
 import { db } from "@/config/firebase"
+import Image from "next/image"
+
+
+//
 
 const Signup = () => {
   const [name, setName] = useState("")
@@ -51,13 +54,30 @@ const Signup = () => {
   }
 
   const uploadProfileImage = async (userId: string, file: File): Promise<string> => {
-    const timestamp = Date.now()
-    const fileExtension = file.name.split(".").pop()
-    const fileName = `profile-${timestamp}.${fileExtension}`
+    // Get current user token
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+      throw new Error('User not authenticated')
+    }
 
-    const imageRef = ref(storage, `profile-images/${userId}/${fileName}`)
-    const snapshot = await uploadBytes(imageRef, file)
-    return await getDownloadURL(snapshot.ref)
+    const token = await currentUser.getIdToken(true)
+
+    // Upload via API route to avoid CORS issues
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('token', token)
+
+    const response = await fetch('/api/upload-profile-image', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error('Upload failed')
+    }
+
+    const { url } = await response.json()
+    return url
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,9 +124,10 @@ const Signup = () => {
 
       toast.success("Account created successfully!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[handleSubmit] Signup error:", error)
-      toast.error(error.message || "Failed to create account")
+      const message = error instanceof Error ? error.message : "Failed to create account"
+      toast.error(message)
     } finally {
       console.timeEnd("[handleSubmit] Total signup time")
       setIsLoading(false)
@@ -147,9 +168,10 @@ const Signup = () => {
       await createUserProfile(user)
       toast.success("Signed up with Google!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to sign up with Google")
+      const message = error instanceof Error ? error.message : "Failed to sign up with Google"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -163,9 +185,10 @@ const Signup = () => {
       await createUserProfile(user)
       toast.success("Signed up with Facebook!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to sign up with Facebook")
+      const message = error instanceof Error ? error.message : "Failed to sign up with Facebook"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -220,9 +243,10 @@ const Signup = () => {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       {profileImagePreview ? (
-                        <img
+                        <Image
                           src={profileImagePreview}
                           alt="Profile Preview"
+                          fill
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -373,7 +397,7 @@ const Signup = () => {
 
               <div className="mt-4 text-center">
                 <p className="text-xs text-muted-foreground">
-                  By clicking "Sign up", you agree to our{" "}
+                  By clicking &quot;Sign up&quot;, you agree to our{" "}
                   <Link href="/terms" className="text-primary hover:text-primary/80">
                     Terms of Service
                   </Link>{" "}

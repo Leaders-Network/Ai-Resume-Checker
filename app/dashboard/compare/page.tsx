@@ -61,10 +61,35 @@ export default function CompareResumesPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("metrics")
 
+
+
   useEffect(() => {
     const storedResumes = sessionStorage.getItem("resumes")
     const storedKeywords = sessionStorage.getItem("keywordCategories")
     const storedCompareList = sessionStorage.getItem("compareList")
+
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
+    }
 
     if (storedResumes) {
       const parsedResumes = JSON.parse(storedResumes)
@@ -92,29 +117,6 @@ export default function CompareResumesPage() {
 
     setLoading(false)
   }, [user])
-
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
-    }
-  }
-
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
-    }
-  }
 
   const getUserInitials = () => {
     const name = userProfile?.displayName || user?.displayName || user?.email || "User"
@@ -269,11 +271,10 @@ export default function CompareResumesPage() {
                     <label
                       key={index}
                       htmlFor={`resume-${index}`}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-start space-x-3 ${
-                        selectedResumes.some((r) => r.fileName === resume.fileName)
-                          ? "border-primary bg-primary/10 shadow-lg"
-                          : "border-border hover:border-primary/50 hover:bg-muted/50"
-                      }`}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-start space-x-3 ${selectedResumes.some((r) => r.fileName === resume.fileName)
+                        ? "border-primary bg-primary/10 shadow-lg"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        }`}
                     >
                       <Checkbox
                         checked={selectedResumes.some((r) => r.fileName === resume.fileName)}
@@ -341,7 +342,7 @@ export default function CompareResumesPage() {
                       Metrics
                     </TabsTrigger>
                     <TabsTrigger
-                      value="keywords"
+                      value={keywords ? "keywords" : "metrics"}
                       className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />

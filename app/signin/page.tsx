@@ -11,6 +11,8 @@ import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaEye, FaEyeSlash } from "react-icons/fa"
 
+
+
 const Signin = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -26,9 +28,10 @@ const Signin = () => {
       await createUserProfile(userCredential.user)
       toast.success("Signed in successfully!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to sign in")
+      const message = error instanceof Error ? error.message : "Failed to sign in"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -41,9 +44,10 @@ const Signin = () => {
       await createUserProfile(result.user)
       toast.success("Signed in with Google!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to sign in with Google")
+      const message = error instanceof Error ? error.message : "Failed to sign in with Google"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -56,9 +60,10 @@ const Signin = () => {
       await createUserProfile(result.user)
       toast.success("Signed in with Facebook!")
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to sign in with Facebook")
+      const message = error instanceof Error ? error.message : "Failed to sign in with Facebook"
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -92,7 +97,7 @@ const Signin = () => {
               </p>
 
               <div className="mt-auto text-center">
-                <p className="text-muted-foreground">Don't have an account?</p>
+                <p className="text-muted-foreground">Don&apos;t have an account?</p>
                 <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>
@@ -186,7 +191,7 @@ const Signin = () => {
               </div>
 
               <div className="mt-8 text-center md:hidden">
-                <p className="text-muted-foreground">Don't have an account?</p>
+                <p className="text-muted-foreground">Don&apos;t have an account?</p>
                 <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>

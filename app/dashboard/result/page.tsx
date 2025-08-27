@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, FileText, Filter, Search, Eye, Crown, TrendingUp } from "lucide-react"
+import { ChevronDown, ChevronUp, FileText, Filter, Search, Eye } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScoreProgressBar } from "@/components/ui/score-progress-bar"
 import { motion } from "framer-motion"
@@ -50,7 +50,34 @@ export default function ResultPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterScore, setFilterScore] = useState("all")
 
+  void userProfile
+  void subscriptionData
+
   useEffect(() => {
+
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
+    }
+
     const storedResumes = sessionStorage.getItem("resumes")
     if (storedResumes) {
       setResumes(JSON.parse(storedResumes))
@@ -61,38 +88,17 @@ export default function ResultPage() {
     }
   }, [user])
 
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
-    }
-  }
 
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
-    }
-  }
 
-  const getUserInitials = () => {
-    const name = userProfile?.displayName || user?.displayName || user?.email || "User"
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
+  // const getUserInitials = () => {
+  //   const name = userProfile?.displayName || user?.displayName || user?.email || "User"
+  //   return name
+  //     .split(" ")
+  //     .map((n) => n[0])
+  //     .join("")
+  //     .toUpperCase()
+  //     .slice(0, 2)
+  // }
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
@@ -147,6 +153,8 @@ export default function ResultPage() {
   }
 
   const sortedResumes = getSortedResumes()
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6 w-full">
@@ -314,10 +322,10 @@ export default function ResultPage() {
                             <ScoreProgressBar score={resume.score} className="h-3 w-24" />
                             <span
                               className={`font-bold text-lg w-12 text-right ${resume.score >= 70
-                                  ? "text-green-600 dark:text-green-400"
-                                  : resume.score >= 40
-                                    ? "text-yellow-600 dark:text-yellow-400"
-                                    : "text-red-600 dark:text-red-400"
+                                ? "text-green-600 dark:text-green-400"
+                                : resume.score >= 40
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
                                 }`}
                             >
                               {Math.round(resume.score)}%
