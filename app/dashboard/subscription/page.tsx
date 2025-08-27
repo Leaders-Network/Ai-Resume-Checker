@@ -59,29 +59,29 @@ export default function SubscriptionPage() {
   const [processingPlan, setProcessingPlan] = useState<string | null>(null)
 
   useEffect(() => {
-    
-  const loadUserProfile = async () => {
-    if (!user) return
-    try {
-      const userDocRef = doc(db, "users", user.uid)
-      const userDoc = await getDoc(userDocRef)
-      if (userDoc.exists()) {
-        setUserProfile(userDoc.data() as UserProfile)
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error)
-    }
-  }
 
-  const loadSubscriptionData = async () => {
-    if (!user) return
-    try {
-      const subscription = await getUserSubscription(user.uid)
-      setSubscriptionData(subscription)
-    } catch (error) {
-      console.error("Error loading subscription data:", error)
+    const loadUserProfile = async () => {
+      if (!user) return
+      try {
+        const userDocRef = doc(db, "users", user.uid)
+        const userDoc = await getDoc(userDocRef)
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile)
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
     }
-  }
+
+    const loadSubscriptionData = async () => {
+      if (!user) return
+      try {
+        const subscription = await getUserSubscription(user.uid)
+        setSubscriptionData(subscription)
+      } catch (error) {
+        console.error("Error loading subscription data:", error)
+      }
+    }
 
     if (user) {
       loadUserProfile()
@@ -415,7 +415,7 @@ export default function SubscriptionPage() {
                 <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg">
                   <p className="text-center text-orange-700 dark:text-orange-300">
                     <Star className="h-4 w-4 inline mr-2" />
-                    Your trial expires on {formatDate(subscriptionData.trialEndDate)}. Upgrade now to continue enjoying
+                    Your trial expires on {formatDate(subscriptionData?.trialEndDate ?? null)}. Upgrade now to continue enjoying
                     premium features!
                   </p>
                 </div>
@@ -496,11 +496,10 @@ export default function SubscriptionPage() {
             return (
               <Card
                 key={plan.id}
-                className={`relative overflow-hidden border-2 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                  plan.popular
+                className={`relative overflow-hidden border-2 shadow-lg hover:shadow-xl transition-all duration-300 ${plan.popular
                     ? "border-[#130F4D] scale-105 shadow-2xl"
                     : "border-gray-200 dark:border-gray-700 hover:border-[#130F4D]/50"
-                } ${isCurrentPlan ? "ring-2 ring-green-500" : ""}`}
+                  } ${isCurrentPlan ? "ring-2 ring-green-500" : ""}`}
               >
                 {plan.popular && (
                   <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-[#130F4D] to-blue-600 text-white text-center py-2 text-sm font-semibold">
@@ -553,13 +552,12 @@ export default function SubscriptionPage() {
                   </div>
 
                   <Button
-                    className={`w-full h-12 text-base font-semibold shadow-md transition-all duration-300 ${
-                      isCurrentPlan
+                    className={`w-full h-12 text-base font-semibold shadow-md transition-all duration-300 ${isCurrentPlan
                         ? "bg-green-600 hover:bg-green-700 text-white"
                         : plan.popular
                           ? "bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
                           : "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white"
-                    }`}
+                      }`}
                     onClick={() => handleSubscribe(plan.id)}
                     disabled={isCurrentPlan || isProcessing}
                   >
