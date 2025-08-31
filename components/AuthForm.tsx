@@ -1,6 +1,5 @@
-import { useAuth } from "@/lib/auth";
 import React, { useState } from "react";
-// import { useAuth } from "../lib/auth";
+import useAuth from "../app/hooks/useAuth";
 
 export const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -10,14 +9,10 @@ export const AuthForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      if (isSignUp) {
-        await signUp(email, password);
-      } else {
-        await signIn(email, password);
-      }
-    } catch (error) {
-      console.error("Auth error:", error);
+    if (isSignUp) {
+      await signUp(email, password);
+    } else {
+      await signIn(email, password);
     }
   };
 
@@ -53,15 +48,17 @@ export const AuthForm = () => {
         >
           {isSignUp ? "Sign Up" : "Sign In"}
         </button>
+        <p className="text-sm text-gray-500">
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            {isSignUp ? "Sign In" : "Sign Up"}
+          </button>
+        </p>
       </form>
-      <button
-        onClick={() => setIsSignUp(!isSignUp)}
-        className="mt-4 text-sm text-blue-600 hover:underline"
-      >
-        {isSignUp
-          ? "Already have an account? Sign in"
-          : "Need an account? Sign up"}
-      </button>
     </div>
   );
 };

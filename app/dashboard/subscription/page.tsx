@@ -497,8 +497,8 @@ export default function SubscriptionPage() {
               <Card
                 key={plan.id}
                 className={`relative overflow-hidden border-2 shadow-lg hover:shadow-xl transition-all duration-300 ${plan.popular
-                    ? "border-[#130F4D] scale-105 shadow-2xl"
-                    : "border-gray-200 dark:border-gray-700 hover:border-[#130F4D]/50"
+                  ? "border-[#130F4D] scale-105 shadow-2xl"
+                  : "border-gray-200 dark:border-gray-700 hover:border-[#130F4D]/50"
                   } ${isCurrentPlan ? "ring-2 ring-green-500" : ""}`}
               >
                 {plan.popular && (
@@ -553,10 +553,10 @@ export default function SubscriptionPage() {
 
                   <Button
                     className={`w-full h-12 text-base font-semibold shadow-md transition-all duration-300 ${isCurrentPlan
-                        ? "bg-green-600 hover:bg-green-700 text-white"
-                        : plan.popular
-                          ? "bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
-                          : "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white"
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : plan.popular
+                        ? "bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
+                        : "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white"
                       }`}
                     onClick={() => handleSubscribe(plan.id)}
                     disabled={isCurrentPlan || isProcessing}

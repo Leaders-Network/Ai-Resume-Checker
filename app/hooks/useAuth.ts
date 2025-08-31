@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 
 const useAuth = () => {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -16,7 +16,7 @@ const useAuth = () => {
           });
           return;
         }
-        setUser(user);
+        setUser(localUser);
       } else {
         setUser(null);
       }
@@ -26,7 +26,29 @@ const useAuth = () => {
     return () => unsubscribe();
   }, []);
 
-  return { user, loading };
+  const signUp = async (email: string, password: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem('user', user.uid);
+      setUser(user.uid);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem('user', user.uid);
+      setUser(user.uid);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return { user, loading, signUp, signIn };
 };
 
 export default useAuth;

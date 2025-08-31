@@ -455,8 +455,7 @@ export default function SummaryPage() {
                             </div>
                             <Progress
                               value={selectedResume.categoryScores?.skills || 0}
-                              className="h-3"
-                              indicatorClassName="bg-gradient-to-r from-blue-500 to-indigo-500"
+                              className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500"
                             />
                           </div>
                           <div>
@@ -468,8 +467,7 @@ export default function SummaryPage() {
                             </div>
                             <Progress
                               value={selectedResume.categoryScores?.experience || 0}
-                              className="h-3"
-                              indicatorClassName="bg-gradient-to-r from-purple-500 to-pink-500"
+                              className="h-3 bg-gradient-to-r from-purple-500 to-pink-500"
                             />
                           </div>
                           <div>
@@ -481,8 +479,7 @@ export default function SummaryPage() {
                             </div>
                             <Progress
                               value={selectedResume.categoryScores?.location || 0}
-                              className="h-3"
-                              indicatorClassName="bg-gradient-to-r from-orange-500 to-red-500"
+                              className="h-3 bg-gradient-to-r from-orange-500 to-red-500"
                             />
                           </div>
                           <div>
@@ -494,8 +491,7 @@ export default function SummaryPage() {
                             </div>
                             <Progress
                               value={selectedResume.categoryScores?.certification || 0}
-                              className="h-3"
-                              indicatorClassName="bg-gradient-to-r from-teal-500 to-cyan-500"
+                              className="h-3 bg-gradient-to-r from-teal-500 to-cyan-500"
                             />
                           </div>
                         </div>

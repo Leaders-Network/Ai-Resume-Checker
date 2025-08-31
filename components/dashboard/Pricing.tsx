@@ -7,6 +7,17 @@ interface PricingProps {
   onChange?: (isAnnual: boolean) => void;
 }
 
+interface PriceDisplayProps {
+  price: number;
+  isAnnual: boolean;
+  showNaira?: boolean;
+}
+
+interface FeatureItemProps {
+  included: boolean;
+  feature: string;
+}
+
 // Toggle between monthly and annual billing
 function BillingToggle({ isAnnual, onChange } : PricingProps) {
   return (
@@ -15,7 +26,7 @@ function BillingToggle({ isAnnual, onChange } : PricingProps) {
         Monthly
       </span>
       <button
-        onClick={() => onChange(!isAnnual)}
+        onClick={() => onChange?.(!isAnnual)}
         className="relative inline-flex h-6 w-11 items-center rounded-full bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         role="switch"
         aria-checked={isAnnual}
@@ -37,7 +48,7 @@ function BillingToggle({ isAnnual, onChange } : PricingProps) {
 }
 
 // Price display with conditional annual discount
-function PriceDisplay({ price, isAnnual, showNaira = false }) {
+function PriceDisplay({ price, isAnnual, showNaira = false }: PriceDisplayProps)  {
   const monthlyPrice = isAnnual ? Math.round(price * 0.8) : price;
   const currencySymbol = showNaira ? '₦' : '$';
 
@@ -55,7 +66,7 @@ function PriceDisplay({ price, isAnnual, showNaira = false }) {
 }
 
 // Feature check item for plan comparison
-function FeatureItem({ included, feature }) {
+function FeatureItem({ included, feature }: FeatureItemProps) {
   return (
     <li className="flex items-center gap-3">
       {included ? (

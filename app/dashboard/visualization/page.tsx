@@ -48,6 +48,7 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+import { TooltipProps } from "recharts";
 
 interface Resume {
   fileName: string
@@ -61,6 +62,12 @@ interface Resume {
     location: number
     certification: number
   }
+}
+
+type ResumeData = {
+  fileName: string
+  matched: number
+  missing: number
 }
 
 interface UserProfile {
@@ -607,16 +614,24 @@ export default function VisualizationPage() {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="matched" name="Matched Keywords" />
                             <YAxis dataKey="missing" name="Missing Keywords" />
-                            <Tooltip
-                              cursor={{ strokeDasharray: "3 3" }}
-                              formatter={(value, name) => [value, name === "matched" ? "Matched" : "Missing"]}
-                              labelFormatter={(label, payload) => {
-                                if (payload && payload[0]) {
-                                  return `Resume: ${payload[0].payload.fileName}`
-                                }
-                                return label
-                              }}
-                            />
+            
+            <Tooltip<string, string>
+  cursor={{ strokeDasharray: "3 3" }}
+  formatter={(value, name) => [value, name === "matched" ? "Matched" : "Missing"]}
+labelFormatter={(
+  label: string | number,
+  payload: TooltipProps<string, string>["payload"]
+) => {
+  const safePayload = payload as { payload: ResumeData }[] | undefined;
+
+  if (safePayload && safePayload[0]?.payload?.fileName) {
+    return `Resume: ${safePayload[0].payload.fileName}`;
+  }
+  return label;
+}}
+
+/>
+
                             <Scatter dataKey="matched" fill={chartColors.primary} />
                           </ScatterChart>
                         </ResponsiveContainer>
