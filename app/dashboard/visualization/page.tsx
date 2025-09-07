@@ -287,7 +287,7 @@ export default function VisualizationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+    <div>
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -399,7 +399,7 @@ export default function VisualizationPage() {
           <Card className="border-2 border-[#130F4D]/10 shadow-lg">
             <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 bg-white dark:bg-gray-800">
+                <TabsList className="w-full flex flex-wrap sm:grid sm:grid-cols-5 bg-white dark:bg-gray-800 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <TabsTrigger
                     value="overview"
                     className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
@@ -668,7 +668,6 @@ labelFormatter={(
           </Card>
         </motion.div>
 
-        {/* Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -686,3 +685,4 @@ labelFormatter={(
     </div>
   )
 }
+

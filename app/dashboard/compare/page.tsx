@@ -249,7 +249,7 @@ export default function CompareResumesPage() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Enhanced Resume Selection Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

@@ -308,7 +308,7 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+    <div>
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -481,7 +481,6 @@ export default function SubscriptionPage() {
           </motion.div>
         )}
 
-        {/* Pricing Plans */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -584,7 +583,6 @@ export default function SubscriptionPage() {
           })}
         </motion.div>
 
-        {/* Features Comparison */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -669,7 +667,6 @@ export default function SubscriptionPage() {
           </Card>
         </motion.div>
 
-        {/* FAQ Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -706,6 +703,44 @@ export default function SubscriptionPage() {
                     We use enterprise-grade security and never share your resume data with third parties.
                   </p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        {/* Features Comparison */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-12 overflow-x-auto"
+        >
+          <Card className="border-2 border-[#130F4D]/10 shadow-lg min-w-[350px]">
+            <CardHeader className="bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+              <CardTitle className="text-xl text-center">Feature Comparison</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="overflow-x-auto">
+                {/* ...existing table code... */}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* FAQ Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12"
+        >
+          <Card className="border-2 border-[#130F4D]/10 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+              <CardTitle className="text-xl text-center">Frequently Asked Questions</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* ...existing FAQ code... */}
               </div>
             </CardContent>
           </Card>

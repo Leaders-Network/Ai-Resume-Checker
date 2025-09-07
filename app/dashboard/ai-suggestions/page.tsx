@@ -389,7 +389,7 @@ export default function AISuggestionsPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
               <Card className="border-2 border-primary/10">
                 <CardHeader>
@@ -493,10 +493,13 @@ export default function AISuggestionsPage() {
     </div>
   ) : (
     <Tabs defaultValue="improvements" className="w-full mt-4">
-      <TabsList>
-        <TabsTrigger value="improvements">Improvements</TabsTrigger>
-        <TabsTrigger value="additions">Additions</TabsTrigger>
-        <TabsTrigger value="formatting">Formatting</TabsTrigger>
+      <TabsList
+        className="w-full flex gap-2 overflow-x-auto px-1 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        <TabsTrigger value="improvements" className="min-w-[140px] whitespace-nowrap py-2 px-4 text-sm">Improvements</TabsTrigger>
+        <TabsTrigger value="additions" className="min-w-[140px] whitespace-nowrap py-2 px-4 text-sm">Additions</TabsTrigger>
+        <TabsTrigger value="formatting" className="min-w-[140px] whitespace-nowrap py-2 px-4 text-sm">Formatting</TabsTrigger>
       </TabsList>
 
       <TabsContent value="improvements" className="mt-0 space-y-4">

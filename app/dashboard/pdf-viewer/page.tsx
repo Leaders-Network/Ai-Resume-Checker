@@ -449,7 +449,7 @@ export default function PDFViewerPage() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Enhanced Control Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

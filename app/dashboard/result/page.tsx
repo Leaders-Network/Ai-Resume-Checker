@@ -157,9 +157,7 @@ export default function ResultPage() {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6 w-full">
       <div className="max-w-7xl mx-auto">
-
         {/* Enhanced Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -255,7 +253,6 @@ export default function ResultPage() {
           </Card>
         </motion.div>
 
-        {/* Enhanced Results Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -401,6 +398,5 @@ export default function ResultPage() {
           </Card>
         </motion.div>
       </div>
-    </div>
   )
 }

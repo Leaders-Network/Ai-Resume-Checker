@@ -249,9 +249,6 @@ const SettingsPage = () => {
     }
   }
 
-
-
-
   const handleRemoveImage = async () => {
     if (!user) return
 
@@ -360,7 +357,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6">
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 sm:p-6">
       <Toaster position="top-right" />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -370,8 +367,8 @@ const SettingsPage = () => {
       >
         {/* Header with User Info */}
         <div className="mb-8">
-          <div className="flex items-center space-x-6 mb-6">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 space-y-4 sm:space-y-0 mb-6">
+            <div className="relative mb-2 sm:mb-0">
               <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-lg">
                 <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
@@ -392,12 +389,12 @@ const SettingsPage = () => {
               </Button>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-primary">
+            <div className="text-center sm:text-left w-full">
+              <h1 className="text-2xl sm:text-4xl font-bold text-primary break-words">
                 {userProfile?.displayName || user?.displayName || "User"}
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">{user?.email}</p>
-              <div className="flex items-center space-x-4 mt-3">
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mt-1 break-words">{user?.email}</p>
+              <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-3">
                 <Badge variant="outline">
                   <Shield className="h-3 w-3 mr-1" />
                   Verified Account
@@ -451,7 +448,7 @@ const SettingsPage = () => {
                     </div>
 
                     {/* Profile Image Section */}
-                    <div className="flex items-center space-x-6 p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-xl">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-xl">
                       <Avatar className="h-20 w-20 border-4 border-primary/20">
                         <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
                         <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
@@ -463,7 +460,7 @@ const SettingsPage = () => {
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                           Upload a new profile picture. Recommended size: 400x400px, max 5MB.
                         </p>
-                        <div className="flex space-x-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           <Button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploadingImage}
@@ -528,7 +525,7 @@ const SettingsPage = () => {
                     </div>
 
                     {/* Account Information */}
-                    <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
+                    <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
                       <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
                         <Calendar className="h-5 w-5 mr-2" />
                         Account Information
@@ -557,7 +554,7 @@ const SettingsPage = () => {
                     <Button
                       onClick={handleProfileUpdate}
                       disabled={isUpdating}
-                      className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
+                      className="w-full sm:w-auto bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
                     >
                       <Save className="h-5 w-5 mr-2" />
                       {isUpdating ? "Updating..." : "Save Changes"}

@@ -742,14 +742,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className={`min-h-screen w-full p-6 ${isDarkMode
+    <div className={`min-h-screen w-full p-3 sm:p-6 ${isDarkMode
       ? "bg-background"
       : "bg-gray-50"  // Light, clean background for light mode
       }`}>
 
 
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="max-w-7xl mx-auto">
+  <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with user info - improved styling */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -757,14 +757,14 @@ export default function DashboardPage() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className={`rounded-xl p-6 ${isDarkMode
+          <div className={`rounded-xl p-4 sm:p-6 ${isDarkMode
             ? "bg-card shadow-md"
             : "bg-white shadow-md"
             }`}>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <Avatar className={`h-20 w-20 shadow-lg ${isDarkMode
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+              <div className="flex flex-col items-center sm:flex-row sm:items-center sm:space-x-6 space-y-3 sm:space-y-0 w-full">
+                <div className="relative mb-2 sm:mb-0">
+                  <Avatar className={`h-16 w-16 sm:h-20 sm:w-20 shadow-lg ${isDarkMode
                     ? "border-4 border-primary/20"
                     : "border-4 border-primary/10"
                     }`}>
@@ -773,7 +773,7 @@ export default function DashboardPage() {
                       alt="Profile"
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-lg sm:text-xl font-bold">
                       {getUserInitials()}
                     </AvatarFallback>
                   </Avatar>
@@ -783,15 +783,15 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className={`text-4xl font-bold ${isDarkMode
+                <div className="text-center sm:text-left w-full">
+                  <h1 className={`text-2xl sm:text-4xl font-bold ${isDarkMode
                     ? "text-primary"
                     : "text-gray-800"
                     }`}>
                     Welcome back, {userProfile?.displayName || user?.displayName || "User"}!
                   </h1>
-                  <p className={`${isDarkMode ? 'text-gray-300' : 'text-blue-700'} mb-4`}>Ready to analyze some resumes today?</p>
-                  <div className="flex items-center space-x-3 mt-3">
+                  <p className={`${isDarkMode ? 'text-gray-300' : 'text-blue-700'} mb-2 sm:mb-4 text-base sm:text-lg`}>Ready to analyze some resumes today?</p>
+                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-2 sm:mt-3">
                     <Badge
                       variant="secondary"
                       className={`${isDarkMode
@@ -828,7 +828,7 @@ export default function DashboardPage() {
 
         {/* Enhanced Stats Cards */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
               ? "bg-card border-border"
               : "bg-white border-gray-200"
@@ -1003,7 +1003,7 @@ export default function DashboardPage() {
         )}
 
         {/* Main content cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1059,7 +1059,7 @@ export default function DashboardPage() {
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className={`border-4 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
+                  className={`border-4 border-dashed rounded-xl p-4 sm:p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
                     ? isDragOver
                       ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
                       : isDarkMode
@@ -1109,11 +1109,11 @@ export default function DashboardPage() {
                 </div>
 
                 {/* File list */}
-                <ul className="mt-6 space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {files.map((file, index) => (
                     <li
                       key={index}
-                      className={`flex items-center justify-between p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow ${isDarkMode
+                      className={`flex flex-col xs:flex-row items-start xs:items-center justify-between p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow gap-2 sm:gap-0 ${isDarkMode
                         ? "bg-primary text-primary-foreground"
                         : "bg-primary text-primary-foreground"
                         }`}
@@ -1223,7 +1223,7 @@ export default function DashboardPage() {
           <Button
             onClick={navigateToResults}
             disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 rounded-xl text-xl font-bold h-16 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 sm:py-4 rounded-xl text-lg sm:text-xl font-bold h-14 sm:h-16 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
           >
             {isLoading ? (
               <>

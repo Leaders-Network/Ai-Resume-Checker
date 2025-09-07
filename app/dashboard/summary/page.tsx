@@ -247,7 +247,7 @@ export default function SummaryPage() {
   const improvements = generateImprovements(selectedResume)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+    <div>
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -652,7 +652,6 @@ export default function SummaryPage() {
           </Card>
         </motion.div>
 
-        {/* Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
