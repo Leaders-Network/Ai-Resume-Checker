@@ -9,13 +9,13 @@ import { getStorage } from "firebase/storage"; // ✅
 const firebaseConfig = {
   apiKey: "AIzaSyCYU5QtVd3IrpaY7fwHtaFtHCrHHOnIeCg",
   authDomain: "ai-resume-checker-42e9c.firebaseapp.com",
+  databaseURL: "https://ai-resume-checker-42e9c-default-rtdb.firebaseio.com",
   projectId: "ai-resume-checker-42e9c",
   storageBucket: "ai-resume-checker-42e9c.appspot.com",
   messagingSenderId: "602601909832",
   appId: "1:602601909832:web:edc0c9d1b4b542e384f27d",
   measurementId: "G-KWFZ1GG2R6"
-  
-};;
+};
 
 const app = initializeApp(firebaseConfig);
 
