@@ -1,9 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Star, Quote, Award, TrendingUp, Clock, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Quote, Award, TrendingUp, Clock, Check, type LucideIcon } from 'lucide-react';
 
+// Define types for our data structures
+type ImpactType = 'interviews' | 'response' | 'ats' | 'job';
+
+interface Testimonial {
+  id: number;
+  name: string;
+  role: string;
+  company: string;
+  image: string;
+  content: string;
+  rating: number;
+  impact: {
+    type: ImpactType;
+    value: string;
+    timeframe: string;
+  };
+  companyLogo: string;
+  industry: string;
+  beforeScore: number;
+  afterScore: number;
+}
 
 // Sample testimonial data with more detailed info
-const testimonials = [
+const testimonials: Testimonial[] = [
   {
     id: 1,
     name: "Alex Thompson",
@@ -78,8 +99,15 @@ const testimonials = [
   }
 ];
 
+interface Stat {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  color: string;
+}
+
 // Get impact icon based on type
-const getImpactIcon = (type) => {
+const getImpactIcon = (type: ImpactType): LucideIcon => {
   switch(type) {
     case 'interviews': return TrendingUp;
     case 'response': return TrendingUp;
@@ -89,11 +117,18 @@ const getImpactIcon = (type) => {
   }
 };
 
+const summaryStats: Stat[] = [
+  { value: "98%", label: "Satisfaction rate", icon: Star, color: "text-yellow-400" },
+  { value: "2.3×", label: "More interviews", icon: TrendingUp, color: "text-primary" },
+  { value: "87%", label: "ATS pass rate", icon: Check, color: "text-green-500" },
+  { value: "<3 wks", label: "Average job search", icon: Clock, color: "text-blue-500" }
+];
+
 function Testimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [direction, setDirection] = useState(null);
-  const slideTimerRef = useRef(null);
+  const [direction, setDirection] = useState<"prev" | "next" | null>(null);
+  const slideTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Auto-advance slides
   useEffect(() => {
@@ -104,25 +139,27 @@ function Testimonials() {
       }, 8000);
     }
     
-    return () => clearInterval(slideTimerRef.current);
+    return () => {
+      if (slideTimerRef.current) clearInterval(slideTimerRef.current);
+    };
   }, [isPaused]);
   
   const handlePrev = () => {
-    clearInterval(slideTimerRef.current);
+    if (slideTimerRef.current) clearInterval(slideTimerRef.current);
     setIsPaused(true);
     setDirection('prev');
     setActiveIndex(prev => (prev === 0 ? testimonials.length - 1 : prev - 1));
   };
   
   const handleNext = () => {
-    clearInterval(slideTimerRef.current);
+    if (slideTimerRef.current) clearInterval(slideTimerRef.current);
     setIsPaused(true);
     setDirection('next');
     setActiveIndex(prev => (prev + 1) % testimonials.length);
   };
   
-  const goToSlide = (index) => {
-    clearInterval(slideTimerRef.current);
+  const goToSlide = (index: number) => {
+    if (slideTimerRef.current) clearInterval(slideTimerRef.current);
     setIsPaused(true);
     setDirection(index > activeIndex ? 'next' : 'prev');
     setActiveIndex(index);
@@ -132,7 +169,7 @@ function Testimonials() {
     setIsPaused(false);
   };
 
-  const placeholderInitials = (name) => {
+  const placeholderInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   };
 
@@ -189,13 +226,9 @@ function Testimonials() {
               const wasRecent = (idx === activeIndex - 1) || (activeIndex === 0 && idx === testimonials.length - 1);
               const willBeNext = (idx === activeIndex + 1) || (activeIndex === testimonials.length - 1 && idx === 0);
               
-              let slideClass = 'absolute top-0 left-0 w-full transition-all duration-700 opacity-0';
-              
-              if (isActive) {
-                slideClass = 'relative opacity-100 transition-all duration-700';
-              } else if ((wasRecent && direction === 'next') || (willBeNext && direction === 'prev')) {
-                slideClass = 'absolute top-0 left-0 w-full transition-all duration-700 opacity-0';
-              }
+              const slideClass = isActive
+                ? 'relative opacity-100 transition-all duration-700'
+                : 'absolute top-0 left-0 w-full transition-all duration-700 opacity-0';
               
               return (
                 <div 
@@ -314,16 +347,8 @@ function Testimonials() {
       {/* Summary metrics */}
       <div className="mb-20 max-w-5xl mx-auto bg-background rounded-2xl border border-border p-8 shadow-md">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: "98%", label: "Satisfaction rate", icon: Star, color: "text-yellow-400" },
-            { value: "2.3×", label: "More interviews", icon: TrendingUp, color: "text-primary" },
-            { value: "87%", label: "ATS pass rate", icon: Check, color: "text-green-500" },
-            { value: "<3 wks", label: "Average job search", icon: Clock, color: "text-blue-500" }
-          ].map((stat, idx) => (
+          {summaryStats.map((stat, idx) => (
             <div key={idx} className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
-              </div>
               <div className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </div>

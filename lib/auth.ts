@@ -1,4 +1,4 @@
-import { db } from "@/config/firebase"
+import { db, realtimeDb } from "@/config/firebase"
 import type { User } from "firebase/auth"
 import { doc, setDoc, getDoc } from "firebase/firestore"
 import { ref, set, get } from "firebase/database"

@@ -62,7 +62,9 @@ function ResumeAnalyzer() {
           for (let i = 0; i < pdfDoc.numPages; i++) {
             const page = await pdfDoc.getPage(i + 1);
             const textContent = await page.getTextContent();
-            const strings = textContent.items.map((item) => item.str);
+            const strings = textContent.items
+              .map((item) => ("str" in item ? item.str : null))
+              .filter((str): str is string => str !== null);
             pdfText += strings.join(" ") + " ";
           }
           resolve(pdfText);
@@ -86,7 +88,7 @@ function ResumeAnalyzer() {
         .toLowerCase()
         .split(",")
         .map((k) => k.trim());
-      const newAnalysis = {};
+      const newAnalysis: Record<string, ResumeAnalysis> = {};
 
       for (const file of files) {
         const fileContent = await readFileContent(file);
