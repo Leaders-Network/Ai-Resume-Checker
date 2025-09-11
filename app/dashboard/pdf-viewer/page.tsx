@@ -170,29 +170,32 @@ export default function PDFViewerPage() {
 
     setPdfLoading(true)
     try {
-      let pdfData: ArrayBuffer
+      let pdfData: ArrayBuffer | undefined = undefined;
 
-      if (selectedResume.blob) {
-        pdfData = await selectedResume.blob.arrayBuffer()
-      } else if (selectedResume.file) {
-        pdfData = await selectedResume.file.arrayBuffer()
+      // Only use blob if it's a real Blob (not a plain object from sessionStorage)
+      if (selectedResume.blob && typeof selectedResume.blob === 'object' && typeof selectedResume.blob.arrayBuffer === 'function') {
+        pdfData = await selectedResume.blob.arrayBuffer();
+      } else if (selectedResume.file && typeof selectedResume.file === 'object' && typeof selectedResume.file.arrayBuffer === 'function') {
+        pdfData = await selectedResume.file.arrayBuffer();
       } else if (selectedResume.url) {
-        const response = await fetch(selectedResume.url)
-        pdfData = await response.arrayBuffer()
+        const response = await fetch(selectedResume.url);
+        pdfData = await response.arrayBuffer();
       } else {
-        throw new Error("No PDF data available")
+        throw new Error("No PDF data available");
       }
 
-      const pdf = await getDocument(new Uint8Array(pdfData)).promise
-      pdfDocRef.current = pdf
-      setTotalPages(pdf.numPages)
-      setCurrentPage(1)
-      await renderPage(1)
+      if (!pdfData) throw new Error("No PDF data loaded");
+
+      const pdf = await getDocument(new Uint8Array(pdfData)).promise;
+      pdfDocRef.current = pdf;
+      setTotalPages(pdf.numPages);
+      setCurrentPage(1);
+      await renderPage(1);
     } catch (error) {
-      console.error("Error loading PDF:", error)
-      toast.error("Failed to load PDF")
+      console.error("Error loading PDF:", error);
+      toast.error("Failed to load PDF");
     } finally {
-      setPdfLoading(false)
+      setPdfLoading(false);
     }
   }, [selectedResume, subscriptionData, renderPage])
 
