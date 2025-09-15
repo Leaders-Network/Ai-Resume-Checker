@@ -74,6 +74,7 @@ export default function PDFViewerPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [renderFallback, setRenderFallback] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const pdfDocRef = useRef<PDFDocumentProxy | null>(null)
@@ -162,6 +163,9 @@ export default function PDFViewerPage() {
   const loadPDF = useCallback(async () => {
     if (!selectedResume || !canvasRef.current) return
 
+    // Wait until subscription data is available before gating access
+    if (subscriptionData === null) return
+
     // Check if user has access to PDF viewer
     if (!checkFeatureAccess(subscriptionData, "basic")) {
       toast.error("🔒 Upgrade to access PDF viewer!")
@@ -169,6 +173,7 @@ export default function PDFViewerPage() {
     }
 
     setPdfLoading(true)
+    setRenderFallback(false)
     try {
       let pdfData: ArrayBuffer | undefined = undefined;
 
@@ -178,7 +183,14 @@ export default function PDFViewerPage() {
       } else if (selectedResume.file && typeof selectedResume.file === 'object' && typeof selectedResume.file.arrayBuffer === 'function') {
         pdfData = await selectedResume.file.arrayBuffer();
       } else if (selectedResume.url) {
-        const response = await fetch(selectedResume.url);
+        // Try direct fetch first; if it fails (e.g., 401/CORS), fallback to proxy
+        let response = await fetch(selectedResume.url);
+        if (!response.ok) {
+          response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}`)
+        }
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status}`)
+        }
         pdfData = await response.arrayBuffer();
       } else {
         throw new Error("No PDF data available");
@@ -194,17 +206,33 @@ export default function PDFViewerPage() {
     } catch (error) {
       console.error("Error loading PDF:", error);
       toast.error("Failed to load PDF");
+      if (selectedResume?.url) {
+        setRenderFallback(true)
+      }
     } finally {
       setPdfLoading(false);
     }
   }, [selectedResume, subscriptionData, renderPage])
 
   useEffect(() => {
-
     if (selectedResume) {
       loadPDF()
     }
   }, [selectedResume, loadPDF])
+
+  // Retry load when subscription data becomes available
+  useEffect(() => {
+    if (subscriptionData && selectedResume) {
+      loadPDF()
+    }
+  }, [subscriptionData, selectedResume, loadPDF])
+
+  // Re-render current page when zoom/rotation/currentPage changes
+  useEffect(() => {
+    if (pdfDocRef.current && currentPage > 0) {
+      renderPage(currentPage)
+    }
+  }, [zoom, rotation, currentPage, renderPage])
 
 
 
@@ -227,7 +255,6 @@ export default function PDFViewerPage() {
     }
     const newZoom = Math.min(zoom + 0.25, 3)
     setZoom(newZoom)
-    renderPage(currentPage)
   }
 
   const handleZoomOut = () => {
@@ -237,7 +264,6 @@ export default function PDFViewerPage() {
     }
     const newZoom = Math.max(zoom - 0.25, 0.5)
     setZoom(newZoom)
-    renderPage(currentPage)
   }
 
   const handleRotate = () => {
@@ -247,13 +273,11 @@ export default function PDFViewerPage() {
     }
     const newRotation = (rotation + 90) % 360
     setRotation(newRotation)
-    renderPage(currentPage)
   }
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page)
-      renderPage(page)
     }
   }
 
@@ -265,7 +289,7 @@ export default function PDFViewerPage() {
     }
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!checkFeatureAccess(subscriptionData, "basic")) {
       toast.error("🔒 Upgrade to access download feature!")
       return
@@ -279,6 +303,14 @@ export default function PDFViewerPage() {
         blob = selectedResume.blob
       } else if (selectedResume.file) {
         blob = new Blob([selectedResume.file], { type: "application/pdf" })
+      } else if (selectedResume.url) {
+        let response = await fetch(selectedResume.url)
+        if (!response.ok) {
+          response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}`)
+        }
+        if (!response.ok) throw new Error("Failed to fetch PDF for download")
+        const buf = await response.arrayBuffer()
+        blob = new Blob([buf], { type: "application/pdf" })
       } else {
         toast.error("No downloadable file available")
         return
@@ -452,7 +484,7 @@ export default function PDFViewerPage() {
           </motion.div>
         )}
 
-  <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Enhanced Control Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -712,14 +744,22 @@ export default function PDFViewerPage() {
                     </div>
                   ) : (
                     <div className="flex justify-center p-4">
-                      <canvas
-                        ref={canvasRef}
-                        className="max-w-full h-auto shadow-lg border border-gray-300 dark:border-gray-600"
-                        style={{
-                          transform: `rotate(${rotation}deg)`,
-                          transition: "transform 0.3s ease",
-                        }}
-                      />
+                      {renderFallback && selectedResume?.url ? (
+                        <iframe
+                          title="PDF Preview"
+                          src={`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}#view=FitH`}
+                          className="w-full h-[65vh] border border-gray-300 dark:border-gray-600 rounded"
+                        />
+                      ) : (
+                        <canvas
+                          ref={canvasRef}
+                          className="max-w-full h-auto shadow-lg border border-gray-300 dark:border-gray-600"
+                          style={{
+                            transform: `rotate(${rotation}deg)`,
+                            transition: "transform 0.3s ease",
+                          }}
+                        />
+                      )}
                     </div>
                   )}
                 </div>

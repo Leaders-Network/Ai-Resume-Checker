@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { motion } from "framer-motion"
 import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, getDocs, setDoc, collection } from "firebase/firestore"
 import { getUserSubscription, updateUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 // import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -252,7 +252,8 @@ export default function DashboardPage() {
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
-  const [files, setFiles] = useState<UploadedFile[]>([])
+  const [currentFiles, setCurrentFiles] = useState<UploadedFile[]>([])
+  const [previousFiles, setPreviousFiles] = useState<UploadedFile[]>([])
   const [keywords, setKeywords] = useState<KeywordCategory>(() => {
     if (typeof window !== "undefined") {
       const savedKeywords = sessionStorage.getItem("keywords")
@@ -261,6 +262,7 @@ export default function DashboardPage() {
     return { skills: [], experience: [], location: [], certification: [] }
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestedKeywords, setSuggestedKeywords] = useState<KeywordCategory>({
     skills: [],
@@ -285,11 +287,26 @@ export default function DashboardPage() {
   // })
 
 
+  async function saveResumeMetadata(userId: string, fileData: {
+    name: string;
+    url: string;
+    analysis: any;
+    uploadedAt: Date;
+  }) {
+    const docRef = doc(collection(db, "users", userId, "resumes"));
+    await setDoc(docRef, {
+      ...fileData,
+      uploadedAt: fileData.uploadedAt.toISOString(),
+    });
+  }
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("keywords", JSON.stringify(keywords))
     }
   }, [keywords])
+
+
 
 
 
@@ -317,11 +334,42 @@ export default function DashboardPage() {
       }
     }
 
+    if (!user) return;
+    const fetchPreviousResumes = async () => {
+      const resumesCollectionRef = collection(db, "users", user.uid, "resumes");
+      const querySnapshot = await getDocs(resumesCollectionRef);
+      const resumes = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name,
+          url: data.url,
+          uploadDate: new Date(data.uploadedAt),
+          ...data,
+        };
+      });
+      // Ensure each resume has all required UploadedFile fields
+      const formattedResumes = resumes.map((resume) => ({
+        id: resume.id,
+        name: resume.name,
+        url: resume.url,
+        uploadDate: resume.uploadDate,
+        size: 0,
+        type: "application/pdf",
+        status: "completed",
+      }));
+      setPreviousFiles(formattedResumes as UploadedFile[]);
+    };
+    fetchPreviousResumes();
+
     if (user) {
       loadUserProfile()
       loadSubscriptionData()
     }
   }, [user])
+
+
+
 
   //handle sign out unused
   // const handleSignOut = async () => {
@@ -412,20 +460,37 @@ export default function DashboardPage() {
 
   const processFiles = async (uploadedFiles: File[]) => {
     const uniqueFiles = uploadedFiles.filter(
-      (file) => !files.some((existingFile) => (existingFile.fileName ?? existingFile.name) === file.name),
-    )
+      (file) => !currentFiles.some((existingFile) => (existingFile.fileName ?? existingFile.name) === file.name),
+    );
 
     if (uniqueFiles.length === 0) {
-      toast.error("⚠ No new or valid files selected.")
-      return
+      toast.error("⚠ No new or valid files selected.");
+      return;
     }
 
     try {
+      setIsUploading(true);
       const processedFiles: Array<UploadedFile | null> = await Promise.all(
         uniqueFiles.map(async (file) => {
           try {
-            const content = await extractTextFromPDF(file)
-            const extractedKeywords = extractKeywords(content)
+            // 1. Upload to Cloudinary via API route
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/api/upload-pdf", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to upload file to storage");
+            }
+
+            const { url: fileUrl } = await response.json();
+
+            // 2. Extract content for keyword suggestions
+            const content = await extractTextFromPDF(file);
+            const extractedKeywords = extractKeywords(content);
 
             // Only show suggestions if user has access to advanced features
             if (checkFeatureAccess(subscriptionData, "advanced")) {
@@ -434,7 +499,7 @@ export default function DashboardPage() {
                 experience: [...new Set([...prev.experience, ...extractedKeywords.experience])],
                 location: [...new Set([...prev.location, ...extractedKeywords.location])],
                 certification: [...new Set([...prev.certification, ...extractedKeywords.certification])],
-              }))
+              }));
 
               if (
                 extractedKeywords.skills.length > 0 ||
@@ -442,12 +507,21 @@ export default function DashboardPage() {
                 extractedKeywords.location.length > 0 ||
                 extractedKeywords.certification.length > 0
               ) {
-                setShowSuggestions(true)
+                setShowSuggestions(true);
               }
             }
 
-            const fileBlob = new Blob([file], { type: file.type })
-            const fileUrl = URL.createObjectURL(fileBlob)
+            const fileBlob = new Blob([file], { type: file.type });
+
+            // 3. Save metadata to Firestore
+            if (user) {
+              await saveResumeMetadata(user.uid, {
+                name: file.name,
+                url: fileUrl,
+                analysis: extractedKeywords,
+                uploadedAt: new Date(),
+              });
+            }
 
             return {
               id: `${file.name}-${Date.now()}`,
@@ -461,28 +535,30 @@ export default function DashboardPage() {
               content,
               file,
               blob: fileBlob,
-            }
+            };
           } catch (error) {
-            console.error(`Error processing file ${file.name}:`, error)
-            return null
+            console.error(`Error processing file ${file.name}:`, error);
+            return null;
           }
         }),
-      )
+      );
 
-      const validFiles = processedFiles.filter((f): f is UploadedFile => f !== null)
-      setFiles((prevFiles) => [...prevFiles, ...validFiles])
+      const validFiles = processedFiles.filter((f): f is UploadedFile => f !== null);
+      setCurrentFiles((prevFiles) => [...prevFiles, ...validFiles]);
 
       // Update subscription data
       if (user && subscriptionData) {
-        const updatedLimit = (subscriptionData.resumeLimit || 0) - uniqueFiles.length
-        await updateUserSubscription(user.uid, { resumeLimit: updatedLimit })
-        setSubscriptionData((prev) => (prev ? { ...prev, resumeLimit: updatedLimit } : null))
+        const updatedLimit = (subscriptionData.resumeLimit || 0) - uniqueFiles.length;
+        await updateUserSubscription(user.uid, { resumeLimit: updatedLimit });
+        setSubscriptionData((prev) => (prev ? { ...prev, resumeLimit: updatedLimit } : null));
       }
-      toast.success("✅ Files uploaded successfully!")
+      toast.success("✅ Files uploaded successfully!");
     } catch (error) {
-      toast.error(`❌ Failed to process files. ${error}`)
+      toast.error(`❌ Failed to process files. ${error}`);
+    } finally {
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = Array.from(event.target.files || []).filter((file) => file.type === "application/pdf")
@@ -500,7 +576,7 @@ export default function DashboardPage() {
   }
 
   const handleFileDelete = (index: number) => {
-    setFiles((prevFiles) => {
+    setCurrentFiles((prevFiles) => {
       const updatedFiles = prevFiles.filter((_, i) => i !== index)
       return updatedFiles
     })
@@ -614,7 +690,7 @@ export default function DashboardPage() {
   }
 
   const navigateToResults = async () => {
-    if (files.length === 0) {
+    if (currentFiles.length === 0) {
       toast.error("📄 Please upload at least one resume to analyze", {
         duration: 3000,
         position: "top-right",
@@ -639,7 +715,7 @@ export default function DashboardPage() {
     setIsLoading(true)
     const allKeywords = [...keywords.skills, ...keywords.experience, ...keywords.location, ...keywords.certification]
 
-    const filesWithKeywords = files.map((file) => {
+    const filesWithKeywords = currentFiles.map((file) => {
       const fileContent = file.content ?? ""
       const matches = allKeywords.filter((keyword) => {
         if (keywords.experience.includes(keyword)) {
@@ -749,7 +825,7 @@ export default function DashboardPage() {
 
 
       <Toaster position="top-right" reverseOrder={false} />
-  <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with user info - improved styling */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -865,7 +941,7 @@ export default function DashboardPage() {
                   ? "text-primary"
                   : "text-primary"
                   }`}>
-                  {files.length}
+                  {currentFiles.length}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -877,7 +953,7 @@ export default function DashboardPage() {
                 <div className="mt-3 flex items-center space-x-2">
                   <FileText className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">
-                    {files.length > 0 ? "Files ready" : "No files uploaded"}
+                    {currentFiles.length > 0 ? "Files ready" : "No files uploaded"}
                   </span>
                 </div>
               </CardContent>
@@ -1003,7 +1079,7 @@ export default function DashboardPage() {
         )}
 
         {/* Main content cards */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 ">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1059,7 +1135,7 @@ export default function DashboardPage() {
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className={`border-4 border-dashed rounded-xl p-4 sm:p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
+                  className={`relative border-4 border-dashed rounded-xl p-4 sm:p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
                     ? isDragOver
                       ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
                       : isDarkMode
@@ -1068,8 +1144,16 @@ export default function DashboardPage() {
                     : isDarkMode
                       ? "border-border bg-muted cursor-not-allowed opacity-50"
                       : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
-                    }`}
+                    } ${isUploading ? "pointer-events-none opacity-70" : ""}`}
                 >
+                  {isUploading && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/80">
+                      <div className="flex items-center space-x-3">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="text-sm font-medium">Uploading PDF...</span>
+                      </div>
+                    </div>
+                  )}
                   <Upload
                     className={`mx-auto h-16 w-16 mb-4 ${canUploadResumes()
                       ? isDragOver
@@ -1086,11 +1170,13 @@ export default function DashboardPage() {
                       : "text-gray-500 dark:text-gray-500"
                       }`}
                   >
-                    {canUploadResumes()
-                      ? isDragOver
-                        ? "Drop PDF files here!"
-                        : "Drag & drop PDF files or click to upload"
-                      : "Upgrade to upload resumes"}
+                    {isUploading
+                      ? "Uploading..."
+                      : canUploadResumes()
+                        ? isDragOver
+                          ? "Drop PDF files here!"
+                          : "Drag & drop PDF files or click to upload"
+                        : "Upgrade to upload resumes"}
                   </p>
                   <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                     {canUploadResumes()
@@ -1104,13 +1190,13 @@ export default function DashboardPage() {
                     accept=".pdf"
                     multiple
                     onChange={handleFileUpload}
-                    disabled={!canUploadResumes()}
+                    disabled={!canUploadResumes() || isUploading}
                   />
                 </div>
 
                 {/* File list */}
                 <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                  {files.map((file, index) => (
+                  {currentFiles.map((file, index) => (
                     <li
                       key={index}
                       className={`flex flex-col xs:flex-row items-start xs:items-center justify-between p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow gap-2 sm:gap-0 ${isDarkMode
@@ -1238,6 +1324,72 @@ export default function DashboardPage() {
             )}
           </Button>
         </motion.div>
+
+
+        {/* previous uploads  */}
+        {previousFiles.length > 0 && (
+          <section className={`mt-8 rounded-xl shadow-lg p-4 sm:p-6 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
+            <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Previous Uploads</h2>
+            <ul className="divide-y divide-gray-200 dark:divide-border">
+              {previousFiles.map((file: UploadedFile) => (
+                <li key={file.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
+                  <div className="flex items-center space-x-3">
+                    <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
+                    <a
+                      href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`font-medium underline ${isDarkMode ? "text-primary" : "text-blue-700"} hover:text-blue-500`}
+                    >
+                      {file.name}
+                    </a>
+                    <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      {new Date(file.uploadDate).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="mt-2 sm:mt-0 flex items-center space-x-2">
+                    <button
+                      onClick={async () => {
+                        if (!file.url) return;
+                        try {
+                          const response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(file.url)}&download=1&filename=${encodeURIComponent(file.name.endsWith('.pdf') ? file.name : file.name + '.pdf')}`);
+                          if (response.ok) {
+                            const blob = await response.blob();
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = file.name.endsWith('.pdf') ? file.name : file.name + '.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            toast.success('Download started!');
+                          } else {
+                            toast.error('Download failed');
+                          }
+                        } catch (error) {
+                          toast.error('Download failed');
+                        }
+                      }}
+                      className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+    ${isDarkMode
+                          ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
+                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
+                      disabled={!file.url}
+                    >
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                      </svg>
+                      Download
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+
       </div>
     </div>
   )

@@ -7,14 +7,14 @@ import { getStorage } from "firebase/storage"; // ✅
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCYU5QtVd3IrpaY7fwHtaFtHCrHHOnIeCg",
-  authDomain: "ai-resume-checker-42e9c.firebaseapp.com",
-  databaseURL: "https://ai-resume-checker-42e9c-default-rtdb.firebaseio.com",
-  projectId: "ai-resume-checker-42e9c",
-  storageBucket: "ai-resume-checker-42e9c.appspot.com",
-  messagingSenderId: "602601909832",
-  appId: "1:602601909832:web:edc0c9d1b4b542e384f27d",
-  measurementId: "G-KWFZ1GG2R6"
+  apiKey: "AIzaSyChSxls4C1TrSzPVjTRySEiVe3U-jjJrSM",
+  authDomain: "ai-resume-checker-453da.firebaseapp.com",
+  databaseURL: "https://ai-resume-checker-453da-default-rtdb.firebaseio.com",
+  projectId: "ai-resume-checker-453da",
+  storageBucket: "ai-resume-checker-453da.appspot.com",
+  messagingSenderId: "1089704000703",
+  appId: "1:1089704000703:web:ecda1f06565b764bfe1a0a",
+  measurementId: "G-L292LR922B"
 };
 
 const app = initializeApp(firebaseConfig);
