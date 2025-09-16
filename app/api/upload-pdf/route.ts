@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Configure Cloudinary from environment variables
 cloudinary.config({
-  cloud_name: "diydxws5g",
-  api_key: "649557923563211",
-  api_secret: "vUCg0PYMiSrl2RaBnjsxzdis9rc",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 export async function POST(req: NextRequest) {
