@@ -335,7 +335,7 @@ const handleDownload = async () => {
     console.error("Error downloading file:", error)
     toast.error("Failed to download file")
   }
-
+}
 
   const toggleFullscreen = () => {
     if (!checkFeatureAccess(subscriptionData, "advanced")) {
@@ -776,4 +776,4 @@ const handleDownload = async () => {
       </div>
     </div>
   )
-}}
+}

@@ -290,7 +290,7 @@ export default function DashboardPage() {
   async function saveResumeMetadata(userId: string, fileData: {
     name: string;
     url: string;
-    analysis: any;
+    analysis: string;
     uploadedAt: Date;
   }) {
     const docRef = doc(collection(db, "users", userId, "resumes"));
@@ -468,6 +468,7 @@ export default function DashboardPage() {
       return;
     }
 
+
     try {
       setIsUploading(true);
       const processedFiles: Array<UploadedFile | null> = await Promise.all(
@@ -518,7 +519,7 @@ export default function DashboardPage() {
               await saveResumeMetadata(user.uid, {
                 name: file.name,
                 url: fileUrl,
-                analysis: extractedKeywords,
+                analysis: JSON.stringify(extractedKeywords),
                 uploadedAt: new Date(),
               });
             }
@@ -1412,7 +1413,7 @@ const allFiles = [
                     toast.error('Download failed');
                   }
                 } catch (error) {
-                  toast.error('Download failed');
+                  toast.error('Download failed: ' + String(error));
                 }
               }}
               className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors

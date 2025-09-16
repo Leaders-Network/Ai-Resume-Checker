@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 
 // Configure Cloudinary from environment variables
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const result = await new Promise<any>((resolve, reject) => {
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
           resource_type: "raw",
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         },
         (error, result) => {
           if (error) return reject(error);
+          if (!result) return reject(new Error("No result returned from Cloudinary"));
           resolve(result);
         }
       );
@@ -44,9 +45,10 @@ export async function POST(req: NextRequest) {
       public_id: result.public_id,
       original_filename: result.original_filename || file.name,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Upload failed", details: error?.message || String(error) },
+      { error: "Upload failed", details: errorMessage },
       { status: 500 }
     );
   }

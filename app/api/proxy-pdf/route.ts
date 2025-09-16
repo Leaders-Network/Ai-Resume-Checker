@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
         }
 
         return new NextResponse(arrayBuffer, { status: 200, headers });
-    } catch (error: any) {
-        return NextResponse.json(
-            { error: "Proxy error", details: error?.message || String(error) },
+    } catch (error: unknown) {
+       return NextResponse.json(
+            { error: "Proxy error", details: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         );
     }

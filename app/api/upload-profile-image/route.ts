@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAuth } from "firebase-admin/auth"
 import { initializeApp, getApps, cert } from "firebase-admin/app"
-import { v2 as cloudinary } from "cloudinary"
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary"
 
 if (!getApps().length) {
   initializeApp({
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Upload via Cloudinary SDK with public access
-    const uploadResult = await new Promise<any>((resolve, reject) => {
+    const uploadResult = await new Promise<UploadApiResponse>((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
           resource_type: "image",
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         },
         (error, result) => {
           if (error) return reject(error)
+          if (!result) return reject(new Error("No result returned from Cloudinary"))
           resolve(result)
         }
       )
