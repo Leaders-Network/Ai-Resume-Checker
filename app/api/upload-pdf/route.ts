@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
           use_filename: true,
           unique_filename: true,
           filename_override: file.name,
-          access_mode: "public",
+          upload_preset: "public_raw_upload",
+          access_mode: "public"
         },
         (error, result) => {
           if (error) return reject(error);

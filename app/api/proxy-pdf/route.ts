@@ -10,7 +10,11 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
         }
 
-        const upstream = await fetch(targetUrl);
+        const upstream = await fetch(targetUrl, {
+            headers: {
+                "Accept": "*/*"
+            }
+        });
         if (!upstream.ok) {
             const text = await upstream.text().catch(() => "");
             return NextResponse.json(
@@ -35,5 +39,3 @@ export async function GET(req: NextRequest) {
         );
     }
 }
-
-

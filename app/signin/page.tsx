@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
 import { auth, provider, facebookProvider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
@@ -19,6 +19,15 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

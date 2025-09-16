@@ -806,6 +806,15 @@ export default function DashboardPage() {
     router.push("/dashboard/result")
   }
 
+  // Merge currentFiles and previousFiles, avoiding duplicates by file name
+const allFiles = [
+  ...currentFiles,
+  ...previousFiles.filter(
+    prev =>
+      !currentFiles.some(cur => (cur.fileName ?? cur.name) === (prev.fileName ?? prev.name))
+  ),
+];
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -1125,6 +1134,38 @@ export default function DashboardPage() {
                     >
                       Upgrade to Premium
                     </Button>
+
+                    {/* Uploaded files ready for analysis */}
+{currentFiles.length > 0 && (
+  <section className={`mt-6 rounded-xl shadow p-4 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
+    <h2 className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Ready for Analysis</h2>
+    <ul className="divide-y divide-gray-200 dark:divide-border">
+      {currentFiles.map((file, index) => (
+        <li key={file.id ?? index} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
+          <div className="flex items-center space-x-3">
+            <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
+            <span className={`font-medium ${isDarkMode ? "text-primary" : "text-blue-700"}`}>{file.fileName ?? file.name}</span>
+            <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+              {new Date(file.uploadDate).toLocaleString()}
+            </span>
+          </div>
+          <div className="mt-2 sm:mt-0 flex items-center space-x-2">
+            <button
+              onClick={() => handleFileDelete(index)}
+              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                ${isDarkMode
+                  ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
+                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
                   </div>
                 )}
 
@@ -1220,6 +1261,8 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </motion.div>
+
+
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1327,67 +1370,68 @@ export default function DashboardPage() {
 
 
         {/* previous uploads  */}
-        {previousFiles.length > 0 && (
-          <section className={`mt-8 rounded-xl shadow-lg p-4 sm:p-6 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
-            <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Previous Uploads</h2>
-            <ul className="divide-y divide-gray-200 dark:divide-border">
-              {previousFiles.map((file: UploadedFile) => (
-                <li key={file.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
-                  <div className="flex items-center space-x-3">
-                    <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
-                    <a
-                      href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`font-medium underline ${isDarkMode ? "text-primary" : "text-blue-700"} hover:text-blue-500`}
-                    >
-                      {file.name}
-                    </a>
-                    <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      {new Date(file.uploadDate).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-2 sm:mt-0 flex items-center space-x-2">
-                    <button
-                      onClick={async () => {
-                        if (!file.url) return;
-                        try {
-                          const response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(file.url)}&download=1&filename=${encodeURIComponent(file.name.endsWith('.pdf') ? file.name : file.name + '.pdf')}`);
-                          if (response.ok) {
-                            const blob = await response.blob();
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = file.name.endsWith('.pdf') ? file.name : file.name + '.pdf';
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                            toast.success('Download started!');
-                          } else {
-                            toast.error('Download failed');
-                          }
-                        } catch (error) {
-                          toast.error('Download failed');
-                        }
-                      }}
-                      className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-    ${isDarkMode
-                          ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
-                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
-                      disabled={!file.url}
-                    >
-                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                      </svg>
-                      Download
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+      
+{allFiles.length > 0 && (
+    <section className={`mt-8 rounded-xl shadow-lg p-4 sm:p-6 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
+    <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Previous Uploads</h2>
+    <ul className="divide-y divide-gray-200 dark:divide-border">
+      {previousFiles.map((file: UploadedFile) => (
+        <li key={file.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
+          <div className="flex items-center space-x-3">
+            <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
+            <a
+              href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`font-medium underline ${isDarkMode ? "text-primary" : "text-blue-700"} hover:text-blue-500`}
+            >
+              {file.name}
+            </a>
+            <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+              {new Date(file.uploadDate).toLocaleString()}
+            </span>
+          </div>
+          <div className="mt-2 sm:mt-0 flex items-center space-x-2">
+            <button
+              onClick={async () => {
+                if (!file.url) return;
+                try {
+                  const response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(file.url)}&download=1&filename=${encodeURIComponent(file.name.endsWith('.pdf') ? file.name : file.name + '.pdf')}`);
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name.endsWith('.pdf') ? file.name : file.name + '.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    toast.success('Download started!');
+                  } else {
+                    toast.error('Download failed');
+                  }
+                } catch (error) {
+                  toast.error('Download failed');
+                }
+              }}
+              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+${isDarkMode
+                ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
+                : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
+              disabled={!file.url}
+            >
+              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              </svg>
+              Download
+            </button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
 
 
       </div>

@@ -289,47 +289,53 @@ export default function PDFViewerPage() {
     }
   }
 
-  const handleDownload = async () => {
-    if (!checkFeatureAccess(subscriptionData, "basic")) {
-      toast.error("🔒 Upgrade to access download feature!")
+const handleDownload = async () => {
+  if (!checkFeatureAccess(subscriptionData, "basic")) {
+    toast.error("🔒 Upgrade to access download feature!")
+    return
+  }
+
+  if (!selectedResume) return
+
+  try {
+    let blob: Blob | null = null
+
+    if (selectedResume.blob && typeof selectedResume.blob.arrayBuffer === "function") {
+      // If it's a real Blob
+      blob = selectedResume.blob
+    } else if (selectedResume.file && typeof selectedResume.file.arrayBuffer === "function") {
+      // If it's a real File
+      const buf = await selectedResume.file.arrayBuffer()
+      blob = new Blob([buf], { type: "application/pdf" })
+    } else if (selectedResume.url) {
+      let response = await fetch(selectedResume.url)
+      if (!response.ok) {
+        response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}`)
+      }
+      if (!response.ok) throw new Error("Failed to fetch PDF for download")
+      const buf = await response.arrayBuffer()
+      blob = new Blob([buf], { type: "application/pdf" })
+    } else {
+      toast.error("No downloadable file available")
       return
     }
 
-    if (!selectedResume) return
+    if (!blob) throw new Error("No valid PDF blob for download")
 
-    try {
-      let blob: Blob
-      if (selectedResume.blob) {
-        blob = selectedResume.blob
-      } else if (selectedResume.file) {
-        blob = new Blob([selectedResume.file], { type: "application/pdf" })
-      } else if (selectedResume.url) {
-        let response = await fetch(selectedResume.url)
-        if (!response.ok) {
-          response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}`)
-        }
-        if (!response.ok) throw new Error("Failed to fetch PDF for download")
-        const buf = await response.arrayBuffer()
-        blob = new Blob([buf], { type: "application/pdf" })
-      } else {
-        toast.error("No downloadable file available")
-        return
-      }
-
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = selectedResume.fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      toast.success("Download started!")
-    } catch (error) {
-      console.error("Error downloading file:", error)
-      toast.error("Failed to download file")
-    }
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = selectedResume.fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    toast.success("Download started!")
+  } catch (error) {
+    console.error("Error downloading file:", error)
+    toast.error("Failed to download file")
   }
+
 
   const toggleFullscreen = () => {
     if (!checkFeatureAccess(subscriptionData, "advanced")) {
@@ -770,4 +776,4 @@ export default function PDFViewerPage() {
       </div>
     </div>
   )
-}
+}}
