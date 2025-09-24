@@ -183,7 +183,7 @@ export default function SubscriptionPage() {
     }
 
     const handler = window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY, 
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY as string, 
       email: user.email,
       amount: plan.price * 100, // Paystack expects amount in kobo
       currency: "NGN",
