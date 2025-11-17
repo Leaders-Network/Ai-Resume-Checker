@@ -19,6 +19,7 @@ import {
   Maximize,
   Minimize,
   RefreshCw,
+  Trash2,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -42,6 +43,7 @@ interface Resume {
   url?: string
   blob?: Blob
   file?: File
+  publicId?: string
   categoryScores?: {
     skills: number
     experience: number
@@ -246,6 +248,49 @@ export default function PDFViewerPage() {
       .slice(0, 2)
   }
 
+  const handleDelete = async (fileName: string, publicId: string) => {
+    if (!user) {
+      toast.error("You must be logged in to delete files.")
+      return
+    }
+
+    const confirmation = window.confirm(`Are you sure you want to delete ${fileName}?`)
+    if (!confirmation) return
+
+    try {
+      const token = await user.getIdToken()
+      const response = await fetch("/api/upload-pdf", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, publicId }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete file")
+      }
+
+      toast.success("File deleted successfully!")
+
+      // Update state and session storage
+      const updatedResumes = resumes.filter((r) => r.fileName !== fileName)
+      setResumes(updatedResumes)
+      sessionStorage.setItem("resumes", JSON.stringify(updatedResumes))
+
+      if (selectedResume?.fileName === fileName) {
+        const newSelected = updatedResumes.length > 0 ? updatedResumes[0] : null
+        setSelectedResume(newSelected)
+        if (newSelected) {
+          sessionStorage.setItem("selectedResume", JSON.stringify(newSelected))
+        } else {
+          sessionStorage.removeItem("selectedResume")
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error)
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+    }
+  }
 
 
   const handleZoomIn = () => {
@@ -518,9 +563,24 @@ const handleDownload = async () => {
                     <SelectContent>
                       {resumes.map((resume) => (
                         <SelectItem key={resume.fileName} value={resume.fileName}>
-                          <div className="flex items-center space-x-2">
-                            <FileText className="h-4 w-4" />
-                            <span className="truncate max-w-[200px]">{resume.fileName}</span>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center space-x-2">
+                              <FileText className="h-4 w-4" />
+                              <span className="truncate max-w-[180px]">{resume.fileName}</span>
+                            </div>
+                            {resume.publicId && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDelete(resume.fileName, resume.publicId!)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
                           </div>
                         </SelectItem>
                       ))}

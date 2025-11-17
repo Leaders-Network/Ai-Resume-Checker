@@ -3,13 +3,13 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
-import { auth, provider, facebookProvider } from "@/config/firebase"
+import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
-import { FaFacebook, FaEye, FaEyeSlash } from "react-icons/fa"
+import { FaEye, FaEyeSlash } from "react-icons/fa"
 
 
 
@@ -56,22 +56,6 @@ const Signin = () => {
     } catch (error: unknown) {
       console.error(error)
       const message = error instanceof Error ? error.message : "Failed to sign in with Google"
-      toast.error(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleFacebookLogin = async () => {
-    setIsLoading(true)
-    try {
-      const result = await signInWithPopup(auth, facebookProvider)
-      await createUserProfile(result.user)
-      toast.success("Signed in with Facebook!")
-      router.push("/dashboard")
-    } catch (error: unknown) {
-      console.error(error)
-      const message = error instanceof Error ? error.message : "Failed to sign in with Facebook"
       toast.error(message)
     } finally {
       setIsLoading(false)
@@ -188,14 +172,14 @@ const Signin = () => {
                     <span className="text-foreground font-medium">Continue with Google</span>
                   </button>
 
-                  <button
+                 {/* <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center px-4 py-3 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     <FaFacebook className="w-5 h-5 mr-3 text-blue-600" />
                     <span className="text-foreground font-medium">Continue with Facebook</span>
-                  </button>
+                  </button> */}
                 </div>
               </div>
 

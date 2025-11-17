@@ -1,3 +1,4 @@
+import { getAuth } from "firebase-admin/auth";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -51,5 +52,44 @@ export async function POST(req: NextRequest) {
       { error: "Upload failed", details: errorMessage },
       { status: 500 }
     );
+  }
+}
+
+// DELETE handler to remove previously uploaded resumes (or other resources).
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { token, publicId, resourceType = "raw" } = body || {}
+
+    if (!token || !publicId) {
+      return NextResponse.json({ error: "Missing token or publicId" }, { status: 400 })
+    }
+
+    // Verify Firebase token
+    const decoded = await getAuth().verifyIdToken(token)
+    if (!decoded?.uid) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+    }
+
+    const destroyResult = await new Promise<unknown>((resolve, reject) => {
+      cloudinary.uploader.destroy(
+        publicId,
+        { resource_type: resourceType },
+        (error, result) => {
+          if (error) return reject(error)
+          resolve(result)
+        }
+      )
+    })
+
+    // Cloudinary returns { result: 'ok' } or { result: 'not found' } etc.
+    if ((destroyResult as { result: string })?.result === "ok" || (destroyResult as { result: string })?.result === "deleted") {
+      return NextResponse.json({ success: true })
+    } else {
+      return NextResponse.json({ error: "Could not delete resource", details: destroyResult }, { status: 400 })
+    }
+  } catch (error) {
+    console.error("Delete error:", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

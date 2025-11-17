@@ -53,6 +53,7 @@ interface UploadedFile {
   content?: string
   file?: File
   blob?: Blob
+  publicId?: string
 }
 
 // Common skills for auto-extraction
@@ -290,6 +291,7 @@ export default function DashboardPage() {
   async function saveResumeMetadata(userId: string, fileData: {
     name: string;
     url: string;
+    publicId: string;
     analysis: string;
     uploadedAt: Date;
   }) {
@@ -344,6 +346,7 @@ export default function DashboardPage() {
           id: doc.id,
           name: data.name,
           url: data.url,
+          publicId: data.publicId,
           uploadDate: new Date(data.uploadedAt),
           ...data,
         };
@@ -353,6 +356,7 @@ export default function DashboardPage() {
         id: resume.id,
         name: resume.name,
         url: resume.url,
+        publicId: resume.publicId,
         uploadDate: resume.uploadDate,
         size: 0,
         type: "application/pdf",
@@ -487,7 +491,7 @@ export default function DashboardPage() {
               throw new Error("Failed to upload file to storage");
             }
 
-            const { url: fileUrl } = await response.json();
+            const { url: fileUrl, public_id: publicId } = await response.json();
 
             // 2. Extract content for keyword suggestions
             const content = await extractTextFromPDF(file);
@@ -519,6 +523,7 @@ export default function DashboardPage() {
               await saveResumeMetadata(user.uid, {
                 name: file.name,
                 url: fileUrl,
+                publicId: publicId,
                 analysis: JSON.stringify(extractedKeywords),
                 uploadedAt: new Date(),
               });
@@ -532,6 +537,7 @@ export default function DashboardPage() {
               uploadDate: new Date(),
               status: 'completed',
               url: fileUrl,
+              publicId: publicId,
               fileName: file.name,
               content,
               file,
@@ -582,6 +588,38 @@ export default function DashboardPage() {
       return updatedFiles
     })
     toast.success("🗑️ File deleted successfully.")
+  }
+
+  const handlePreviousFileDelete = async (fileId: string, publicId: string) => {
+    if (!user) {
+      toast.error("You must be logged in to delete files.")
+      return
+    }
+
+    const confirmation = window.confirm(`Are you sure you want to delete this file?`)
+    if (!confirmation) return
+
+    try {
+      const token = await user.getIdToken()
+      const response = await fetch("/api/upload-pdf", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, publicId }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete file")
+      }
+
+      toast.success("File deleted successfully!")
+
+      // Update state
+      setPreviousFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId))
+    } catch (error) {
+      console.error("Error deleting file:", error)
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+    }
   }
 
   const handleKeywordInput = (category: keyof KeywordCategory, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -1393,6 +1431,17 @@ const allFiles = [
             </span>
           </div>
           <div className="mt-2 sm:mt-0 flex items-center space-x-2">
+            <button
+              onClick={() => handlePreviousFileDelete(file.id, file.publicId!)}
+              disabled={!file.publicId}
+              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                ${isDarkMode
+                  ? "bg-red-500/20 text-red-500 hover:bg-red-500/40"
+                  : "bg-red-100 text-red-700 hover:bg-red-200"}`}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </button>
             <button
               onClick={async () => {
                 if (!file.url) return;

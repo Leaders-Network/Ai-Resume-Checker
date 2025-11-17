@@ -10,6 +10,7 @@ interface ResumeAnalysis {
   matches: string[];
   suggestions: string[];
   fileContent: string;
+  publicId: string;
 }
 
 function ResumeAnalyzer() {
@@ -110,9 +111,10 @@ function ResumeAnalyzer() {
           matches,
           suggestions: missing.map(
             (keyword) =>
-              `Consider adding experience or skills related to "${keyword}"`
+              `Consider adding experience or skills related to "${keyword}" `
           ),
           fileContent,
+          publicId: "",
         };
       }
 
