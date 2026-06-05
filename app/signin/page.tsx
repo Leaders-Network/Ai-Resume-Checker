@@ -162,7 +162,7 @@ const Signin = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-3">
+                {/* <div className="mt-6 space-y-3">
                   <button
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
@@ -172,15 +172,15 @@ const Signin = () => {
                     <span className="text-foreground font-medium">Continue with Google</span>
                   </button>
 
-                 {/* <button
+                 <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center px-4 py-3 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     <FaFacebook className="w-5 h-5 mr-3 text-blue-600" />
                     <span className="text-foreground font-medium">Continue with Facebook</span>
-                  </button> */}
-                </div>
+                  </button> 
+                </div> */}
               </div>
 
               <div className="mt-8 text-center md:hidden">

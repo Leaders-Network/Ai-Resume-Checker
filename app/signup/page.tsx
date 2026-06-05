@@ -374,7 +374,7 @@ const Signup = () => {
                     <span className="px-2 bg-card text-muted-foreground">OR</span>
                   </div>
                 </div>
-
+{/* 
                 <div className="mt-4 space-y-2">
                   <button
                     onClick={handleGoogleLogin}
@@ -392,7 +392,8 @@ const Signup = () => {
                     <FaFacebook className="w-4 h-4 mr-2 text-blue-600" />
                     <span className="text-foreground font-medium">Continue with Facebook</span>
                   </button>
-                </div>
+                </div> */}
+
               </div>
 
               <div className="mt-4 text-center">
