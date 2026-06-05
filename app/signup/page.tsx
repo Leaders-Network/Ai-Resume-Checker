@@ -7,7 +7,7 @@ import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
-import { FcGoogle } from "react-icons/fc"
+// import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaEye, FaEyeSlash, FaCamera, FaUser } from "react-icons/fa"
 import { doc, updateDoc } from "firebase/firestore"
 import { db } from "@/config/firebase"
@@ -160,39 +160,39 @@ const Signup = () => {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true)
-    try {
-      const result = await signInWithPopup(auth, provider)
-      const user = result.user
-      await createUserProfile(user)
-      toast.success("Signed up with Google!")
-      router.push("/dashboard")
-    } catch (error: unknown) {
-      console.error(error)
-      const message = error instanceof Error ? error.message : "Failed to sign up with Google"
-      toast.error(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // const handleGoogleLogin = async () => {
+  //   setIsLoading(true)
+  //   try {
+  //     const result = await signInWithPopup(auth, provider)
+  //     const user = result.user
+  //     await createUserProfile(user)
+  //     toast.success("Signed up with Google!")
+  //     router.push("/dashboard")
+  //   } catch (error: unknown) {
+  //     console.error(error)
+  //     const message = error instanceof Error ? error.message : "Failed to sign up with Google"
+  //     toast.error(message)
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
-  const handleFacebookLogin = async () => {
-    setIsLoading(true)
-    try {
-      const result = await signInWithPopup(auth, facebookProvider)
-      const user = result.user
-      await createUserProfile(user)
-      toast.success("Signed up with Facebook!")
-      router.push("/dashboard")
-    } catch (error: unknown) {
-      console.error(error)
-      const message = error instanceof Error ? error.message : "Failed to sign up with Facebook"
-      toast.error(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // const handleFacebookLogin = async () => {
+  //   setIsLoading(true)
+  //   try {
+  //     const result = await signInWithPopup(auth, facebookProvider)
+  //     const user = result.user
+  //     await createUserProfile(user)
+  //     toast.success("Signed up with Facebook!")
+  //     router.push("/dashboard")
+  //   } catch (error: unknown) {
+  //     console.error(error)
+  //     const message = error instanceof Error ? error.message : "Failed to sign up with Facebook"
+  //     toast.error(message)
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background text-foreground">

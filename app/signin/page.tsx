@@ -8,7 +8,7 @@ import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
-import { FcGoogle } from "react-icons/fc"
+// import { FcGoogle } from "react-icons/fc"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 
 
@@ -46,21 +46,21 @@ const Signin = () => {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true)
-    try {
-      const result = await signInWithPopup(auth, provider)
-      await createUserProfile(result.user)
-      toast.success("Signed in with Google!")
-      router.push("/dashboard")
-    } catch (error: unknown) {
-      console.error(error)
-      const message = error instanceof Error ? error.message : "Failed to sign in with Google"
-      toast.error(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // const handleGoogleLogin = async () => {
+  //   setIsLoading(true)
+  //   try {
+  //     const result = await signInWithPopup(auth, provider)
+  //     await createUserProfile(result.user)
+  //     toast.success("Signed in with Google!")
+  //     router.push("/dashboard")
+  //   } catch (error: unknown) {
+  //     console.error(error)
+  //     const message = error instanceof Error ? error.message : "Failed to sign in with Google"
+  //     toast.error(message)
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
