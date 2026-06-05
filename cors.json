@@ -1,7 +1,8 @@
 [
   {
     "origin": [
-      "http://localhost:3000"
+      "https://leaderscvchecker.com",
+      "http://localhost:3000" 
     ],
     "method": [
       "GET",
