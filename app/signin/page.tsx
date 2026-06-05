@@ -2,8 +2,8 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
-import { auth, provider } from "@/config/firebase"
+import { signInWithEmailAndPassword,  } from "firebase/auth"
+import { auth, } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
