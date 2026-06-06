@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
 import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"

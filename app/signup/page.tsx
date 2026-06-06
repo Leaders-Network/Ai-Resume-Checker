@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 import { useState, useRef } from "react"
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from "firebase/auth"
 import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
