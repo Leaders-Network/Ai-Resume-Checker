@@ -1,13 +1,13 @@
 "use client"
 import type React from "react"
 import { useState, useRef } from "react"
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
-import { auth, } from "@/config/firebase"
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
-// import { FcGoogle } from "react-icons/fc"
+import { FcGoogle } from "react-icons/fc"
 import { FaEye, FaEyeSlash, FaCamera, FaUser } from "react-icons/fa"
 import { doc, updateDoc } from "firebase/firestore"
 import { db } from "@/config/firebase"
@@ -160,22 +160,22 @@ const Signup = () => {
     }
   }
 
-  // const handleGoogleLogin = async () => {
-  //   setIsLoading(true)
-  //   try {
-  //     const result = await signInWithPopup(auth, provider)
-  //     const user = result.user
-  //     await createUserProfile(user)
-  //     toast.success("Signed up with Google!")
-  //     router.push("/dashboard")
-  //   } catch (error: unknown) {
-  //     console.error(error)
-  //     const message = error instanceof Error ? error.message : "Failed to sign up with Google"
-  //     toast.error(message)
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const result = await signInWithPopup(auth, provider)
+      const user = result.user
+      await createUserProfile(user)
+      toast.success("Signed up with Google!")
+      router.push("/dashboard")
+    } catch (error: unknown) {
+      console.error(error)
+      const message = error instanceof Error ? error.message : "Failed to sign up with Google"
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // const handleFacebookLogin = async () => {
   //   setIsLoading(true)
@@ -374,7 +374,7 @@ const Signup = () => {
                     <span className="px-2 bg-card text-muted-foreground">OR</span>
                   </div>
                 </div>
-{/* 
+
                 <div className="mt-4 space-y-2">
                   <button
                     onClick={handleGoogleLogin}
@@ -384,15 +384,15 @@ const Signup = () => {
                     <FcGoogle className="w-4 h-4 mr-2" />
                     <span className="text-foreground font-medium">Continue with Google</span>
                   </button>
-                  <button
+                {/*   <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     <FaFacebook className="w-4 h-4 mr-2 text-blue-600" />
                     <span className="text-foreground font-medium">Continue with Facebook</span>
-                  </button>
-                </div> */}
+                  </button> */}
+                </div>
 
               </div>
 

@@ -2,13 +2,13 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { signInWithEmailAndPassword,  } from "firebase/auth"
-import { auth, } from "@/config/firebase"
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
-// import { FcGoogle } from "react-icons/fc"
+import { FcGoogle } from "react-icons/fc"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 
 
@@ -46,21 +46,21 @@ const Signin = () => {
     }
   }
 
-  // const handleGoogleLogin = async () => {
-  //   setIsLoading(true)
-  //   try {
-  //     const result = await signInWithPopup(auth, provider)
-  //     await createUserProfile(result.user)
-  //     toast.success("Signed in with Google!")
-  //     router.push("/dashboard")
-  //   } catch (error: unknown) {
-  //     console.error(error)
-  //     const message = error instanceof Error ? error.message : "Failed to sign in with Google"
-  //     toast.error(message)
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const result = await signInWithPopup(auth, provider)
+      await createUserProfile(result.user)
+      toast.success("Signed in with Google!")
+      router.push("/dashboard")
+    } catch (error: unknown) {
+      console.error(error)
+      const message = error instanceof Error ? error.message : "Failed to sign in with Google"
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
@@ -162,7 +162,7 @@ const Signin = () => {
                   </div>
                 </div>
 
-                {/* <div className="mt-6 space-y-3">
+                 <div className="mt-6 space-y-3">
                   <button
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
@@ -172,15 +172,15 @@ const Signin = () => {
                     <span className="text-foreground font-medium">Continue with Google</span>
                   </button>
 
-                 <button
+                {/* <button
                     onClick={handleFacebookLogin}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center px-4 py-3 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
                   >
                     <FaFacebook className="w-5 h-5 mr-3 text-blue-600" />
                     <span className="text-foreground font-medium">Continue with Facebook</span>
-                  </button> 
-                </div> */}
+                  </button> */} 
+                </div> 
               </div>
 
               <div className="mt-8 text-center md:hidden">
