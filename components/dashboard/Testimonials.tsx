@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Star, Quote, Award, TrendingUp, Clock, Check, type LucideIcon } from 'lucide-react';
+import { Star, Quote, Check, TrendingUp, Clock, Award, type LucideIcon } from 'lucide-react';
 
 // Define types for our data structures
 type ImpactType = 'interviews' | 'response' | 'ats' | 'job';
@@ -99,13 +99,6 @@ const testimonials: Testimonial[] = [
   }
 ];
 
-interface Stat {
-  value: string;
-  label: string;
-  icon: LucideIcon;
-  color: string;
-}
-
 // Get impact icon based on type
 const getImpactIcon = (type: ImpactType): LucideIcon => {
   switch(type) {
@@ -116,13 +109,6 @@ const getImpactIcon = (type: ImpactType): LucideIcon => {
     default: return Clock;
   }
 };
-
-const summaryStats: Stat[] = [
-  { value: "98%", label: "Satisfaction rate", icon: Star, color: "text-yellow-400" },
-  { value: "2.3×", label: "More interviews", icon: TrendingUp, color: "text-primary" },
-  { value: "87%", label: "ATS pass rate", icon: Check, color: "text-green-500" },
-  { value: "<3 wks", label: "Average job search", icon: Clock, color: "text-blue-500" }
-];
 
 function Testimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -143,20 +129,7 @@ function Testimonials() {
       if (slideTimerRef.current) clearInterval(slideTimerRef.current);
     };
   }, [isPaused]);
-  
-  const handlePrev = () => {
-    if (slideTimerRef.current) clearInterval(slideTimerRef.current);
-    setIsPaused(true);
-    setDirection('prev');
-    setActiveIndex(prev => (prev === 0 ? testimonials.length - 1 : prev - 1));
-  };
-  
-  const handleNext = () => {
-    if (slideTimerRef.current) clearInterval(slideTimerRef.current);
-    setIsPaused(true);
-    setDirection('next');
-    setActiveIndex(prev => (prev + 1) % testimonials.length);
-  };
+  // removed handlePrev and handleNext
   
   const goToSlide = (index: number) => {
     if (slideTimerRef.current) clearInterval(slideTimerRef.current);

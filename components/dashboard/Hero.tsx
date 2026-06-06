@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Upload, CheckCircle, Star, Sparkles, TrendingUp, Shield } from 'lucide-react';
 

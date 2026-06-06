@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, MoreHorizontal, Sparkles as SparkleIcon } from "lucide-react"
+import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, Sparkles as SparkleIcon } from "lucide-react"
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
@@ -1440,7 +1440,7 @@ const allFiles = [
               </div>
             ) : (
               <ul className="divide-y divide-border">
-                {previousFiles.map((file: UploadedFile, idx: number) => (
+                {previousFiles.map((file: UploadedFile) => (
                   <li
                     key={file.id}
                     className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-3.5 transition-colors table-row-stripe ${
