@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown } from "lucide-react"
+import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, MoreHorizontal, Sparkles as SparkleIcon } from "lucide-react"
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { motion } from "framer-motion"
 import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
-import { doc, getDoc, getDocs, setDoc, collection } from "firebase/firestore"
+import { doc, getDoc, getDocs, setDoc, collection, deleteDoc } from "firebase/firestore"
 import { getUserSubscription, updateUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 // import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -246,6 +246,13 @@ const extractKeywords = (text: string) => {
   })
 
   return extractedKeywords
+}
+
+const getGreeting = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) return { text: "Good morning", emoji: "☀️" }
+  if (hour < 17) return { text: "Good afternoon", emoji: "🌤️" }
+  return { text: "Good evening", emoji: "🌙" }
 }
 
 export default function DashboardPage() {
@@ -600,22 +607,34 @@ export default function DashboardPage() {
     if (!confirmation) return
 
     try {
-      const token = await user.getIdToken()
-      const response = await fetch("/api/upload-pdf", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, publicId }),
-      })
+      // 1. Delete from Cloudinary if publicId exists
+      if (publicId) {
+        const token = await user.getIdToken(true) // force refresh so token isn't stale
+        const response = await fetch("/api/upload-pdf", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, publicId }),
+        })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to delete file")
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.warn(`Cloudinary delete failed (${response.status}):`, errorData)
+          // Proceed to delete from Firestore anyway so the user isn't stuck with a ghost file
+        }
       }
 
-      toast.success("File deleted successfully!")
+      // 2. Delete from Firestore
+      try {
+        const resumeDocRef = doc(db, "users", user.uid, "resumes", fileId)
+        await deleteDoc(resumeDocRef)
+      } catch (firestoreErr) {
+        console.warn("Firestore delete warning (file may already be removed):", firestoreErr)
+        // Don't throw — Cloudinary delete already succeeded
+      }
 
-      // Update state
+      // 3. Update UI state
       setPreviousFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId))
+      toast.success("File deleted successfully!")
     } catch (error) {
       console.error("Error deleting file:", error)
       toast.error(error instanceof Error ? error.message : "An unknown error occurred")
@@ -874,74 +893,76 @@ const allFiles = [
 
       <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-7xl mx-auto">
-        {/* Enhanced Header with user info - improved styling */}
+        {/* ── Gradient Hero Header ── */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className={`rounded-xl p-4 sm:p-6 ${isDarkMode
-            ? "bg-card shadow-md"
-            : "bg-white shadow-md"
-            }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className={`relative overflow-hidden rounded-2xl p-6 sm:p-8 ${
+            isDarkMode
+              ? "bg-gradient-to-br from-[hsl(200,30%,10%)] via-[hsl(200,28%,14%)] to-[hsl(28,40%,12%)] border border-border shadow-xl"
+              : "bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 shadow-xl"
+          }`}>
+            {/* Background mesh pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+              backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)`,
+              backgroundSize: "40px 40px"
+            }} />
+            {/* Glowing orb accents */}
+            <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-violet-500/20 blur-2xl pointer-events-none" />
+
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div className="flex flex-col items-center sm:flex-row sm:items-center sm:space-x-6 space-y-3 sm:space-y-0 w-full">
-                <div className="relative mb-2 sm:mb-0">
-                  <Avatar className={`h-16 w-16 sm:h-20 sm:w-20 shadow-lg ${isDarkMode
-                    ? "border-4 border-primary/20"
-                    : "border-4 border-primary/10"
-                    }`}>
-                    <AvatarImage
-                      src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
-                      alt="Profile"
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-lg sm:text-xl font-bold">
-                      {getUserInitials()}
-                    </AvatarFallback>
-                  </Avatar>
+                {/* Avatar with glow ring */}
+                <div className="relative mb-2 sm:mb-0 flex-shrink-0">
+                  <div className="animate-glow-ring rounded-full">
+                    <Avatar className="h-16 w-16 sm:h-20 sm:w-20 ring-4 ring-white/30 shadow-2xl">
+                      <AvatarImage
+                        src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
+                        alt="Profile"
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-lg sm:text-xl font-bold">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
                   {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                    <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1">
-                      <Crown className="h-4 w-4 text-primary-foreground" />
+                    <div className="absolute -top-1 -right-1 bg-amber-400 rounded-full p-1 shadow-lg">
+                      <Crown className="h-3 w-3 text-amber-900" />
                     </div>
                   )}
                 </div>
+
+                {/* Greeting text */}
                 <div className="text-center sm:text-left w-full">
-                  <h1 className={`text-2xl sm:text-4xl font-bold ${isDarkMode
-                    ? "text-primary"
-                    : "text-gray-800"
-                    }`}>
-                    Welcome back, {userProfile?.displayName || user?.displayName || "User"}!
+                  <p className="text-white/70 text-sm font-medium mb-0.5">
+                    {getGreeting().emoji} {getGreeting().text}
+                  </p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-sm">
+                    {userProfile?.displayName || user?.displayName || "User"}!
                   </h1>
-                  <p className={`${isDarkMode ? 'text-gray-300' : 'text-blue-700'} mb-2 sm:mb-4 text-base sm:text-lg`}>Ready to analyze some resumes today?</p>
-                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-2 sm:mt-3">
-                    <Badge
-                      variant="secondary"
-                      className={`${isDarkMode
-                        ? "bg-secondary/50 text-secondary-foreground"
-                        : "bg-blue-50 text-blue-700"
-                        }`}
-                    >
-                      <User className="h-3 w-3 mr-1" />
+                  <p className="text-white/70 mt-1 text-sm sm:text-base">Ready to analyze some resumes today?</p>
+
+                  {/* Status badges */}
+                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-3">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white backdrop-blur-sm border border-white/20">
+                      <User className="h-3 w-3" />
                       {subscriptionData?.isTrialActive ? "Free Trial" : subscriptionData?.activePlan || "Free"}
-                    </Badge>
+                    </span>
                     {subscriptionData?.isTrialActive && (
-                      <Badge
-                        variant="secondary"
-                        className={`${isDarkMode
-                          ? "bg-primary/20 text-primary"
-                          : "bg-amber-50 text-amber-700"
-                          }`}
-                      >
-                        {getRemainingDays()} days left
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/20 text-amber-200 border border-amber-400/30">
+                        ⏳ {getRemainingDays()} days left
+                      </span>
                     )}
                     {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                      <Badge variant="secondary" className="bg-primary text-primary-foreground">
-                        <Crown className="h-3 w-3 mr-1" />
-                        Premium Features
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
+                        <Crown className="h-3 w-3" />
+                        Premium Active
+                      </span>
                     )}
                   </div>
                 </div>
@@ -950,89 +971,83 @@ const allFiles = [
           </div>
         </motion.div>
 
-        {/* Enhanced Stats Cards */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
-              ? "bg-card border-border"
-              : "bg-white border-gray-200"
-              }`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-3xl font-bold ${isDarkMode
-                  ? "text-primary"
-                  : "text-primary"
-                  }`}>
-                  {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className={`font-medium text-lg ${isDarkMode
-                  ? "text-card-foreground"
-                  : "text-gray-800"
-                  }`}>Resume Credits</p>
-                <p className="text-sm text-muted-foreground">Remaining analyses</p>
-                <div className="mt-3 w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min(((subscriptionData?.resumeLimit || 0) / 100) * 100, 100)}%` }}
-                  ></div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* ── Premium Stats Cards ── */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
 
-            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
-              ? "bg-card border-border"
-              : "bg-white border-gray-200"
-              }`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-3xl font-bold ${isDarkMode
-                  ? "text-primary"
-                  : "text-primary"
-                  }`}>
-                  {currentFiles.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className={`font-medium text-lg ${isDarkMode
-                  ? "text-card-foreground"
-                  : "text-gray-800"
-                  }`}>Uploaded Resumes</p>
-                <p className="text-sm text-muted-foreground">Ready for analysis</p>
-                <div className="mt-3 flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    {currentFiles.length > 0 ? "Files ready" : "No files uploaded"}
-                  </span>
+            {/* Card 1: Resume Credits */}
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-emerald-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Resume Credits</p>
+                  <p className="text-4xl font-extrabold text-foreground animate-count-in">
+                    {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Remaining analyses</p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="h-12 w-12 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-6 w-6 text-emerald-500" />
+                </div>
+              </div>
+              <div className="mt-4 w-full bg-muted rounded-full h-1.5">
+                <div
+                  className="bg-emerald-500 h-1.5 rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min(((subscriptionData?.resumeLimit || 0) / 100) * 100, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                {subscriptionData?.resumeLimit ? `${subscriptionData.resumeLimit} of 100 remaining` : "No credits"}
+              </p>
+            </div>
 
-            <Card className={`shadow-lg hover:shadow-xl transition-shadow ${isDarkMode
-              ? "bg-card border-border"
-              : "bg-white border-gray-200"
-              }`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-3xl font-bold ${isDarkMode
-                  ? "text-primary"
-                  : "text-primary"
-                  }`}>
-                  {Object.values(keywords).flat().length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className={`font-medium text-lg ${isDarkMode
-                  ? "text-card-foreground"
-                  : "text-gray-800"
-                  }`}>Keywords</p>
-                <p className="text-sm text-muted-foreground">Added for matching</p>
-                <div className="mt-3 flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    {Object.values(keywords).flat().length > 0 ? "Keywords configured" : "No keywords added"}
-                  </span>
+            {/* Card 2: Uploaded Resumes */}
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Uploaded Resumes</p>
+                  <p className="text-4xl font-extrabold text-foreground animate-count-in">
+                    {currentFiles.length}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Ready for analysis</p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="h-12 w-12 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                  <Files className="h-6 w-6 text-blue-500" />
+                </div>
+              </div>
+              <div className={`mt-4 flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-lg w-fit ${
+                currentFiles.length > 0
+                  ? "bg-blue-500/10 text-blue-500"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                <FileText className="h-3.5 w-3.5" />
+                {currentFiles.length > 0 ? `${currentFiles.length} file${currentFiles.length > 1 ? "s" : ""} ready` : "No files uploaded"}
+              </div>
+            </div>
+
+            {/* Card 3: Keywords */}
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Keywords</p>
+                  <p className="text-4xl font-extrabold text-foreground animate-count-in">
+                    {Object.values(keywords).flat().length}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Added for matching</p>
+                </div>
+                <div className="h-12 w-12 rounded-xl bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+                  <Tag className="h-6 w-6 text-violet-500" />
+                </div>
+              </div>
+              <div className={`mt-4 flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-lg w-fit ${
+                Object.values(keywords).flat().length > 0
+                  ? "bg-violet-500/10 text-violet-500"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                <CheckCircle className="h-3.5 w-3.5" />
+                {Object.values(keywords).flat().length > 0 ? "Keywords configured" : "No keywords added"}
+              </div>
+            </div>
+
           </div>
         </motion.div>
 
@@ -1126,85 +1141,44 @@ const allFiles = [
           </motion.div>
         )}
 
-        {/* Main content cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 ">
+        {/* ── Main Content Cards ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className={`shadow-lg ${isDarkMode
-              ? "border-2 border-border"
-              : "border border-gray-200"
-              }`}>
-              <CardHeader className={`pb-2 ${isDarkMode
-                ? "bg-card"
-                : "bg-white"
-                }`}>
-                <CardTitle className={`flex items-center text-xl ${isDarkMode
-                  ? "text-card-foreground"
-                  : "text-gray-800"
-                  }`}>
-                  <Upload className="mr-2 h-6 w-6 text-primary" />
+            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-gray-100"}`}>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2.5 text-base font-semibold text-foreground">
+                  <span className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <Upload className="h-4 w-4 text-primary" />
+                  </span>
                   Upload Resumes
+                  <span className="ml-auto text-xs font-normal text-muted-foreground px-2 py-0.5 rounded-full bg-muted">PDF only</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className={`pt-6 ${isDarkMode
-                ? ""
-                : "bg-white"
-                }`}>
+              <CardContent className="pt-2">
                 {!canUploadResumes() && (
-                  <div className="mb-6 p-4 bg-destructive/10 rounded-xl border border-destructive/20">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <Crown className="h-6 w-6 text-primary" />
-                      <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>ground
+                  <div className="mb-5 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20 flex items-start gap-3">
+                    <Crown className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-sm text-foreground">
                         {subscriptionData?.isTrialActive ? "Trial Limit Reached" : "Upgrade Required"}
                       </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {subscriptionData?.isTrialActive
+                          ? "You've used all your trial credits. Upgrade to continue."
+                          : "You've reached your resume limit. Upgrade to continue."}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => router.push("/dashboard/subscription")}
+                        className="mt-2 h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        Upgrade to Premium
+                      </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {subscriptionData?.isTrialActive
-                        ? "You've used all your trial credits. Upgrade to continue analyzing resumes."
-                        : "You've reached your resume limit. Upgrade to continue analyzing resumes."}
-                    </p>
-                    <Button
-                      onClick={() => router.push("/dashboard/subscription")}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      Upgrade to Premium
-                    </Button>
-
-                    {/* Uploaded files ready for analysis */}
-{currentFiles.length > 0 && (
-  <section className={`mt-6 rounded-xl shadow p-4 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
-    <h2 className={`text-lg font-semibold mb-3 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Ready for Analysis</h2>
-    <ul className="divide-y divide-gray-200 dark:divide-border">
-      {currentFiles.map((file, index) => (
-        <li key={file.id ?? index} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
-          <div className="flex items-center space-x-3">
-            <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
-            <span className={`font-medium ${isDarkMode ? "text-primary" : "text-blue-700"}`}>{file.fileName ?? file.name}</span>
-            <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-              {new Date(file.uploadDate).toLocaleString()}
-            </span>
-          </div>
-          <div className="mt-2 sm:mt-0 flex items-center space-x-2">
-            <button
-              onClick={() => handleFileDelete(index)}
-              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                ${isDarkMode
-                  ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
-                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
-)}
                   </div>
                 )}
 
@@ -1215,52 +1189,45 @@ const allFiles = [
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className={`relative border-4 border-dashed rounded-xl p-4 sm:p-8 cursor-pointer transition-all duration-300 ${canUploadResumes()
-                    ? isDragOver
-                      ? "border-primary/80 bg-primary/5 scale-105 shadow-lg"
-                      : isDarkMode
-                        ? "border-border bg-card hover:border-primary/50 hover:shadow-lg"
-                        : "border-gray-300 bg-white hover:border-primary/50 hover:shadow-lg"
-                    : isDarkMode
-                      ? "border-border bg-muted cursor-not-allowed opacity-50"
-                      : "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
-                    } ${isUploading ? "pointer-events-none opacity-70" : ""}`}
+                  className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 group ${
+                    canUploadResumes()
+                      ? isDragOver
+                        ? "border-primary bg-primary/5 scale-[1.02] animate-pulse-ring shadow-lg"
+                        : isDarkMode
+                          ? "border-border bg-gradient-to-br from-muted/50 to-card hover:border-primary/60 hover:shadow-md"
+                          : "border-gray-200 bg-gradient-to-br from-gray-50 to-white hover:border-primary/50 hover:shadow-md"
+                      : "border-border bg-muted cursor-not-allowed opacity-50"
+                  } ${isUploading ? "pointer-events-none opacity-70" : ""}`}
                 >
                   {isUploading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-background/80">
-                      <div className="flex items-center space-x-3">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        <span className="text-sm font-medium">Uploading PDF...</span>
-                      </div>
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-background/80 backdrop-blur-sm">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                      <span className="text-sm font-medium text-foreground">Uploading PDF...</span>
+                      <span className="text-xs text-muted-foreground mt-0.5">Please wait</span>
                     </div>
                   )}
-                  <Upload
-                    className={`mx-auto h-16 w-16 mb-4 ${canUploadResumes()
-                      ? isDragOver
-                        ? "text-primary"
-                        : "text-gray-400 dark:text-gray-500"
-                      : "text-gray-400 dark:text-gray-500"
-                      }`}
-                  />
-                  <p
-                    className={`text-center text-lg font-medium ${canUploadResumes()
-                      ? isDragOver
-                        ? "text-primary"
-                        : "text-gray-700 dark:text-gray-300"
-                      : "text-gray-500 dark:text-gray-500"
-                      }`}
-                  >
+
+                  <div className={`mx-auto h-14 w-14 mb-4 rounded-2xl flex items-center justify-center ${
+                    isDragOver ? "bg-primary/20" : "bg-primary/10"
+                  }`}>
+                    <Upload className={`h-7 w-7 animate-float ${
+                      isDragOver ? "text-primary" : "text-primary/70"
+                    }`} />
+                  </div>
+                  <p className={`text-base font-semibold ${
+                    isDragOver ? "text-primary" : "text-foreground"
+                  }`}>
                     {isUploading
-                      ? "Uploading..."
+                      ? "Processing..."
                       : canUploadResumes()
                         ? isDragOver
-                          ? "Drop PDF files here!"
-                          : "Drag & drop PDF files or click to upload"
+                          ? "Drop your files here!"
+                          : "Drag & drop or click to upload"
                         : "Upgrade to upload resumes"}
                   </p>
-                  <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-1.5">
                     {canUploadResumes()
-                      ? "Supports PDF files up to 10MB each • Multiple files supported"
+                      ? "PDF files up to 10MB · Multiple files supported"
                       : "Premium feature required"}
                   </p>
                   <input
@@ -1274,215 +1241,278 @@ const allFiles = [
                   />
                 </div>
 
-                {/* File list */}
-                <ul className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                  {currentFiles.map((file, index) => (
-                    <li
-                      key={index}
-                      className={`flex flex-col xs:flex-row items-start xs:items-center justify-between p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow gap-2 sm:gap-0 ${isDarkMode
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-primary text-primary-foreground"
+                {/* File list with metadata */}
+                {currentFiles.length > 0 && (
+                  <ul className="mt-4 space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                    {currentFiles.map((file, index) => (
+                      <li
+                        key={index}
+                        className={`flex items-center justify-between p-3 rounded-xl transition-colors group/item ${
+                          isDarkMode
+                            ? "bg-muted/50 hover:bg-muted"
+                            : "bg-gray-50 hover:bg-gray-100"
                         }`}
-                    >
-                      <div className="flex items-center flex-1 min-w-0">
-                        <FileText className="h-5 w-5 mr-3 text-primary-foreground flex-shrink-0" />
-                        <span className="text-primary-foreground truncate font-medium">{file.fileName ?? file.name}</span>
-                      </div>
-                      <button
-                        onClick={() => handleFileDelete(index)}
-                        className="text-primary-foreground/70 hover:text-primary-foreground ml-3 p-1 rounded transition-colors"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                            <FileText className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{file.fileName ?? file.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {(file.size / 1024).toFixed(0)}KB · {new Date(file.uploadDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <button
+                            onClick={() => handleFileDelete(index)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
-
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className={`shadow-lg h-full ${isDarkMode
-              ? "border-2 border-border"
-              : "border border-gray-200"
-              }`}>
-              <CardHeader className={`pb-2 ${isDarkMode
-                ? "bg-card"
-                : "bg-white"
-                }`}>
-                <CardTitle className={`flex items-center text-xl ${isDarkMode
-                  ? "text-card-foreground"
-                  : "text-gray-800"
-                  }`}>
-                  <CheckCircle className="mr-2 h-6 w-6 text-primary" />
+            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-gray-100"}`}>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2.5 text-base font-semibold text-foreground">
+                  <span className="h-8 w-8 rounded-lg bg-violet-500/15 flex items-center justify-center">
+                    <Tag className="h-4 w-4 text-violet-500" />
+                  </span>
                   Keywords
+                  {Object.values(keywords).flat().length > 0 && (
+                    <span className="ml-auto text-xs font-semibold text-violet-500 px-2 py-0.5 rounded-full bg-violet-500/10">
+                      {Object.values(keywords).flat().length} added
+                    </span>
+                  )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className={`pt-6 ${isDarkMode
-                ? ""
-                : "bg-white"
-                }`}>
-                <div className="space-y-6">
-                  {Object.keys(categoryLabels).map((category) => (
-                    <div key={category} className="space-y-3">
-                      <label className={`block text-lg font-semibold ${isDarkMode
-                        ? "text-foreground"
-                        : "text-gray-800"
-                        }`}>
-                        {categoryLabels[category as keyof KeywordCategory]}
-                      </label>
-                      {category === "experience" ? (
-                        <>
-                          <select
-                            onChange={handleExperienceSelect}
-                            className={`w-full border-2 rounded-lg p-3 focus:border-primary transition-colors ${isDarkMode
-                              ? "border-border bg-input text-foreground"
-                              : "border-gray-300 bg-gray-50 text-gray-800 focus:border-primary"
+              <CardContent className="pt-2">
+                <div className="space-y-5">
+                  {Object.keys(categoryLabels).map((category, catIdx) => {
+                    const categoryIcons = {
+                      skills: <Zap className="h-4 w-4 text-amber-500" />,
+                      experience: <Clock className="h-4 w-4 text-blue-500" />,
+                      location: <MapPin className="h-4 w-4 text-rose-500" />,
+                      certification: <Award className="h-4 w-4 text-emerald-500" />,
+                    }
+                    const catKey = category as keyof KeywordCategory
+                    return (
+                      <div key={category}>
+                        {catIdx > 0 && <div className="border-t border-border mb-4" />}
+                        <label className="flex items-center gap-2 text-sm font-semibold text-foreground mb-2">
+                          {categoryIcons[catKey]}
+                          {categoryLabels[catKey]}
+                        </label>
+                        {category === "experience" ? (
+                          <>
+                            <select
+                              onChange={handleExperienceSelect}
+                              className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
+                                isDarkMode
+                                  ? "border-border bg-input text-foreground"
+                                  : "border-gray-200 bg-gray-50 text-gray-800"
                               }`}
-                          >
-                            <option value="">Select Experience Level</option>
-                            <option value="0-1 years">0-1 years</option>
-                            <option value="1-3 years">1-3 years</option>
-                            <option value="3-5 years">3-5 years</option>
-                            <option value="5+ years">5+ years</option>
-                          </select>
-                          <KeywordDisplay category={category as keyof KeywordCategory} />
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex space-x-2">
+                            >
+                              <option value="">Select Experience Level</option>
+                              <option value="0-1 years">0-1 years</option>
+                              <option value="1-3 years">1-3 years</option>
+                              <option value="3-5 years">3-5 years</option>
+                              <option value="5+ years">5+ years</option>
+                            </select>
+                            <KeywordDisplay category={catKey} />
+                          </>
+                        ) : (
+                          <>
                             <Input
                               ref={(el) => {
-                                keywordInputRefs.current[category as keyof KeywordCategory] = el
+                                keywordInputRefs.current[catKey] = el
                               }}
                               type="text"
-                              placeholder={`Enter ${categoryLabels[category as keyof KeywordCategory]} and press Enter`}
-                              onKeyDown={(e) => handleKeywordInput(category as keyof KeywordCategory, e)}
-                              className={`w-full h-12 border-2 focus:border-primary transition-colors ${isDarkMode
-                                ? "border-border bg-input text-foreground"
-                                : "border-gray-300 bg-gray-50 text-gray-800 focus:border-primary"
-                                }`}
+                              placeholder={`Type and press Enter to add ${categoryLabels[catKey].toLowerCase()}`}
+                              onKeyDown={(e) => handleKeywordInput(catKey, e)}
+                              className={`w-full h-10 border rounded-xl text-sm focus:ring-2 focus:ring-primary/40 transition-all ${
+                                isDarkMode
+                                  ? "border-border bg-input text-foreground"
+                                  : "border-gray-200 bg-gray-50 text-gray-800"
+                              }`}
                             />
-                          </div>
-                          <KeywordDisplay category={category as keyof KeywordCategory} />
-                        </>
-                      )}
-                    </div>
-                  ))}
+                            <KeywordDisplay category={catKey} />
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Submit button */}
+        {/* ── Shimmer Analyze Button ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-8"
         >
-          <Button
+          <button
             onClick={navigateToResults}
             disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 sm:py-4 rounded-xl text-lg sm:text-xl font-bold h-14 sm:h-16 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            className={`btn-shimmer relative w-full overflow-hidden rounded-2xl py-5 text-lg font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+              isDarkMode
+                ? "bg-gradient-to-r text-white from-primary via-primary/80 to-primary/90 "
+                : "bg-gradient-to-r text-black from-indigo-600 via-blue-600 to-violet-600  hover:from-indigo-500 hover:via-blue-500 hover:to-violet-500"
+            }`}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="animate-spin mr-3 inline-block h-6 w-6" />
-                Processing Resumes...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="mr-3 inline-block h-6 w-6" />
-                Analyze Resumes
-              </>
-            )}
-          </Button>
+            <span className="relative z-10 flex items-center justify-center gap-3">
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5" />
+                  Analyzing Resumes...
+                </>
+              ) : (
+                <>
+                  <SparkleIcon className="h-5 w-5" />
+                  Analyze Resumes
+                  <CheckCircle className="h-5 w-5 opacity-70" />
+                </>
+              )}
+            </span>
+          </button>
         </motion.div>
 
 
-        {/* previous uploads  */}
-      
-{allFiles.length > 0 && (
-    <section className={`mt-8 rounded-xl shadow-lg p-4 sm:p-6 ${isDarkMode ? "bg-card border border-border" : "bg-white border border-gray-200"}`}>
-    <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-primary" : "text-gray-800"}`}>Previous Uploads</h2>
-    <ul className="divide-y divide-gray-200 dark:divide-border">
-      {previousFiles.map((file: UploadedFile) => (
-        <li key={file.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3">
-          <div className="flex items-center space-x-3">
-            <FileText className={`h-5 w-5 ${isDarkMode ? "text-primary" : "text-blue-600"}`} />
-            <a
-              href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`font-medium underline ${isDarkMode ? "text-primary" : "text-blue-700"} hover:text-blue-500`}
-            >
-              {file.name}
-            </a>
-            <span className={`ml-2 text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-              {new Date(file.uploadDate).toLocaleString()}
-            </span>
-          </div>
-          <div className="mt-2 sm:mt-0 flex items-center space-x-2">
-            <button
-              onClick={() => handlePreviousFileDelete(file.id, file.publicId!)}
-              disabled={!file.publicId}
-              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                ${isDarkMode
-                  ? "bg-red-500/20 text-red-500 hover:bg-red-500/40"
-                  : "bg-red-100 text-red-700 hover:bg-red-200"}`}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete
-            </button>
-            <button
-              onClick={async () => {
-                if (!file.url) return;
-                try {
-                  const response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(file.url)}&download=1&filename=${encodeURIComponent(file.name.endsWith('.pdf') ? file.name : file.name + '.pdf')}`);
-                  if (response.ok) {
-                    const blob = await response.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = file.name.endsWith('.pdf') ? file.name : file.name + '.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    toast.success('Download started!');
-                  } else {
-                    toast.error('Download failed');
-                  }
-                } catch (error) {
-                  toast.error('Download failed: ' + String(error));
-                }
-              }}
-              className={`inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-${isDarkMode
-                ? "bg-primary/20 text-primary-foreground hover:bg-primary/40"
-                : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
-              disabled={!file.url}
-            >
-              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-              </svg>
-              Download
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
-)}
+        {/* ── Previous Uploads: Styled Data Card ── */}
+        {allFiles.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className={`mt-8 rounded-2xl shadow-lg overflow-hidden border ${
+              isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"
+            }`}
+          >
+            {/* Section header */}
+            <div className={`px-6 py-4 border-b ${
+              isDarkMode
+                ? "border-border bg-muted/30"
+                : "border-gray-100 bg-gray-50"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-primary" />
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Previous Uploads</h2>
+                    <p className="text-xs text-muted-foreground">{previousFiles.length} resume{previousFiles.length !== 1 ? "s" : ""} stored</p>
+                  </div>
+                </div>
+                <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-full bg-muted">
+                  History
+                </span>
+              </div>
+            </div>
 
+            {/* File rows */}
+            {previousFiles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                  <FileText className="h-7 w-7 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">No previous uploads</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Your uploaded resumes will appear here</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {previousFiles.map((file: UploadedFile, idx: number) => (
+                  <li
+                    key={file.id}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-3.5 transition-colors table-row-stripe ${
+                      isDarkMode ? "hover:bg-muted/40" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <a
+                          href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-foreground hover:text-primary underline underline-offset-2 decoration-transparent hover:decoration-primary transition-all truncate block"
+                        >
+                          {file.name}
+                        </a>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {new Date(file.uploadDate).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {" · "}
+                          {new Date(file.uploadDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:mt-0 flex items-center gap-1.5 flex-shrink-0">
+                      {/* Download */}
+                      <button
+                        onClick={async () => {
+                          if (!file.url) return;
+                          try {
+                            const response = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(file.url)}&download=1&filename=${encodeURIComponent(file.name.endsWith('.pdf') ? file.name : file.name + '.pdf')}`);
+                            if (response.ok) {
+                              const blob = await response.blob();
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = file.name.endsWith('.pdf') ? file.name : file.name + '.pdf';
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                              toast.success('Download started!');
+                            } else {
+                              toast.error('Download failed');
+                            }
+                          } catch (error) {
+                            toast.error('Download failed: ' + String(error));
+                          }
+                        }}
+                        disabled={!file.url}
+                        title="Download"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handlePreviousFileDelete(file.id, file.publicId || "")}
+                        title="Delete"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </motion.section>
+        )}
 
       </div>
     </div>

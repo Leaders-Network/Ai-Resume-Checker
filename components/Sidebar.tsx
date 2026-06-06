@@ -151,82 +151,106 @@ export function Sidebar({ children }: SidebarProps) {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
         className={cn(
-          "bg-white dark:bg-gray-800 transition-all duration-300 fixed z-30 h-full  shadow-md overflow-hidden",
+          "bg-card border-r border-border transition-all duration-300 fixed z-30 h-full shadow-lg overflow-hidden",
           isOpen ? "w-64" : "w-20",
           "flex flex-col",
         )}
       >
-        <div className="flex items-center justify-between p-4">
+        {/* Brand Header with gradient accent */}
+        <div className={cn(
+          "flex items-center justify-between p-4 border-b border-border",
+          isOpen ? "bg-gradient-to-r from-orange-500/10 to-transparent" : ""
+        )}>
           <div className="flex items-center space-x-2">
-            <FileText className="h-8 w-8 text-orange-600" />
-            {isOpen && <span className="text-xl font-bold text-orange-600 dark:text-orange-400">ResumeAI</span>}
+            <div className="relative">
+              <FileText className="h-8 w-8 text-orange-500" />
+              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+            </div>
+            {isOpen && (
+              <div>
+                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">ResumeAI</span>
+                <p className="text-[10px] text-muted-foreground -mt-0.5 tracking-widest uppercase">Pro Dashboard</p>
+              </div>
+            )}
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="rounded-full h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="rounded-full h-8 w-8 hover:bg-orange-500/10">
             {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
           </Button>
         </div>
 
         {/* User Profile Section */}
         {user && isOpen && (
-          <div className="px-4 py-2">
+          <div className="px-4 py-3 mx-3 my-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-orange-400/5 border border-orange-500/20">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
+              <div className="w-9 h-9 rounded-full ring-2 ring-orange-400/40 overflow-hidden flex-shrink-0">
                 {userProfile?.profileImage || userProfile?.photoURL || user.photoURL ? (
                   <Image
                     src={userProfile?.profileImage || userProfile?.photoURL || user.photoURL || "/placeholder.svg"}
                     alt="Profile"
-                    width={40}
-                    height={40}
+                    width={36}
+                    height={36}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="w-5 h-5 text-orange-600" />
+                  <div className="w-full h-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                    <User className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-semibold text-foreground truncate">
                   {userProfile?.displayName || user.displayName || "User"}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
             </div>
           </div>
         )}
 
-        <div className="flex-1 space-y-2 py-6 px-4 overflow-y-auto">
-          {routes.map((route) => (
-            <Link key={route.href} href={route.href}>
-              <Button
-                variant={pathname === route.href ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full text-gray-700 dark:text-gray-100 font-bold justify-start items-center py-3 text-lg mb-2",
-                  !isOpen && "justify-center px-0",
-                  pathname === route.href && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-                )}
-              >
-                <route.icon className={cn("h-5 w-5", route.color)} />
-                {isOpen && <span className="ml-3">{route.label}</span>}
-              </Button>
-            </Link>
-          ))}
+        <div className="flex-1 space-y-1 py-4 px-3 overflow-y-auto">
+          {routes.map((route) => {
+            const isActive = pathname === route.href
+            return (
+              <Link key={route.href} href={route.href}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full font-medium justify-start items-center py-2.5 text-sm mb-0.5 rounded-lg transition-all duration-200 relative overflow-hidden",
+                    !isOpen && "justify-center px-0",
+                    isActive
+                      ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 sidebar-active-item font-semibold"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <route.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? route.color : "")} />
+                  {isOpen && <span className="ml-3">{route.label}</span>}
+                  {isActive && isOpen && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  )}
+                </Button>
+              </Link>
+            )
+          })}
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="p-3 space-y-1 border-t border-border">
           <Button
             onClick={toggleDarkMode}
             variant="ghost"
-            className={cn("w-full justify-start items-center", !isOpen && "justify-center px-0")}
+            className={cn("w-full justify-start items-center text-sm font-medium rounded-lg hover:bg-muted transition-colors", !isOpen && "justify-center px-0")}
           >
-            {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-blue-700" />}
-            {isOpen && <span className={`ml-3 ${isDarkMode ? "text-yellow-500" : "text-blue-700"}`}>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
+            {isDarkMode
+              ? <Sun className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+              : <Moon className="h-4 w-4 text-slate-500 flex-shrink-0" />}
+            {isOpen && <span className={`ml-3 ${isDarkMode ? "text-yellow-500" : "text-muted-foreground"}`}>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
           </Button>
           <Button
             onClick={handleSignOut}
             variant="ghost"
-            className={cn("w-full justify-start text-red-500 text-lg", !isOpen && "justify-center px-0")}
+            className={cn("w-full justify-start text-sm font-medium text-red-500 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors", !isOpen && "justify-center px-0")}
           >
-            <LogOut className="h-5 w-5" />
-            {isOpen && <span className="ml-3">Logout</span>}
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+            {isOpen && <span className="ml-3">Sign Out</span>}
           </Button>
         </div>
       </motion.div>

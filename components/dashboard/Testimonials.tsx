@@ -27,30 +27,30 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "Alex Thompson",
+    name: "Chinedu Okafor",
     role: "Software Engineer",
-    company: "TechCorp",
-    image: "/avatars/alex.jpg",
+    company: "Paystack",
+    image: "/avatars/alex.jpg", // Kept generic for placeholder initials logic
     content: "Using this resume checker completely transformed my job search. I went from zero callbacks to five interview requests in just one week after optimizing my resume with the AI suggestions.",
-    rating: 5,
+    rating: 3,
     impact: {
       type: "interviews",
       value: "5 interviews",
-      timeframe: "one week"
+      timeframe: "in one week"
     },
     companyLogo: "/logos/techcorp.svg",
-    industry: "Technology",
+    industry: "Fintech",
     beforeScore: 67,
     afterScore: 92
   },
   {
     id: 2,
-    name: "Sarah Johnson",
-    role: "Marketing Director",
-    company: "BrandWave",
+    name: "Fatima Bello",
+    role: "Marketing Manager",
+    company: "Moniepoint",
     image: "/avatars/sarah.jpg",
     content: "The keyword analysis feature is incredible. It identified several critical terms missing from my resume that were specific to my industry. After adding them, my resume started getting noticed by recruiters immediately.",
-    rating: 5,
+    rating: 4,
     impact: {
       type: "response",
       value: "300% increase",
@@ -63,9 +63,9 @@ const testimonials: Testimonial[] = [
   },
   {
     id: 3,
-    name: "Michael Rodriguez",
+    name: "Ayomide Adeyemi",
     role: "Product Manager",
-    company: "InnovateCo",
+    company: "Flutterwave",
     image: "/avatars/michael.jpg",
     content: "I was skeptical at first, but the detailed feedback helped me quantify my achievements in a way that really stands out. The ATS compatibility check also caught formatting issues that were causing my resume to be rejected by automated systems.",
     rating: 5,
@@ -81,12 +81,12 @@ const testimonials: Testimonial[] = [
   },
   {
     id: 4,
-    name: "Emily Zhang",
-    role: "Data Scientist",
-    company: "AnalyticsPro",
+    name: "Nneka Eze",
+    role: "Data Analyst",
+    company: "Kuda",
     image: "/avatars/emily.jpg",
-    content: "As someone transitioning between industries, this tool was invaluable. It helped me highlight transferable skills and reshape my experience to match what employers in my target industry were looking for. Landed my dream job within a month!",
-    rating: 5,
+    content: "As someone transitioning into tech, this tool was invaluable. It helped me highlight transferable skills and reshape my experience to match what employers in my target industry were looking for. Landed my dream job within a month!",
+    rating: 4,
     impact: {
       type: "job",
       value: "Dream job",
@@ -324,87 +324,6 @@ function Testimonials() {
               );
             })}
           </div>
-        </div>
-        
-        {/* Navigation arrows */}
-        <button
-          onClick={handlePrev}
-          className="absolute left-4 md:-left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-background border border-border shadow-md hover:bg-muted transition-colors z-20"
-          aria-label="Previous testimonial"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        
-        <button
-          onClick={handleNext}
-          className="absolute right-4 md:-right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-background border border-border shadow-md hover:bg-muted transition-colors z-20"
-          aria-label="Next testimonial"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      </div>
-      
-      {/* Summary metrics */}
-      <div className="mb-20 max-w-5xl mx-auto bg-background rounded-2xl border border-border p-8 shadow-md">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {summaryStats.map((stat, idx) => (
-            <div key={idx} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Testimonial quotes grid */}
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Generate 6 quote cards with different designs */}
-          {[...Array(6)].map((_, idx) => {
-            // Cycle through testimonials for content
-            const testimonial = testimonials[idx % testimonials.length];
-            
-            // Alternate between different card styles
-            const cardStyles = [
-              "bg-background border border-border hover:shadow-md",
-              "bg-primary/5 border border-primary/10 hover:border-primary/20",
-              "bg-accent/10 border border-accent/10 hover:shadow-md",
-            ];
-            
-            const cardStyle = cardStyles[idx % cardStyles.length];
-            
-            return (
-              <div 
-                key={idx}
-                className={`rounded-xl p-6 transition-all ${cardStyle}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <Quote className="h-5 w-5 text-primary/70" />
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                
-                <blockquote className="text-sm mb-4 line-clamp-4">
-                  {testimonial.content}
-                </blockquote>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs text-primary font-medium">
-                      {placeholderInitials(testimonial.name)}
-                    </div>
-                    <div className="text-sm font-medium">{testimonial.name}</div>
-                  </div>
-                  <div className="text-xs px-2 py-1 rounded bg-background text-muted-foreground">
-                    {testimonial.industry}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>
