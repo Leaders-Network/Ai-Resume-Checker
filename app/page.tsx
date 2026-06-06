@@ -15,7 +15,7 @@ export default function Page() {
 
       {/* ── Sticky Navbar ── */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto">
           <Navbar />
         </div>
       </div>
@@ -32,7 +32,7 @@ export default function Page() {
             backgroundSize: '40px 40px'
           }}
         />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-6">
           <Hero />
         </div>
       </section>
@@ -57,7 +57,7 @@ export default function Page() {
             backgroundSize: '24px 24px'
           }}
         />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-6">
           <Features />
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function Page() {
         <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-muted/30 pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-6">
           <div className="bg-card rounded-3xl shadow-xl border border-border/60 p-8 md:p-12 overflow-hidden relative">
             {/* Corner orbs */}
             <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
@@ -80,7 +80,7 @@ export default function Page() {
       {/* ── Pricing ── */}
       <section className="py-28 relative" id="pricing">
         <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-background pointer-events-none" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-6">
           <div className="bg-card text-card-foreground rounded-3xl shadow-2xl border border-border/60 p-8 md:p-12 overflow-hidden relative">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
             <Pricing />
@@ -103,7 +103,7 @@ export default function Page() {
         {/* Glowing orbs */}
         <div className="absolute top-0 right-0 h-80 w-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 h-60 w-60 rounded-full bg-white/5 blur-2xl pointer-events-none" />
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-6">
           <CTA />
         </div>
       </section>
@@ -111,7 +111,7 @@ export default function Page() {
       {/* ── Footer ── */}
       <footer className="relative border-t border-border">
         <div className="absolute inset-0 bg-gradient-to-b from-muted/40 to-background pointer-events-none" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-6 py-20">
           <Footer />
         </div>
       </footer>
