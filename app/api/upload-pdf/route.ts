@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    console.log({
+  cloud_name: !!process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: !!process.env.CLOUDINARY_API_KEY,
+  api_secret: !!process.env.CLOUDINARY_API_SECRET,
+});
+
     const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       const upload = cloudinary.uploader.upload_stream(
         {
@@ -29,7 +35,6 @@ export async function POST(req: NextRequest) {
           use_filename: true,
           unique_filename: true,
           filename_override: file.name,
-          upload_preset: "public_raw_upload",
           access_mode: "public"
         },
         (error, result) => {
@@ -47,7 +52,13 @@ export async function POST(req: NextRequest) {
       original_filename: result.original_filename || file.name,
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    // Log the full error for debugging
+    console.error("Upload error:", error);
+    const errorMessage = error instanceof Error
+      ? error.message
+      : typeof error === "object"
+      ? JSON.stringify(error)
+      : String(error);
     return NextResponse.json(
       { error: "Upload failed", details: errorMessage },
       { status: 500 }

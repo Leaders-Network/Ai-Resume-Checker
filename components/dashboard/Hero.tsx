@@ -29,17 +29,17 @@ function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <Link 
-                href="/dashboard" 
+                href="/signin" 
                 className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary/90 transition-colors"
               >
                 Get started free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
               <Link
-                href="#features"
+                href="/signup"
                 className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors"
               >
-                See how it works
+                Sign Up Now!
               </Link>
             </div>
 
