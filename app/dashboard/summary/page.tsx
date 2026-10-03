@@ -21,10 +21,11 @@ import {
   BarChart3,
   Award,
   MapPin,
-  Briefcase,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { KeywordReport } from "@/components/KeywordReport"
+import "../../landing.css"
 import { Toaster } from "react-hot-toast"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
@@ -188,11 +189,6 @@ export default function SummaryPage() {
     }
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-green-600 dark:text-green-400"
-    if (score >= 40) return "text-yellow-600 dark:text-yellow-400"
-    return "text-red-600 dark:text-red-400"
-  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -325,72 +321,7 @@ export default function SummaryPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              <div className="flex items-center justify-center mb-8">
-                <div className="relative w-48 h-48">
-                  <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      className="text-gray-200 dark:text-gray-700"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="transparent"
-                      strokeDasharray={`${2 * Math.PI * 40}`}
-                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - selectedResume.score / 100)}`}
-                      className={getScoreColor(selectedResume.score)}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className={`text-4xl font-bold ${getScoreColor(selectedResume.score)}`}>
-                        {Math.round(selectedResume.score)}%
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Match Score</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg">
-                  <Award className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {Math.round(selectedResume.categoryScores?.skills || 0)}%
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Skills</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
-                  <Briefcase className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {Math.round(selectedResume.categoryScores?.experience || 0)}%
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Experience</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
-                  <MapPin className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                    {Math.round(selectedResume.categoryScores?.location || 0)}%
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Location</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg">
-                  <Award className="h-8 w-8 text-teal-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
-                    {Math.round(selectedResume.categoryScores?.certification || 0)}%
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Certifications</div>
-                </div>
-              </div>
+              <KeywordReport report={{ score: selectedResume.score, matches: selectedResume.matches, missing: selectedResume.missing, categoryScores: selectedResume.categoryScores ?? { skills: 0, experience: 0, location: 0, certification: 0 } }} />
             </CardContent>
           </Card>
         </motion.div>

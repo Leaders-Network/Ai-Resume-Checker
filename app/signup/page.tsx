@@ -1,10 +1,11 @@
 "use client"
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from "firebase/auth"
 import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
+import { authDestination, selectionParams } from "@/lib/plans"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
@@ -28,6 +29,8 @@ const Signup = () => {
   const [profileImagePreview, setProfileImagePreview] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const [selection, setSelection] = useState("")
+  useEffect(() => { setSelection(selectionParams(new URLSearchParams(window.location.search))); }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -123,7 +126,7 @@ const Signup = () => {
       }
 
       toast.success("Account created successfully!")
-      router.push("/dashboard")
+      router.push(authDestination(window.location.search))
     } catch (error: unknown) {
       console.error("[handleSubmit] Signup error:", error)
       const message = error instanceof Error ? error.message : "Failed to create account"
@@ -167,7 +170,7 @@ const Signup = () => {
       const user = result.user
       await createUserProfile(user)
       toast.success("Signed up with Google!")
-      router.push("/dashboard")
+      router.push(authDestination(window.location.search))
     } catch (error: unknown) {
       console.error(error)
       const message = error instanceof Error ? error.message : "Failed to sign up with Google"
@@ -184,7 +187,7 @@ const Signup = () => {
   //     const user = result.user
   //     await createUserProfile(user)
   //     toast.success("Signed up with Facebook!")
-  //     router.push("/dashboard")
+  //     router.push(authDestination(window.location.search))
   //   } catch (error: unknown) {
   //     console.error(error)
   //     const message = error instanceof Error ? error.message : "Failed to sign up with Facebook"
@@ -213,8 +216,8 @@ const Signup = () => {
           {/* Left side - Branding */}
           <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-background to-accent p-8 flex-col justify-center text-foreground relative">
             <div className="relative z-10">
-              <h1 className="text-3xl font-bold mb-2">IQ Resume</h1>
-              <p className="text-muted-foreground mb-8">Excellent online builder</p>
+              <h1 className="text-3xl font-bold mb-2">Leaders CV Checker</h1>
+              <p className="text-muted-foreground mb-8">Check your CV against job requirements</p>
 
               <h2 className="text-2xl font-semibold mb-4">Create your account</h2>
               <p className="text-muted-foreground mb-8">
@@ -223,7 +226,7 @@ const Signup = () => {
 
               <div className="mt-auto text-center">
                 <p className="text-muted-foreground">Already have an account?</p>
-                <Link href="/signin" className="text-primary hover:text-primary/80 font-medium">
+                <Link href={`/signin${selection}`} className="text-primary hover:text-primary/80 font-medium">
                   Sign in
                 </Link>
               </div>
@@ -411,7 +414,7 @@ const Signup = () => {
 
               <div className="mt-4 text-center md:hidden">
                 <p className="text-muted-foreground">Already have an account?</p>
-                <Link href="/signin" className="text-primary hover:text-primary/80 font-medium">
+                <Link href={`/signin${selection}`} className="text-primary hover:text-primary/80 font-medium">
                   Sign in
                 </Link>
               </div>

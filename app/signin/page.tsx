@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
 import { auth, provider } from "@/config/firebase"
 import { createUserProfile } from "@/lib/auth"
 import { useRouter } from "next/navigation"
+import { authDestination, selectionParams } from "@/lib/plans"
 import toast, { Toaster } from "react-hot-toast"
 import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
@@ -19,6 +20,8 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const [selection, setSelection] = useState("")
+  useEffect(() => { setSelection(selectionParams(new URLSearchParams(window.location.search))); }, [])
 
   const [mounted, setMounted] = useState(false)
 
@@ -36,7 +39,7 @@ const Signin = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       await createUserProfile(userCredential.user)
       toast.success("Signed in successfully!")
-      router.push("/dashboard")
+      router.push(authDestination(window.location.search))
     } catch (error: unknown) {
       console.error(error)
       const message = error instanceof Error ? error.message : "Failed to sign in"
@@ -52,7 +55,7 @@ const Signin = () => {
       const result = await signInWithPopup(auth, provider)
       await createUserProfile(result.user)
       toast.success("Signed in with Google!")
-      router.push("/dashboard")
+      router.push(authDestination(window.location.search))
     } catch (error: unknown) {
       console.error(error)
       const message = error instanceof Error ? error.message : "Failed to sign in with Google"
@@ -81,8 +84,8 @@ const Signin = () => {
           {/* Left side - Branding */}
           <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-background to-accent p-8 flex-col justify-center text-foreground relative">
             <div className="relative z-10">
-              <h1 className="text-3xl font-bold mb-2">IQ Resume</h1>
-              <p className="text-muted-foreground mb-8">Excellent online builder</p>
+              <h1 className="text-3xl font-bold mb-2">Leaders CV Checker</h1>
+              <p className="text-muted-foreground mb-8">Check your CV against job requirements</p>
 
               <h2 className="text-2xl font-semibold mb-4">Welcome back to your account</h2>
               <p className="text-muted-foreground mb-8">
@@ -91,7 +94,7 @@ const Signin = () => {
 
               <div className="mt-auto text-center">
                 <p className="text-muted-foreground">Don&apos;t have an account?</p>
-                <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
+                <Link href={`/signup${selection}`} className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>
               </div>
@@ -185,7 +188,7 @@ const Signin = () => {
 
               <div className="mt-8 text-center md:hidden">
                 <p className="text-muted-foreground">Don&apos;t have an account?</p>
-                <Link href="/signup" className="text-primary hover:text-primary/80 font-medium">
+                <Link href={`/signup${selection}`} className="text-primary hover:text-primary/80 font-medium">
                   Sign up
                 </Link>
               </div>

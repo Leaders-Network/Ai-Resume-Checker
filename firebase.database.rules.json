@@ -1,0 +1,11 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "billingAccounts": { ".read": false, ".write": false },
+    "paymentOwners": { ".read": false, ".write": false },
+    "subscriptions": {
+      "$uid": { ".read": "auth != null && auth.uid === $uid", ".write": false }
+    }
+  }
+}

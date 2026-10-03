@@ -1,4 +1,6 @@
 "use client"
+import { scoreCV } from "@/lib/scoring";
+
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, Sparkles as SparkleIcon } from "lucide-react"
@@ -14,7 +16,7 @@ import { motion } from "framer-motion"
 import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { doc, getDoc, getDocs, setDoc, collection, deleteDoc } from "firebase/firestore"
-import { getUserSubscription, updateUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
+import { getUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 // import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
 // import { TextItem } from "pdfjs-dist/types/src/display/api"
@@ -412,6 +414,7 @@ export default function DashboardPage() {
 
   const canUploadResumes = () => {
     if (!subscriptionData) return false
+    if (subscriptionData.creditPeriodEnd && new Date(subscriptionData.creditPeriodEnd) <= new Date()) return true
     // Check if trial is active or user has paid subscription
     if (subscriptionData.isTrialActive || subscriptionData.isActive) {
       return (subscriptionData.resumeLimit || 0) > 0
@@ -470,108 +473,42 @@ export default function DashboardPage() {
   }
 
   const processFiles = async (uploadedFiles: File[]) => {
-    const uniqueFiles = uploadedFiles.filter(
-      (file) => !currentFiles.some((existingFile) => (existingFile.fileName ?? existingFile.name) === file.name),
-    );
-
-    if (uniqueFiles.length === 0) {
-      toast.error("⚠ No new or valid files selected.");
-      return;
-    }
-
-
+    if (!user || isUploading) return;
+    const uniqueFiles = uploadedFiles.filter(file => !currentFiles.some(existing => (existing.fileName ?? existing.name) === file.name));
+    if (!uniqueFiles.length) { toast.error("No new PDF files selected."); return; }
+    setIsUploading(true);
     try {
-      setIsUploading(true);
-      const processedFiles: Array<UploadedFile | null> = await Promise.all(
-        uniqueFiles.map(async (file) => {
-          try {
-            // 1. Upload to Cloudinary via API route
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const response = await fetch("/api/upload-pdf", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!response.ok) {
-              throw new Error("Failed to upload file to storage");
-            }
-
-            const { url: fileUrl, public_id: publicId } = await response.json();
-
-            // 2. Extract content for keyword suggestions
-            const content = await extractTextFromPDF(file);
-            const extractedKeywords = extractKeywords(content);
-
-            // Only show suggestions if user has access to advanced features
-            if (checkFeatureAccess(subscriptionData, "advanced")) {
-              setSuggestedKeywords((prev) => ({
-                skills: [...new Set([...prev.skills, ...extractedKeywords.skills])],
-                experience: [...new Set([...prev.experience, ...extractedKeywords.experience])],
-                location: [...new Set([...prev.location, ...extractedKeywords.location])],
-                certification: [...new Set([...prev.certification, ...extractedKeywords.certification])],
-              }));
-
-              if (
-                extractedKeywords.skills.length > 0 ||
-                extractedKeywords.experience.length > 0 ||
-                extractedKeywords.location.length > 0 ||
-                extractedKeywords.certification.length > 0
-              ) {
-                setShowSuggestions(true);
-              }
-            }
-
-            const fileBlob = new Blob([file], { type: file.type });
-
-            // 3. Save metadata to Firestore
-            if (user) {
-              await saveResumeMetadata(user.uid, {
-                name: file.name,
-                url: fileUrl,
-                publicId: publicId,
-                analysis: JSON.stringify(extractedKeywords),
-                uploadedAt: new Date(),
-              });
-            }
-
-            return {
-              id: `${file.name}-${Date.now()}`,
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              uploadDate: new Date(),
-              status: 'completed',
-              url: fileUrl,
-              publicId: publicId,
-              fileName: file.name,
-              content,
-              file,
-              blob: fileBlob,
-            };
-          } catch (error) {
-            console.error(`Error processing file ${file.name}:`, error);
-            return null;
-          }
-        }),
-      );
-
-      const validFiles = processedFiles.filter((f): f is UploadedFile => f !== null);
-      setCurrentFiles((prevFiles) => [...prevFiles, ...validFiles]);
-
-      // Update subscription data
-      if (user && subscriptionData) {
-        const updatedLimit = (subscriptionData.resumeLimit || 0) - uniqueFiles.length;
-        await updateUserSubscription(user.uid, { resumeLimit: updatedLimit });
-        setSubscriptionData((prev) => (prev ? { ...prev, resumeLimit: updatedLimit } : null));
+      // Extract every PDF before uploading; unreadable PDFs never spend credits.
+      const prepared = await Promise.all(uniqueFiles.map(async file => ({ file, content: await extractTextFromPDF(file) })));
+      const formData = new FormData();
+      prepared.forEach(({ file }) => formData.append("files", file));
+      const response = await fetch("/api/upload-pdf", { method: "POST", headers: { Authorization: `Bearer ${await user.getIdToken()}` }, body: formData });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not upload CVs.");
+      setSubscriptionData(result.subscription);
+      const successful: UploadedFile[] = [];
+      for (const stored of result.files as Array<{ index: number; url: string; public_id: string }>) {
+        const { file, content } = prepared[stored.index];
+        const extracted = extractKeywords(content);
+        if (checkFeatureAccess(result.subscription, "advanced")) {
+          setSuggestedKeywords(previous => ({
+            skills: [...new Set([...previous.skills, ...extracted.skills])],
+            experience: [...new Set([...previous.experience, ...extracted.experience])],
+            location: [...new Set([...previous.location, ...extracted.location])],
+            certification: [...new Set([...previous.certification, ...extracted.certification])],
+          }));
+          setShowSuggestions(true);
+        }
+        try {
+          await saveResumeMetadata(user.uid, { name: file.name, url: stored.url, publicId: stored.public_id, analysis: JSON.stringify(extracted), uploadedAt: new Date() });
+        } catch { toast.error("Your CV uploaded, but its history could not be saved. Keep this session open to analyze it."); }
+        successful.push({ id: stored.public_id, name: file.name, fileName: file.name, size: file.size, type: file.type, uploadDate: new Date(), status: "completed", url: stored.url, publicId: stored.public_id, content, file, blob: new Blob([file], { type: file.type }) });
       }
-      toast.success("✅ Files uploaded successfully!");
-    } catch (error) {
-      toast.error(`❌ Failed to process files. ${error}`);
-    } finally {
-      setIsUploading(false);
-    }
+      setCurrentFiles(previous => [...previous, ...successful]);
+      if (successful.length) toast.success(`Uploaded ${successful.length} CV${successful.length === 1 ? "" : "s"}.`);
+      if (result.failures.length) toast.error("Some PDFs could not be uploaded. No credits were used for those files.");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Could not upload CVs."); }
+    finally { setIsUploading(false); }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -771,94 +708,14 @@ export default function DashboardPage() {
     }
 
     setIsLoading(true)
-    const allKeywords = [...keywords.skills, ...keywords.experience, ...keywords.location, ...keywords.certification]
-
-    const filesWithKeywords = currentFiles.map((file) => {
-      const fileContent = file.content ?? ""
-      const matches = allKeywords.filter((keyword) => {
-        if (keywords.experience.includes(keyword)) {
-          if (keyword === "1-3 years") {
-            const regex =
-              /\b([1-3]|one|two|three)[\s-]*(year|yr)s?\b|\b([1-3]|one|two|three)[\s-]*to[\s-]*([1-3]|one|two|three)[\s-]*(year|yr)s?\b/i
-            return regex.test(fileContent)
-          } else if (keyword === "3-5 years") {
-            const regex =
-              /\b([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b([3-5]|three|four|five)[\s-]*to[\s-]*([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b(3|three)\+[\s-]*(year|yr)s?\b/i
-            return regex.test(fileContent)
-          } else if (keyword === "5+ years") {
-            const regex =
-              /\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)[\s-]*(year|yr)s?\b|\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)\+[\s-]*(year|yr)s?\b/i
-            return regex.test(fileContent)
-          } else if (keyword === "0-1 years") {
-            const regex =
-              /\b(0|1|zero|one)[\s-]*(year|yr)s?\b|\b(0|zero)[\s-]*to[\s-]*(1|one)[\s-]*(year|yr)s?\b|\bless than (1|one)[\s-]*(year|yr)s?\b/i
-            return regex.test(fileContent)
-          }
-          return fileContent.toLowerCase().includes(keyword.toLowerCase())
-        }
-        return fileContent.toLowerCase().includes(keyword.toLowerCase())
-      })
-
-      const missing = allKeywords.filter((keyword) => !matches.includes(keyword))
-
-      const categoryMatches = {
-        skills:
-          (keywords.skills.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase())).length /
-            Math.max(1, keywords.skills.length)) *
-          100,
-        experience:
-          (keywords.experience.filter((keyword) => {
-            if (keyword === "1-3 years") {
-              const regex =
-                /\b([1-3]|one|two|three)[\s-]*(year|yr)s?\b|\b([1-3]|one|two|three)[\s-]*to[\s-]*([1-3]|one|two|three)[\s-]*(year|yr)s?\b/i
-              return regex.test(fileContent)
-            } else if (keyword === "3-5 years") {
-              const regex =
-                /\b([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b([3-5]|three|four|five)[\s-]*to[\s-]*([3-5]|three|four|five)[\s-]*(year|yr)s?\b|\b(3|three)\+[\s-]*(year|yr)s?\b/i
-              return regex.test(fileContent)
-            } else if (keyword === "5+ years") {
-              const regex =
-                /\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)[\s-]*(year|yr)s?\b|\b([5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten)\+[\s-]*(year|yr)s?\b/i
-              return regex.test(fileContent)
-            } else if (keyword === "0-1 years") {
-              const regex =
-                /\b(0|1|zero|one)[\s-]*(year|yr)s?\b|\b(0|zero)[\s-]*to[\s-]*(1|one)[\s-]*(year|yr)s?\b|\bless than (1|one)[\s-]*(year|yr)s?\b/i
-              return regex.test(fileContent)
-            }
-            return fileContent.toLowerCase().includes(keyword.toLowerCase())
-          }).length /
-            Math.max(1, keywords.experience.length)) *
-          100,
-        location:
-          (keywords.location.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase())).length /
-            Math.max(1, keywords.location.length)) *
-          100,
-        certification:
-          (keywords.certification.filter((keyword) => fileContent.toLowerCase().includes(keyword.toLowerCase()))
-            .length /
-            Math.max(1, keywords.certification.length)) *
-          100,
-      }
-
-      return {
-        ...file,
-        matches,
-        missing,
-        score: (matches.length / allKeywords.length) * 100 || 0,
-        categoryScores: categoryMatches,
-      }
-    })
+    const filesWithKeywords = currentFiles.map(file => ({ ...file, ...scoreCV(file.content ?? "", keywords) }))
 
     if (typeof window !== "undefined") {
       sessionStorage.setItem("resumes", JSON.stringify(filesWithKeywords))
       sessionStorage.setItem("keywordCategories", JSON.stringify(keywords))
     }
 
-    await toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
-      loading: "🔍 Analyzing resumes...",
-      success: "✅ Analysis complete!",
-      error: "❌ Analysis failed!",
-    })
+    toast.success("Analysis complete.");
 
     setIsLoading(false)
     router.push("/dashboard/result")

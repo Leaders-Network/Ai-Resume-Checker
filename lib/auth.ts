@@ -1,7 +1,9 @@
-import { db, realtimeDb } from "@/config/firebase"
+import { db, auth } from "@/config/firebase"
 import type { User } from "firebase/auth"
 import { doc, setDoc, getDoc } from "firebase/firestore"
-import { ref, set, get } from "firebase/database"
+import { billingRequest } from "@/lib/billing-client"
+import type { SubscriptionData } from "@/lib/subscription-model"
+export type { SubscriptionData } from "@/lib/subscription-model"
 
 export interface UserProfile {
   uid: string
@@ -13,18 +15,6 @@ export interface UserProfile {
   lastLoginAt: string
   trialStartDate?: string
   trialEndDate?: string
-}
-
-export interface SubscriptionData {
-  activePlan: string | null
-  resumeLimit: number
-  subscriptionDate: string | null
-  expirationDate: string | null
-  isActive: boolean
-  trialStartDate?: string | null
-  trialEndDate?: string | null
-  isTrialActive?: boolean
-  paymentReference?: string
 }
 
 export const createUserProfile = async (user: User, additionalData?: Partial<UserProfile>) => {
@@ -53,7 +43,7 @@ export const createUserProfile = async (user: User, additionalData?: Partial<Use
       })
 
       // Initialize subscription data with 7-day trial
-      await initializeUserSubscription(user.uid, trialStartDate, trialEndDate)
+      await initializeUserSubscription(user.uid)
       console.log("Creating user profile for:", user.uid)
     } catch (error) {
       console.error("Error creating user profile:", error)
@@ -70,71 +60,11 @@ export const createUserProfile = async (user: User, additionalData?: Partial<Use
   }
 }
 
-export const initializeUserSubscription = async (userId: string, trialStartDate?: string, trialEndDate?: string) => {
-  const subscriptionRef = ref(realtimeDb, `subscriptions/${userId}`)
-  const snapshot = await get(subscriptionRef)
-
-  if (!snapshot.exists()) {
-    const now = new Date()
-    const trialStart = trialStartDate || now.toISOString()
-    const trialEnd = trialEndDate || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    const isTrialActive = new Date(trialEnd) > now
-
-    const initialSubscription: SubscriptionData = {
-      activePlan: "Free Trial",
-      resumeLimit: 999999, // Unlimited during trial
-      subscriptionDate: trialStart,
-      expirationDate: trialEnd,
-      isActive: isTrialActive,
-      trialStartDate: trialStart,
-      trialEndDate: trialEnd,
-      isTrialActive,
-    }
-    await set(subscriptionRef, initialSubscription)
-  }
-}
-
-export const updateUserSubscription = async (userId: string, subscriptionData: Partial<SubscriptionData>) => {
-  const subscriptionRef = ref(realtimeDb, `subscriptions/${userId}`)
-  const currentData = await get(subscriptionRef)
-  const updatedData = {
-    ...currentData.val(),
-    ...subscriptionData,
-    lastUpdated: new Date().toISOString(),
-  }
-  await set(subscriptionRef, updatedData)
-}
-
+export const initializeUserSubscription = async (userId: string) => { await getUserSubscription(userId); };
 export const getUserSubscription = async (userId: string): Promise<SubscriptionData | null> => {
-  const subscriptionRef = ref(realtimeDb, `subscriptions/${userId}`)
-  const snapshot = await get(subscriptionRef)
-
-  if (snapshot.exists()) {
-    const data = snapshot.val()
-
-    // Check if trial has expired
-    if (data.trialEndDate && data.isTrialActive) {
-      const now = new Date()
-      const trialEnd = new Date(data.trialEndDate)
-
-      if (now > trialEnd) {
-        // Trial has expired, update subscription
-        const updatedData = {
-          ...data,
-          isTrialActive: false,
-          isActive: false,
-          activePlan: "Free",
-          resumeLimit: 3,
-        }
-        await set(subscriptionRef, updatedData)
-        return updatedData
-      }
-    }
-
-    return data
-  }
-  return null
-}
+  if (auth.currentUser?.uid !== userId) throw new Error("Please sign in.");
+  return (await billingRequest("/api/subscription")).subscription;
+};
 
 export const checkFeatureAccess = (subscriptionData: SubscriptionData | null, feature: string): boolean => {
   if (!subscriptionData) return false

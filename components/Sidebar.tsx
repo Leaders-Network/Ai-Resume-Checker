@@ -168,8 +168,8 @@ export function Sidebar({ children }: SidebarProps) {
             </div>
             {isOpen && (
               <div>
-                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">ResumeAI</span>
-                <p className="text-[10px] text-muted-foreground -mt-0.5 tracking-widest uppercase">Pro Dashboard</p>
+                <span className="block max-w-[132px] text-sm leading-tight font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Leaders CV Checker</span>
+                <p className="text-[10px] text-muted-foreground -mt-0.5 tracking-widest uppercase">Dashboard</p>
               </div>
             )}
           </div>
