@@ -165,7 +165,7 @@ export default function ResultPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         >
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 border-green-200 dark:border-green-700 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-muted/40 border-border shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-3xl font-bold text-green-700 dark:text-green-300">{fullyMatched}</CardTitle>
             </CardHeader>
@@ -180,7 +180,7 @@ export default function ResultPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-yellow-50 to-orange-100 dark:from-yellow-900/30 dark:to-orange-800/30 border-yellow-200 dark:border-yellow-700 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-muted/40 border-border shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{partiallyMatched}</CardTitle>
             </CardHeader>
@@ -195,7 +195,7 @@ export default function ResultPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900/30 dark:to-pink-800/30 border-red-200 dark:border-red-700 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-muted/40 border-border shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-3xl font-bold text-red-700 dark:text-red-300">{barelyMatched}</CardTitle>
             </CardHeader>
@@ -224,17 +224,17 @@ export default function ResultPage() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input
                     placeholder="Search by filename or keywords..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-12 border-2 border-input focus:border-primary bg-transparent"
+                    className="pl-10 h-12 border-2 border-input focus:border-border bg-transparent"
                   />
                 </div>
                 <div className="w-full md:w-64">
                   <Select value={filterScore} onValueChange={setFilterScore}>
-                    <SelectTrigger className="h-12 border-2 border-input focus:border-primary bg-transparent">
+                    <SelectTrigger className="h-12 border-2 border-input focus:border-border bg-transparent">
                       <div className="flex items-center">
                         <Filter size={18} className="mr-2" />
                         <SelectValue placeholder="Filter by score" />
@@ -259,7 +259,7 @@ export default function ResultPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card className="overflow-hidden border-2 border-border/10 shadow-lg bg-card">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border">
+            <CardHeader className="bg-muted/40 border-b border-border">
               <CardTitle className="text-xl">Analysis Results</CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
@@ -268,7 +268,7 @@ export default function ResultPage() {
                   <tr className="bg-secondary/20">
                     <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       <div
-                        className="flex items-center space-x-2 cursor-pointer hover:text-primary transition-colors"
+                        className="flex items-center space-x-2 cursor-pointer hover:text-foreground transition-colors"
                         onClick={() => handleSort("fileName")}
                       >
                         <span>Filename</span>
@@ -278,7 +278,7 @@ export default function ResultPage() {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       <div
-                        className="flex items-center space-x-2 cursor-pointer hover:text-primary transition-colors"
+                        className="flex items-center space-x-2 cursor-pointer hover:text-foreground transition-colors"
                         onClick={() => handleSort("score")}
                       >
                         <span>Match Score</span>
@@ -303,11 +303,11 @@ export default function ResultPage() {
                       >
                         <td className="px-6 py-4 text-foreground">
                           <div className="flex items-center">
-                            <div className="p-2 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg mr-3">
-                              <FileText className="h-5 w-5 text-primary" />
+                            <div className="p-2 bg-muted/40 rounded-lg mr-3">
+                              <FileText className="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div>
-                              <span className="font-medium text-primary">{resume.fileName}</span>
+                              <span className="font-medium text-foreground">{resume.fileName}</span>
                               <p className="text-xs text-muted-foreground mt-1">
                                 {resume.matches.length} matches • {resume.missing.length} missing
                               </p>
@@ -375,7 +375,7 @@ export default function ResultPage() {
                     <tr>
                       <td colSpan={4} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center space-y-4">
-                          <div className="p-4 bg-gradient-to-br from-secondary/20 to-accent/20 rounded-full">
+                          <div className="p-4 bg-muted/40 rounded-full">
                             <FileText className="h-12 w-12 text-muted-foreground" />
                           </div>
                           <div>

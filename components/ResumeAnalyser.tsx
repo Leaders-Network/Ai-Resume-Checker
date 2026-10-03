@@ -158,11 +158,11 @@ ${analysisData.fileContent}
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-muted py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <FileText className="h-8 w-8 text-blue-600" />
+        <div className="bg-card rounded-lg shadow-lg p-6">
+          <h1 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <FileText className="h-8 w-8 text-muted-foreground" />
             Resume Analyzer
           </h1>
 
@@ -174,17 +174,17 @@ ${analysisData.fileContent}
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Upload Resume(s)
               </label>
               <div
-                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
+                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <div className="space-y-1 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <div className="flex text-sm text-muted-foreground">
+                    <label className="relative cursor-pointer bg-card rounded-md font-medium text-foreground hover:text-foreground">
                       <span>Upload files</span>
                       <input
                         ref={fileInputRef}
@@ -196,7 +196,7 @@ ${analysisData.fileContent}
                       />
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {`${files.length} file${
                       files.length !== 1 ? "s" : ""
                     } selected (max 50)`}
@@ -206,12 +206,12 @@ ${analysisData.fileContent}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Keywords (comma-separated)
               </label>
               <input
                 type="text"
-                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 text-foreground border rounded-lg focus:outline-none focus:border-blue-500"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
                 placeholder="e.g., javascript, react, typescript"
@@ -221,7 +221,7 @@ ${analysisData.fileContent}
             <button
               onClick={analyzeResume}
               disabled={!files.length || !keywords.trim() || isLoading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-info text-white py-2 px-4 rounded-lg hover:bg-info transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
@@ -236,15 +236,15 @@ ${analysisData.fileContent}
                 {Object.entries(analysis).map(([fileName, analysisData]) => (
                   <div
                     key={fileName}
-                    className="bg-gray-50 p-4 rounded-lg mb-4"
+                    className="bg-muted p-4 rounded-lg mb-4"
                   >
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    <h2 className="text-xl font-semibold text-foreground mb-4">
                       Analysis Results for {fileName}
                     </h2>
 
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-medium text-gray-700">
+                        <h3 className="text-lg font-medium text-foreground">
                           Match Score
                         </h3>
                         <div className="mt-2 relative pt-1">
@@ -254,14 +254,14 @@ ${analysisData.fileContent}
                               className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
                             />
                           </div>
-                          <span className="text-sm font-semibold text-gray-700 mt-1">
+                          <span className="text-sm font-semibold text-foreground mt-1">
                             {analysisData.score.toFixed(2)}%
                           </span>
                         </div>
                       </div>
 
                       <div>
-                        <h3 className="text-lg font-medium text-gray-700">
+                        <h3 className="text-lg font-medium text-foreground">
                           Matched Keywords
                         </h3>
                         <div className="mt-2 flex flex-wrap gap-2">
@@ -278,14 +278,14 @@ ${analysisData.fileContent}
 
                       {analysisData.suggestions.length > 0 && (
                         <div>
-                          <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
+                          <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
                             <AlertCircle className="h-5 w-5 text-yellow-500" />
                             Suggestions
                           </h3>
                           <ul className="mt-2 space-y-2">
                             {analysisData.suggestions.map(
                               (suggestion, index) => (
-                                <li key={index} className="text-gray-600">
+                                <li key={index} className="text-muted-foreground">
                                   • {suggestion}
                                 </li>
                               )

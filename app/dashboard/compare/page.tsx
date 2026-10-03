@@ -163,9 +163,9 @@ export default function CompareResumesPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <div className="flex justify-center items-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin h-12 w-12 border-4 border-[#130F4D] border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
           <p className="text-muted-foreground">Loading resumes...</p>
         </div>
       </div>
@@ -174,18 +174,18 @@ export default function CompareResumesPage() {
 
   if (resumes.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4">
-        <Card className="w-full max-w-md border-2 border-[#130F4D]/10 shadow-lg">
+      <div className="flex flex-col justify-center items-center h-screen bg-background p-4">
+        <Card className="w-full max-w-md border-2 border-border shadow-lg">
           <CardHeader className="text-center">
-            <div className="p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full w-16 h-16 mx-auto mb-4">
-              <FileText className="h-8 w-8 text-gray-400 mx-auto mt-2" />
+            <div className="p-4 bg-muted/40 rounded-full w-16 h-16 mx-auto mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground mx-auto mt-2" />
             </div>
             <CardTitle className="text-xl">No Resumes Found</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <p className="text-gray-600 dark:text-gray-400">You need to analyze resumes before you can compare them.</p>
+            <p className="text-muted-foreground">You need to analyze resumes before you can compare them.</p>
             <Link href="/dashboard">
-              <Button className="w-full bg-orange-600 text-white  ">
+              <Button className="w-full bg-primary text-white ">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Go to Dashboard
               </Button>
@@ -197,7 +197,7 @@ export default function CompareResumesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-6 w-full">
+    <div className="min-h-screen bg-background p-6 w-full">
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -210,33 +210,33 @@ export default function CompareResumesPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Avatar className="h-16 w-16 border-4 border-[#130F4D]/20 shadow-lg">
+                <Avatar className="h-16 w-16 border-4 border-border shadow-lg">
                   <AvatarImage src={userProfile?.photoURL || user?.photoURL || ""} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-[#130F4D] to-blue-600 text-white text-lg font-bold">
+                  <AvatarFallback className="bg-secondary text-foreground text-lg font-bold">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 {subscriptionData?.isActive && (
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1">
+                  <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
                     <Crown className="h-3 w-3 text-white" />
                   </div>
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#130F4D] dark:text-white">Resume Comparison</h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                <h1 className="text-3xl font-bold text-foreground">Resume Comparison</h1>
+                <p className="text-muted-foreground mt-1">
                   Compare up to 3 resumes side by side to find the best candidate
                 </p>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge
                     variant="secondary"
-                    className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                    className="bg-info/10 text-info "
                   >
                     <BarChart className="h-3 w-3 mr-1" />
                     {selectedResumes.length} Selected
                   </Badge>
                   {subscriptionData?.isActive && (
-                    <Badge variant="secondary" className="bg-[#130F4D] text-white">
+                    <Badge variant="secondary" className="bg-primary text-white">
                       <Crown className="h-3 w-3 mr-1" />
                       {subscriptionData.activePlan}
                     </Badge>
@@ -246,8 +246,8 @@ export default function CompareResumesPage() {
             </div>
             <div className="flex items-center space-x-3">
               <div className="text-right">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Credits Remaining</p>
-                <p className="text-2xl font-bold text-[#130F4D] dark:text-white">
+                <p className="text-sm text-muted-foreground">Credits Remaining</p>
+                <p className="text-2xl font-bold text-foreground">
                   {subscriptionData?.resumeLimit || 0}
                 </p>
               </div>
@@ -263,13 +263,13 @@ export default function CompareResumesPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-1"
           >
-            <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+            <Card className="border-2 border-border shadow-lg">
+              <CardHeader className="pb-2 bg-muted/40">
                 <CardTitle className="text-lg flex items-center">
-                  <FileText className="mr-2 h-5 w-5 text-[#130F4D]" />
+                  <FileText className="mr-2 h-5 w-5 text-foreground" />
                   Select Resumes
                 </CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Choose up to 3 resumes to compare</p>
+                <p className="text-sm text-muted-foreground">Choose up to 3 resumes to compare</p>
               </CardHeader>
               <CardContent className="pt-4">
                 <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -278,8 +278,8 @@ export default function CompareResumesPage() {
                       key={index}
                       htmlFor={`resume-${index}`}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 flex items-start space-x-3 ${selectedResumes.some((r) => r.fileName === resume.fileName)
-                        ? "border-primary bg-primary/10 shadow-lg"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        ? "border-primary bg-muted shadow-lg"
+                        : "border-border hover:border-border hover:bg-muted/50"
                         }`}
                     >
                       <Checkbox
@@ -336,27 +336,27 @@ export default function CompareResumesPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-3"
           >
-            <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+            <Card className="border-2 border-border shadow-lg">
+              <CardHeader className="pb-2 bg-muted/40">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-800">
+                  <TabsList className="grid w-full grid-cols-3 bg-card">
                     <TabsTrigger
                       value="metrics"
-                      className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                      className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                     >
                       <BarChart className="mr-2 h-4 w-4" />
                       Metrics
                     </TabsTrigger>
                     <TabsTrigger
                       value={keywords ? "keywords" : "metrics"}
-                      className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                      className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Keywords
                     </TabsTrigger>
                     <TabsTrigger
                       value="content"
-                      className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                      className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                     >
                       <Eye className="mr-2 h-4 w-4" />
                       Content
@@ -367,11 +367,11 @@ export default function CompareResumesPage() {
               <CardContent className="pt-6">
                 {selectedResumes.length === 0 ? (
                   <div className="text-center py-16">
-                    <div className="p-6 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full w-24 h-24 mx-auto mb-6">
-                      <FileText className="h-12 w-12 text-gray-400 mx-auto mt-3" />
+                    <div className="p-6 bg-muted/40 rounded-full w-24 h-24 mx-auto mb-6">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mt-3" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-3">No Resumes Selected</h3>
-                    <p className="text-gray-500 dark:text-gray-500 max-w-md mx-auto">
+                    <h3 className="text-xl font-semibold text-muted-foreground mb-3">No Resumes Selected</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
                       Select at least one resume from the panel to start comparing their performance and characteristics
                     </p>
                   </div>
@@ -381,23 +381,23 @@ export default function CompareResumesPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* Overall Score */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white flex items-center">
+                          <h3 className="font-semibold text-lg text-foreground flex items-center">
                             <TrendingUp className="h-5 w-5 mr-2" />
                             Overall Score
                           </h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-[#130F4D] dark:text-white">
+                                <span className="font-bold text-lg text-foreground">
                                   {Math.round(resume.score)}%
                                 </span>
                               </div>
@@ -408,20 +408,20 @@ export default function CompareResumesPage() {
 
                         {/* Skills Score */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white">Skills Match</h3>
+                          <h3 className="font-semibold text-lg text-foreground">Skills Match</h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-blue-600 dark:text-blue-400">
+                                <span className="font-bold text-lg text-foreground ">
                                   {Math.round(resume.categoryScores?.skills || 0)}%
                                 </span>
                               </div>
@@ -432,20 +432,20 @@ export default function CompareResumesPage() {
 
                         {/* Experience Score */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white">Experience Match</h3>
+                          <h3 className="font-semibold text-lg text-foreground">Experience Match</h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-purple-600 dark:text-purple-400">
+                                <span className="font-bold text-lg text-muted-foreground dark:text-muted-foreground">
                                   {Math.round(resume.categoryScores?.experience || 0)}%
                                 </span>
                               </div>
@@ -456,20 +456,20 @@ export default function CompareResumesPage() {
 
                         {/* Location Score */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white">Location Match</h3>
+                          <h3 className="font-semibold text-lg text-foreground">Location Match</h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-orange-600 dark:text-orange-400">
+                                <span className="font-bold text-lg text-foreground ">
                                   {Math.round(resume.categoryScores?.location || 0)}%
                                 </span>
                               </div>
@@ -480,20 +480,20 @@ export default function CompareResumesPage() {
 
                         {/* Certification Score */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white">Certification Match</h3>
+                          <h3 className="font-semibold text-lg text-foreground">Certification Match</h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-teal-600 dark:text-teal-400">
+                                <span className="font-bold text-lg text-muted-foreground dark:text-muted-foreground">
                                   {Math.round(resume.categoryScores?.certification || 0)}%
                                 </span>
                               </div>
@@ -504,20 +504,20 @@ export default function CompareResumesPage() {
 
                         {/* Keyword Count */}
                         <div className="space-y-4">
-                          <h3 className="font-semibold text-lg text-[#130F4D] dark:text-white">Keyword Count</h3>
+                          <h3 className="font-semibold text-lg text-foreground">Keyword Count</h3>
                           {selectedResumes.map((resume, index) => (
                             <div
                               key={index}
-                              className="space-y-3 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg"
+                              className="space-y-3 p-4 bg-muted/40 rounded-lg"
                             >
                               <div className="flex justify-between items-center">
                                 <span
-                                  className="truncate max-w-[140px] font-medium text-[#130F4D] dark:text-white"
+                                  className="truncate max-w-[140px] font-medium text-foreground"
                                   title={resume.fileName}
                                 >
                                   {resume.fileName}
                                 </span>
-                                <span className="font-bold text-lg text-indigo-600 dark:text-indigo-400">
+                                <span className="font-bold text-lg text-foreground dark:text-indigo-400">
                                   {resume.matches.length} / {resume.matches.length + resume.missing.length}
                                 </span>
                               </div>
@@ -539,10 +539,10 @@ export default function CompareResumesPage() {
                         {selectedResumes.map((resume, index) => (
                           <Card
                             key={index}
-                            className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-md"
+                            className="overflow-hidden border-2 border-border  shadow-md"
                           >
-                            <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 py-4">
-                              <CardTitle className="text-lg truncate text-[#130F4D] dark:text-white">
+                            <CardHeader className="bg-muted/40 py-4">
+                              <CardTitle className="text-lg truncate text-foreground">
                                 {resume.fileName}
                               </CardTitle>
                             </CardHeader>
@@ -553,7 +553,7 @@ export default function CompareResumesPage() {
                                     <CheckCircle className="h-5 w-5 mr-2" />
                                     Matched Keywords ({resume.matches.length})
                                   </h3>
-                                  <div className="flex flex-wrap gap-2 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg min-h-[120px] border border-green-200 dark:border-green-800">
+                                  <div className="flex flex-wrap gap-2 p-4 bg-muted/40 rounded-lg min-h-[120px] border border-border ">
                                     {resume.matches.length > 0 ? (
                                       resume.matches.map((keyword, idx) => (
                                         <Badge
@@ -565,7 +565,7 @@ export default function CompareResumesPage() {
                                         </Badge>
                                       ))
                                     ) : (
-                                      <span className="text-gray-500 dark:text-gray-400 text-sm italic">
+                                      <span className="text-muted-foreground text-sm italic">
                                         No matched keywords
                                       </span>
                                     )}
@@ -588,7 +588,7 @@ export default function CompareResumesPage() {
                                         </Badge>
                                       ))
                                     ) : (
-                                      <span className="text-gray-500 dark:text-gray-400 text-sm italic">
+                                      <span className="text-muted-foreground text-sm italic">
                                         No missing keywords
                                       </span>
                                     )}

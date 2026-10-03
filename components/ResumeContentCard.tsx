@@ -32,9 +32,9 @@ function ResumeContentCard({ resume }: { resume: Resume }) {
       : resume.pdfUrl;
 
   return (
-    <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-md">
-      <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="text-lg truncate text-[#130F4D] dark:text-white">
+    <Card className="overflow-hidden border-2 border-border  shadow-md">
+      <CardHeader className="bg-muted/40 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="text-lg truncate text-foreground">
           {resume.fileName}
         </CardTitle>
         {pdfFile && (
@@ -48,13 +48,13 @@ function ResumeContentCard({ resume }: { resume: Resume }) {
       <CardContent className="p-6">
         {pdfFile ? (
           <div className="bg-background rounded-lg border border-border p-2 max-h-[500px] overflow-y-auto flex justify-center">
-            <Document file={pdfFile} loading={<span className="text-gray-500">Loading PDF...</span>}>
+            <Document file={pdfFile} loading={<span className="text-muted-foreground">Loading PDF...</span>}>
               <Page pageNumber={1} width={500} />
             </Document>
           </div>
         ) : (
           <div className="bg-background rounded-lg border border-border p-6 max-h-[400px] overflow-y-auto">
-            <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
               {resume.content}
             </pre>
           </div>

@@ -339,7 +339,7 @@ export default function AISuggestionsPage() {
 
   if (loading) {
     return (
-        <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+        <div className="flex justify-center items-center h-screen bg-background">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
             <p className="text-muted-foreground">Loading AI suggestions...</p>
@@ -351,7 +351,7 @@ export default function AISuggestionsPage() {
   if (resumes.length === 0) {
     return (
 
-        <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4">
+        <div className="flex flex-col justify-center items-center h-screen bg-background p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>No Resumes Found</CardTitle>
@@ -374,7 +374,7 @@ export default function AISuggestionsPage() {
   const currentResume = getCurrentResume()
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+      <div className="min-h-screen bg-background p-4 md:p-8 w-full">
         <Toaster />
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -383,15 +383,15 @@ export default function AISuggestionsPage() {
             transition={{ duration: 0.5 }}
             className="mb-6"
           >
-            <h1 className="text-3xl font-bold text-[#130F4D] dark:text-white">AI-Powered Resume Suggestions</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
+            <h1 className="text-3xl font-bold text-foreground">AI-Powered Resume Suggestions</h1>
+            <p className="text-muted-foreground mt-2">
               Get intelligent recommendations to improve your resume
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
-              <Card className="border-2 border-primary/10">
+              <Card className="border-2 border-border">
                 <CardHeader>
                   <CardTitle className="text-lg">Resume Selection</CardTitle>
                 </CardHeader>
@@ -448,8 +448,8 @@ export default function AISuggestionsPage() {
             </div>
 
             <div className="lg:col-span-3">
-              <Card className="border-2 border-primary/10">
-                <CardHeader className="pb-2 bg-primary/5">
+              <Card className="border-2 border-border">
+                <CardHeader className="pb-2 bg-muted">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">
                       {currentResume?.fileName ? `Suggestions for ${currentResume.fileName}` : "Select a Resume"}
@@ -475,9 +475,9 @@ export default function AISuggestionsPage() {
                <CardContent className="pt-6">
   {!currentResume ? (
     <div className="text-center py-12">
-      <Sparkles className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600" />
+      <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
       <h3 className="mt-4 text-lg font-medium">Select a Resume</h3>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-muted-foreground">
         Choose a resume from the dropdown to get AI-powered suggestions
       </p>
     </div>
@@ -485,16 +485,16 @@ export default function AISuggestionsPage() {
     suggestions.additions.length === 0 &&
     suggestions.formatting.length === 0 ? (
     <div className="text-center py-12">
-      <Sparkles className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600" />
+      <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
       <h3 className="mt-4 text-lg font-medium">No Suggestions Yet</h3>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-muted-foreground">
         Click &quot;Generate Suggestions&quot; to get AI-powered recommendations
       </p>
     </div>
   ) : (
     <Tabs defaultValue="improvements" className="w-full mt-4">
       <TabsList
-        className="w-full flex gap-2 overflow-x-auto px-1 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60"
+        className="w-full flex gap-2 overflow-x-auto px-1 border-b bg-white/80 /80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:/60"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <TabsTrigger value="improvements" className="min-w-[140px] whitespace-nowrap py-2 px-4 text-sm">Improvements</TabsTrigger>
@@ -505,23 +505,23 @@ export default function AISuggestionsPage() {
       <TabsContent value="improvements" className="mt-0 space-y-4">
         {suggestions.improvements.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               No improvement suggestions available for this resume.
             </p>
           </div>
         ) : (
           suggestions.improvements.map((suggestion, index) => (
             <Card key={index} className="overflow-hidden">
-              <CardHeader className="bg-blue-50 dark:bg-blue-900/20 py-3">
+              <CardHeader className="bg-info/10 py-3">
                 <CardTitle className="text-base flex items-center">
-                  <CheckCircle className="h-4 w-4 text-blue-500 mr-2" />
+                  <CheckCircle className="h-4 w-4 text-muted-foreground mr-2" />
                   {suggestion.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                <p className="text-gray-700 dark:text-gray-300">{suggestion.content}</p>
+                <p className="text-foreground">{suggestion.content}</p>
               </CardContent>
-              <CardFooter className="bg-gray-50 dark:bg-gray-800 py-2 flex justify-end">
+              <CardFooter className="bg-muted  py-2 flex justify-end">
                 <Button variant="ghost" size="sm" onClick={() => copyToClipboard(suggestion.content)}>
                   <Copy className="h-4 w-4 mr-1" />
                   Copy
@@ -535,7 +535,7 @@ export default function AISuggestionsPage() {
       <TabsContent value="additions" className="mt-0 space-y-4">
         {suggestions.additions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               No addition suggestions available for this resume.
             </p>
           </div>
@@ -549,9 +549,9 @@ export default function AISuggestionsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                <p className="text-gray-700 dark:text-gray-300">{suggestion.content}</p>
+                <p className="text-foreground">{suggestion.content}</p>
               </CardContent>
-              <CardFooter className="bg-gray-50 dark:bg-gray-800 py-2 flex justify-end">
+              <CardFooter className="bg-muted  py-2 flex justify-end">
                 <Button variant="ghost" size="sm" onClick={() => copyToClipboard(suggestion.content)}>
                   <Copy className="h-4 w-4 mr-1" />
                   Copy
@@ -565,23 +565,23 @@ export default function AISuggestionsPage() {
       <TabsContent value="formatting" className="mt-0 space-y-4">
         {suggestions.formatting.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               No formatting suggestions available for this resume.
             </p>
           </div>
         ) : (
           suggestions.formatting.map((suggestion, index) => (
             <Card key={index} className="overflow-hidden">
-              <CardHeader className="bg-purple-50 dark:bg-purple-900/20 py-3">
+              <CardHeader className="bg-muted dark:bg-muted py-3">
                 <CardTitle className="text-base flex items-center">
-                  <XCircle className="h-4 w-4 text-purple-500 mr-2" />
+                  <XCircle className="h-4 w-4 text-muted-foreground mr-2" />
                   {suggestion.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                <p className="text-gray-700 dark:text-gray-300">{suggestion.content}</p>
+                <p className="text-foreground">{suggestion.content}</p>
               </CardContent>
-              <CardFooter className="bg-gray-50 dark:bg-gray-800 py-2 flex justify-end">
+              <CardFooter className="bg-muted  py-2 flex justify-end">
                 <Button variant="ghost" size="sm" onClick={() => copyToClipboard(suggestion.content)}>
                   <Copy className="h-4 w-4 mr-1" />
                   Copy

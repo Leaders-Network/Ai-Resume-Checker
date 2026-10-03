@@ -17,7 +17,7 @@ export const AuthForm = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-md mx-auto mt-8 p-6 bg-card rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6">
         {isSignUp ? "Create Account" : "Sign In"}
       </h2>
@@ -44,16 +44,16 @@ export const AuthForm = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-info text-white py-2 rounded hover:bg-info"
         >
           {isSignUp ? "Sign Up" : "Sign In"}
         </button>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 hover:text-blue-700"
+            className="text-foreground hover:text-blue-700"
           >
             {isSignUp ? "Sign In" : "Sign Up"}
           </button>

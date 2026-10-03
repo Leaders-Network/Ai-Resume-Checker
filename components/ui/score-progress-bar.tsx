@@ -12,7 +12,7 @@ const ScoreProgressBar = React.forwardRef<
   ScoreProgressBarProps
 >(({ className, score, ...props }, ref) => {
   const getScoreColor = (s: number) => {
-    if (s >= 70) return "bg-gradient-to-r from-green-500 to-emerald-500"
+    if (s >= 70) return "bg-muted/40"
     if (s >= 40) return "bg-yellow-500"
     return "bg-destructive"
   }

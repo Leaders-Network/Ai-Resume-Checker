@@ -410,9 +410,9 @@ const handleDownload = async () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <div className="flex justify-center items-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin h-12 w-12 border-4 border-[#130F4D] border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
           <p className="text-muted-foreground">Loading PDF viewer...</p>
         </div>
       </div>
@@ -421,18 +421,18 @@ const handleDownload = async () => {
 
   if (resumes.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4">
-        <Card className="w-full max-w-md border-2 border-[#130F4D]/10 shadow-lg">
+      <div className="flex flex-col justify-center items-center h-screen bg-background p-4">
+        <Card className="w-full max-w-md border-2 border-border shadow-lg">
           <CardHeader className="text-center">
-            <div className="p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full w-16 h-16 mx-auto mb-4">
-              <FileText className="h-8 w-8 text-gray-400 mx-auto mt-2" />
+            <div className="p-4 bg-muted/40 rounded-full w-16 h-16 mx-auto mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground mx-auto mt-2" />
             </div>
             <CardTitle className="text-xl">No Resumes Available</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <p className="text-gray-600 dark:text-gray-400">Upload and analyze resumes to view them here.</p>
+            <p className="text-muted-foreground">Upload and analyze resumes to view them here.</p>
             <Link href="/dashboard">
-              <Button className="w-full bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Go to Dashboard
               </Button>
@@ -444,7 +444,7 @@ const handleDownload = async () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 md:p-8 w-full">
+    <div className="min-h-screen bg-background p-4 md:p-8 w-full">
       <Toaster />
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with User Info */}
@@ -457,36 +457,36 @@ const handleDownload = async () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Avatar className="h-16 w-16 border-4 border-[#130F4D]/20 shadow-lg">
+                <Avatar className="h-16 w-16 border-4 border-border shadow-lg">
                   <AvatarImage
                     src={userProfile?.profileImage || userProfile?.photoURL || user?.photoURL || ""}
                     alt="Profile"
                   />
-                  <AvatarFallback className="bg-gradient-to-br from-[#130F4D] to-blue-600 text-white text-lg font-bold">
+                  <AvatarFallback className="bg-secondary text-foreground text-lg font-bold">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1">
+                  <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
                     <Crown className="h-3 w-3 text-white" />
                   </div>
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#130F4D] dark:text-white">PDF Viewer</h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                <h1 className="text-3xl font-bold text-foreground">PDF Viewer</h1>
+                <p className="text-muted-foreground mt-1">
                   {selectedResume ? `Viewing: ${selectedResume.fileName}` : "Select a resume to view"}
                 </p>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge
                     variant="secondary"
-                    className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                    className="bg-info/10 text-info "
                   >
                     <Eye className="h-3 w-3 mr-1" />
                     PDF Viewer
                   </Badge>
                   {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                    <Badge variant="secondary" className="bg-[#130F4D] text-white">
+                    <Badge variant="secondary" className="bg-primary text-white">
                       <Crown className="h-3 w-3 mr-1" />
                       {subscriptionData?.isTrialActive ? "Trial" : subscriptionData.activePlan}
                     </Badge>
@@ -496,8 +496,8 @@ const handleDownload = async () => {
             </div>
             <div className="flex items-center space-x-3">
               <div className="text-right">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Credits Remaining</p>
-                <p className="text-2xl font-bold text-[#130F4D] dark:text-white">
+                <p className="text-sm text-muted-foreground">Credits Remaining</p>
+                <p className="text-2xl font-bold text-foreground">
                   {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
                 </p>
               </div>
@@ -513,8 +513,8 @@ const handleDownload = async () => {
             transition={{ duration: 0.5 }}
             className="mb-6"
           >
-            <Card className="border-2 border-red-300 dark:border-red-600 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30">
+            <Card className="border-2 border-border shadow-lg">
+              <CardHeader className="pb-2 bg-muted/40 ">
                 <CardTitle className="flex items-center text-red-800 dark:text-red-300">
                   <Crown className="mr-2 h-5 w-5" />
                   Upgrade Required
@@ -526,7 +526,7 @@ const handleDownload = async () => {
                 </p>
                 <Button
                   onClick={() => router.push("/dashboard/subscription")}
-                  className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   🚀 Upgrade Now
                 </Button>
@@ -543,21 +543,21 @@ const handleDownload = async () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-1"
           >
-            <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+            <Card className="border-2 border-border shadow-lg">
+              <CardHeader className="pb-2 bg-muted/40">
                 <CardTitle className="text-lg flex items-center">
-                  <FileText className="mr-2 h-5 w-5 text-[#130F4D]" />
+                  <FileText className="mr-2 h-5 w-5 text-foreground" />
                   Controls
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 {/* Resume Selection */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-foreground mb-2 block">
                     Select Resume
                   </label>
                   <Select value={selectedResume?.fileName || ""} onValueChange={handleResumeChange}>
-                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600">
+                    <SelectTrigger className="h-12 border-2 border-border focus:border-ring ">
                       <SelectValue placeholder="Choose a resume" />
                     </SelectTrigger>
                     <SelectContent>
@@ -591,7 +591,7 @@ const handleDownload = async () => {
                 {/* Page Navigation */}
                 {totalPages > 0 && (
                   <div>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                    <label className="text-sm font-medium text-foreground mb-2 block">
                       Page Navigation
                     </label>
                     <div className="flex items-center space-x-2">
@@ -604,7 +604,7 @@ const handleDownload = async () => {
                       >
                         Previous
                       </Button>
-                      <span className="text-sm font-medium px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded">
+                      <span className="text-sm font-medium px-3 py-2 bg-muted  rounded">
                         {currentPage} / {totalPages}
                       </span>
                       <Button
@@ -622,7 +622,7 @@ const handleDownload = async () => {
 
                 {/* Zoom Controls */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-foreground mb-2 block">
                     Zoom Level: {Math.round(zoom * 100)}%
                   </label>
                   <div className="flex items-center space-x-2">
@@ -651,7 +651,7 @@ const handleDownload = async () => {
                 <div className="space-y-3">
                   <Button
                     variant="outline"
-                    className="w-full border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent"
+                    className="w-full border-primary text-foreground hover:bg-primary/90 hover:text-white bg-transparent"
                     onClick={handleRotate}
                     disabled={!checkFeatureAccess(subscriptionData, "advanced")}
                   >
@@ -660,7 +660,7 @@ const handleDownload = async () => {
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 bg-transparent"
+                    className="w-full border-border text-foreground hover:bg-muted   bg-transparent"
                     onClick={resetView}
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
@@ -668,7 +668,7 @@ const handleDownload = async () => {
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 bg-transparent"
+                    className="w-full border-border text-foreground hover:bg-muted   bg-transparent"
                     onClick={toggleFullscreen}
                     disabled={!checkFeatureAccess(subscriptionData, "advanced")}
                   >
@@ -689,7 +689,7 @@ const handleDownload = async () => {
                 {/* Action Buttons */}
                 <div className="space-y-3 pt-4 border-t ">
                   <Button
-                    className="w-full bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white shadow-md"
+                    className="w-full bg-primary hover:bg-primary/90 text-white shadow-md"
                     onClick={handleDownload}
                     disabled={!selectedResume || !checkFeatureAccess(subscriptionData, "basic")}
                   >
@@ -699,7 +699,7 @@ const handleDownload = async () => {
                   <Link href="/dashboard/result">
                     <Button
                       variant="outline"
-                      className="w-full border-[#130F4D] text-[#130F4D] hover:bg-[#130F4D] hover:text-white bg-transparent mt-4"
+                      className="w-full border-primary text-foreground hover:bg-primary/90 hover:text-white bg-transparent mt-4"
                     >
                       <ArrowLeft className="mr-2 h-4 w-4 " />
                       Back to Results
@@ -710,10 +710,10 @@ const handleDownload = async () => {
                 {/* Resume Info */}
                 {selectedResume && (
                   <div className="pt-4 border-t">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Resume Info</h3>
+                    <h3 className="text-sm font-medium text-foreground mb-3">Resume Info</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Score:</span>
+                        <span className="text-muted-foreground">Score:</span>
                         <Badge
                           variant="secondary"
                           className={
@@ -728,11 +728,11 @@ const handleDownload = async () => {
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Matches:</span>
+                        <span className="text-muted-foreground">Matches:</span>
                         <span className="font-medium">{selectedResume.matches.length}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Missing:</span>
+                        <span className="text-muted-foreground">Missing:</span>
                         <span className="font-medium">{selectedResume.missing.length}</span>
                       </div>
                     </div>
@@ -749,15 +749,15 @@ const handleDownload = async () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-3"
           >
-            <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-              <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+            <Card className="border-2 border-border shadow-lg">
+              <CardHeader className="pb-2 bg-muted/40">
                 <CardTitle className="text-lg flex items-center justify-between">
                   <div className="flex items-center">
-                    <Eye className="mr-2 h-5 w-5 text-[#130F4D]" />
+                    <Eye className="mr-2 h-5 w-5 text-foreground" />
                     PDF Document
                   </div>
                   {totalPages > 0 && (
-                    <div className="text-sm font-normal text-gray-600 dark:text-gray-400">
+                    <div className="text-sm font-normal text-muted-foreground">
                       Page {currentPage} of {totalPages}
                     </div>
                   )}
@@ -766,22 +766,22 @@ const handleDownload = async () => {
               <CardContent className="p-6">
                 <div
                   ref={containerRef}
-                  className="relative bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-auto"
+                  className="relative bg-card rounded-lg border-2 border-border  overflow-auto"
                   style={{ height: "70vh" }}
                 >
                   {!checkFeatureAccess(subscriptionData, "basic") ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
-                        <div className="p-6 bg-gradient-to-br from-gray-100 to-red-100 dark:from-gray-800 dark:to-red-900/20 rounded-full w-24 h-24 mx-auto mb-6">
+                        <div className="p-6 bg-muted/40 rounded-full w-24 h-24 mx-auto mb-6">
                           <Crown className="h-12 w-12 text-red-500 mx-auto mt-3" />
                         </div>
                         <h3 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-3">Premium Feature</h3>
-                        <p className="text-gray-500 dark:text-gray-500 max-w-md mx-auto mb-4">
+                        <p className="text-muted-foreground max-w-md mx-auto mb-4">
                           PDF viewer is available for premium users. Upgrade your plan to view PDF documents.
                         </p>
                         <Button
                           onClick={() => router.push("/dashboard/subscription")}
-                          className="bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white"
+                          className="bg-primary hover:bg-primary/90 text-white"
                         >
                           🚀 Upgrade Now
                         </Button>
@@ -790,20 +790,20 @@ const handleDownload = async () => {
                   ) : pdfLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="flex flex-col items-center space-y-4">
-                        <div className="animate-spin h-12 w-12 border-4 border-[#130F4D] border-t-transparent rounded-full"></div>
-                        <p className="text-gray-600 dark:text-gray-400">Loading PDF...</p>
+                        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
+                        <p className="text-muted-foreground">Loading PDF...</p>
                       </div>
                     </div>
                   ) : !selectedResume ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
-                        <div className="p-6 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full w-24 h-24 mx-auto mb-6">
-                          <FileText className="h-12 w-12 text-gray-400 mx-auto mt-3" />
+                        <div className="p-6 bg-muted/40 rounded-full w-24 h-24 mx-auto mb-6">
+                          <FileText className="h-12 w-12 text-muted-foreground mx-auto mt-3" />
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-3">
+                        <h3 className="text-xl font-semibold text-muted-foreground mb-3">
                           No Resume Selected
                         </h3>
-                        <p className="text-gray-500 dark:text-gray-500 max-w-md mx-auto">
+                        <p className="text-muted-foreground max-w-md mx-auto">
                           Choose a resume from the dropdown to view its PDF content
                         </p>
                       </div>
@@ -814,12 +814,12 @@ const handleDownload = async () => {
                         <iframe
                           title="PDF Preview"
                           src={`/api/proxy-pdf?url=${encodeURIComponent(selectedResume.url)}#view=FitH`}
-                          className="w-full h-[65vh] border border-gray-300 dark:border-gray-600 rounded"
+                          className="w-full h-[65vh] border border-border  rounded"
                         />
                       ) : (
                         <canvas
                           ref={canvasRef}
-                          className="max-w-full h-auto shadow-lg border border-gray-300 dark:border-gray-600"
+                          className="max-w-full h-auto shadow-lg border border-border "
                           style={{
                             transform: `rotate(${rotation}deg)`,
                             transition: "transform 0.3s ease",

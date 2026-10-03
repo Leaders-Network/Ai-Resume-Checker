@@ -2,8 +2,8 @@
 import { scoreCV } from "@/lib/scoring";
 
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, Sparkles as SparkleIcon } from "lucide-react"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { Upload, Trash2, Loader2, FileText, CheckCircle, Lightbulb, User, Crown, CreditCard, Files, Tag, Zap, Clock, MapPin, Award, Download, ChevronLeft, ChevronRight, Sparkles as SparkleIcon } from "lucide-react"
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
@@ -12,10 +12,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { motion } from "framer-motion"
 import { auth, db } from "@/config/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
-import { doc, getDoc, getDocs, setDoc, collection, deleteDoc } from "firebase/firestore"
+import {
+  doc, getDoc, getDocs, setDoc, collection, deleteDoc,
+  query, orderBy, limit, startAfter, getCountFromServer, type QueryDocumentSnapshot,
+} from "firebase/firestore"
 import { getUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
 // import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -257,13 +261,25 @@ const getGreeting = () => {
   return { text: "Good evening", emoji: "🌙" }
 }
 
+const HISTORY_PAGE_SIZE = 5
+
 export default function DashboardPage() {
   const { isDarkMode } = useDarkMode();
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
   const [currentFiles, setCurrentFiles] = useState<UploadedFile[]>([])
   const [previousFiles, setPreviousFiles] = useState<UploadedFile[]>([])
+  // Upload history is read one page (5 rows) at a time. pageCursors[n] is the last
+  // document of page n-1, used as the startAfter cursor for page n.
+  const [historyPage, setHistoryPage] = useState(0)
+  const [historyTotal, setHistoryTotal] = useState<number | null>(null)
+  const [historyLoading, setHistoryLoading] = useState(true)
+  const [historyError, setHistoryError] = useState(false)
+  const pageCursors = useRef<(QueryDocumentSnapshot | undefined)[]>([undefined])
+  const historyRequest = useRef(0)
   const [keywords, setKeywords] = useState<KeywordCategory>(() => {
     if (typeof window !== "undefined") {
       const savedKeywords = sessionStorage.getItem("keywords")
@@ -321,65 +337,94 @@ export default function DashboardPage() {
 
 
 
+  // Reads one page of upload history (newest first). The total comes from a cheap
+  // server-side count, fetched only when `recount` is set (mount, upload, delete).
+  const loadHistory = useCallback(async (page: number, recount = false) => {
+    if (!user) return
+    const requestId = ++historyRequest.current
+    setHistoryLoading(true)
+    setHistoryError(false)
+    try {
+      const resumesRef = collection(db, "users", user.uid, "resumes")
+      const cursor = pageCursors.current[page]
+      const pageQuery = cursor
+        ? query(resumesRef, orderBy("uploadedAt", "desc"), startAfter(cursor), limit(HISTORY_PAGE_SIZE))
+        : query(resumesRef, orderBy("uploadedAt", "desc"), limit(HISTORY_PAGE_SIZE))
+      const [snapshot, count] = await Promise.all([
+        getDocs(pageQuery),
+        recount ? getCountFromServer(resumesRef).then((result) => result.data().count) : Promise.resolve(null),
+      ])
+      if (requestId !== historyRequest.current) return // a newer request superseded this one
+      if (snapshot.empty && page > 0) {
+        // The last row of this page was deleted; fall back to the previous page.
+        await loadHistory(page - 1, true)
+        return
+      }
+      const last = snapshot.docs[snapshot.docs.length - 1]
+      pageCursors.current[page + 1] = snapshot.docs.length === HISTORY_PAGE_SIZE ? last : undefined
+      setPreviousFiles(
+        snapshot.docs.map((snap) => {
+          const data = snap.data()
+          return {
+            id: snap.id,
+            name: data.name,
+            url: data.url,
+            publicId: data.publicId,
+            uploadDate: new Date(data.uploadedAt),
+            size: 0,
+            type: "application/pdf",
+            status: "completed",
+          } as UploadedFile
+        }),
+      )
+      setHistoryPage(page)
+      if (count !== null) setHistoryTotal(count)
+    } catch (error) {
+      if (requestId !== historyRequest.current) return
+      console.error("Error loading upload history:", error)
+      setHistoryError(true)
+    } finally {
+      if (requestId === historyRequest.current) setHistoryLoading(false)
+    }
+  }, [user])
+
+  const refreshHistory = () => {
+    pageCursors.current = [undefined]
+    return loadHistory(0, true)
+  }
+
   useEffect(() => {
+    if (!user) return
+
     const loadUserProfile = async () => {
-      if (!user) return
       try {
-        const userDocRef = doc(db, "users", user.uid)
-        const userDoc = await getDoc(userDocRef)
+        const userDoc = await getDoc(doc(db, "users", user.uid))
         if (userDoc.exists()) {
           setUserProfile(userDoc.data() as UserProfile)
         }
       } catch (error) {
         console.error("Error loading user profile:", error)
+      } finally {
+        setProfileLoading(false)
       }
     }
 
     const loadSubscriptionData = async () => {
-      if (!user) return
       try {
         const subscription = await getUserSubscription(user.uid)
         setSubscriptionData(subscription)
       } catch (error) {
         console.error("Error loading subscription data:", error)
+      } finally {
+        setSubscriptionLoading(false)
       }
     }
 
-    if (!user) return;
-    const fetchPreviousResumes = async () => {
-      const resumesCollectionRef = collection(db, "users", user.uid, "resumes");
-      const querySnapshot = await getDocs(resumesCollectionRef);
-      const resumes = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name,
-          url: data.url,
-          publicId: data.publicId,
-          uploadDate: new Date(data.uploadedAt),
-          ...data,
-        };
-      });
-      // Ensure each resume has all required UploadedFile fields
-      const formattedResumes = resumes.map((resume) => ({
-        id: resume.id,
-        name: resume.name,
-        url: resume.url,
-        publicId: resume.publicId,
-        uploadDate: resume.uploadDate,
-        size: 0,
-        type: "application/pdf",
-        status: "completed",
-      }));
-      setPreviousFiles(formattedResumes as UploadedFile[]);
-    };
-    fetchPreviousResumes();
-
-    if (user) {
-      loadUserProfile()
-      loadSubscriptionData()
-    }
-  }, [user])
+    loadUserProfile()
+    loadSubscriptionData()
+    pageCursors.current = [undefined]
+    loadHistory(0, true)
+  }, [user, loadHistory])
 
 
 
@@ -505,6 +550,7 @@ export default function DashboardPage() {
         successful.push({ id: stored.public_id, name: file.name, fileName: file.name, size: file.size, type: file.type, uploadDate: new Date(), status: "completed", url: stored.url, publicId: stored.public_id, content, file, blob: new Blob([file], { type: file.type }) });
       }
       setCurrentFiles(previous => [...previous, ...successful]);
+      if (successful.length) void refreshHistory();
       if (successful.length) toast.success(`Uploaded ${successful.length} CV${successful.length === 1 ? "" : "s"}.`);
       if (result.failures.length) toast.error("Some PDFs could not be uploaded. No credits were used for those files.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not upload CVs."); }
@@ -569,9 +615,9 @@ export default function DashboardPage() {
         // Don't throw — Cloudinary delete already succeeded
       }
 
-      // 3. Update UI state
-      setPreviousFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId))
+      // 3. Reload the current page (falls back a page if it is now empty)
       toast.success("File deleted successfully!")
+      await loadHistory(historyPage, true)
     } catch (error) {
       console.error("Error deleting file:", error)
       toast.error(error instanceof Error ? error.message : "An unknown error occurred")
@@ -733,9 +779,9 @@ const allFiles = [
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        <div className="flex flex-col items-center text-center" role="status" aria-live="polite">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading dashboard…</p>
         </div>
       </div>
     )
@@ -744,7 +790,7 @@ const allFiles = [
   return (
     <div className={`min-h-screen w-full p-3 sm:p-6 ${isDarkMode
       ? "bg-background"
-      : "bg-gray-50"  // Light, clean background for light mode
+      : "bg-muted"  // Light, clean background for light mode
       }`}>
 
 
@@ -759,8 +805,8 @@ const allFiles = [
         >
           <div className={`relative overflow-hidden rounded-2xl p-6 sm:p-8 ${
             isDarkMode
-              ? "bg-gradient-to-br from-[hsl(200,30%,10%)] via-[hsl(200,28%,14%)] to-[hsl(28,40%,12%)] border border-border shadow-xl"
-              : "bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 shadow-xl"
+              ? "bg-muted/40 border border-border shadow-xl"
+              : "bg-[#14284b] text-white shadow-xl"
           }`}>
             {/* Background mesh pattern */}
             <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
@@ -769,7 +815,7 @@ const allFiles = [
             }} />
             {/* Glowing orb accents */}
             <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-violet-500/20 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-muted blur-2xl pointer-events-none" />
 
             <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div className="flex flex-col items-center sm:flex-row sm:items-center sm:space-x-6 space-y-3 sm:space-y-0 w-full">
@@ -782,7 +828,7 @@ const allFiles = [
                         alt="Profile"
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-lg sm:text-xl font-bold">
+                      <AvatarFallback className="bg-secondary text-foreground text-lg sm:text-xl font-bold">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
@@ -799,13 +845,23 @@ const allFiles = [
                   <p className="text-white/70 text-sm font-medium mb-0.5">
                     {getGreeting().emoji} {getGreeting().text}
                   </p>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-sm">
-                    {userProfile?.displayName || user?.displayName || "User"}!
-                  </h1>
+                  {profileLoading && !user?.displayName ? (
+                    <Skeleton className="h-8 w-48 my-1 mx-auto sm:mx-0 bg-white/20" />
+                  ) : (
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-sm">
+                      {userProfile?.displayName || user?.displayName || "User"}!
+                    </h1>
+                  )}
                   <p className="text-white/70 mt-1 text-sm sm:text-base">Ready to analyze some resumes today?</p>
 
                   {/* Status badges */}
                   <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-3">
+                    {subscriptionLoading ? (
+                      <>
+                        <Skeleton className="h-6 w-24 rounded-full bg-white/20" />
+                        <Skeleton className="h-6 w-28 rounded-full bg-white/20" />
+                      </>
+                    ) : (<>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white backdrop-blur-sm border border-white/20">
                       <User className="h-3 w-3" />
                       {subscriptionData?.isTrialActive ? "Free Trial" : subscriptionData?.activePlan || "Free"}
@@ -816,11 +872,12 @@ const allFiles = [
                       </span>
                     )}
                     {(subscriptionData?.isActive || subscriptionData?.isTrialActive) && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-400/20 text-emerald-200 border border-border">
                         <Crown className="h-3 w-3" />
                         Premium Active
                       </span>
                     )}
+                    </>)}
                   </div>
                 </div>
               </div>
@@ -833,13 +890,17 @@ const allFiles = [
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
 
             {/* Card 1: Resume Credits */}
-            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-emerald-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-emerald-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-card border-border"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">Resume Credits</p>
-                  <p className="text-4xl font-extrabold text-foreground animate-count-in">
-                    {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
-                  </p>
+                  {subscriptionLoading ? (
+                    <Skeleton className="h-10 w-20 my-0.5" />
+                  ) : (
+                    <p className="text-4xl font-extrabold text-foreground animate-count-in">
+                      {subscriptionData?.resumeLimit === 999999 ? "∞" : subscriptionData?.resumeLimit || 0}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">Remaining analyses</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
@@ -852,13 +913,17 @@ const allFiles = [
                   style={{ width: `${Math.min(((subscriptionData?.resumeLimit || 0) / 100) * 100, 100)}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                {subscriptionData?.resumeLimit ? `${subscriptionData.resumeLimit} of 100 remaining` : "No credits"}
-              </p>
+              {subscriptionLoading ? (
+                <Skeleton className="h-3 w-28 mt-2" />
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {subscriptionData?.resumeLimit ? `${subscriptionData.resumeLimit} of 100 remaining` : "No credits"}
+                </p>
+              )}
             </div>
 
             {/* Card 2: Uploaded Resumes */}
-            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-card border-border"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">Uploaded Resumes</p>
@@ -868,12 +933,12 @@ const allFiles = [
                   <p className="text-xs text-muted-foreground mt-1">Ready for analysis</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-                  <Files className="h-6 w-6 text-blue-500" />
+                  <Files className="h-6 w-6 text-muted-foreground" />
                 </div>
               </div>
               <div className={`mt-4 flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-lg w-fit ${
                 currentFiles.length > 0
-                  ? "bg-blue-500/10 text-blue-500"
+                  ? "bg-muted text-foreground"
                   : "bg-muted text-muted-foreground"
               }`}>
                 <FileText className="h-3.5 w-3.5" />
@@ -882,7 +947,7 @@ const allFiles = [
             </div>
 
             {/* Card 3: Keywords */}
-            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"}`}>
+            <div className={`relative rounded-2xl p-5 overflow-hidden border-l-4 border-l-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md ${isDarkMode ? "bg-card border-border" : "bg-card border-border"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-1">Keywords</p>
@@ -891,13 +956,13 @@ const allFiles = [
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">Added for matching</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-violet-500/15 flex items-center justify-center flex-shrink-0">
-                  <Tag className="h-6 w-6 text-violet-500" />
+                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                  <Tag className="h-6 w-6 text-muted-foreground" />
                 </div>
               </div>
               <div className={`mt-4 flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-lg w-fit ${
                 Object.values(keywords).flat().length > 0
-                  ? "bg-violet-500/10 text-violet-500"
+                  ? "bg-muted text-muted-foreground"
                   : "bg-muted text-muted-foreground"
               }`}>
                 <CheckCircle className="h-3.5 w-3.5" />
@@ -917,9 +982,9 @@ const allFiles = [
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className={`border-2 border-primary/30 shadow-lg ${isDarkMode ? 'bg-card' : 'bg-blue-50'}`}>
-              <CardHeader className="pb-2 bg-primary/5">
-                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-blue-800'}`}>
+            <Card className={`border-2 border-primary/30 shadow-lg ${isDarkMode ? 'bg-card' : 'bg-info/10'}`}>
+              <CardHeader className="pb-2 bg-muted">
+                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-foreground'}`}>
                   <Crown className="mr-2 h-5 w-5" />
                   Trial Ending Soon
                 </CardTitle>
@@ -947,10 +1012,10 @@ const allFiles = [
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Card className={`shadow-lg border ${isDarkMode ? 'border-border bg-card' : 'border-gray-200 bg-blue-50'}`}>
+            <Card className={`shadow-lg border ${isDarkMode ? 'border-border bg-card' : 'border-border bg-info/10'}`}>
               <CardHeader className="pb-2 bg-secondary/5">
-                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-blue-800'}`}>
-                  <Lightbulb className={`mr-2 h-6 w-6 ${isDarkMode ? 'text-primary' : 'text-blue-500'}`} />
+                <CardTitle className={`flex items-center text-xl ${isDarkMode ? 'text-card-foreground' : 'text-foreground'}`}>
+                  <Lightbulb className={`mr-2 h-6 w-6 ${isDarkMode ? 'text-foreground' : 'text-foreground'}`} />
                   AI Suggested Keywords
                 </CardTitle>
               </CardHeader>
@@ -963,13 +1028,13 @@ const allFiles = [
 
                     return (
                       <div key={category} className="space-y-2">
-                        <h3 className={`font-medium text-lg ${isDarkMode ? 'text-gray-200' : 'text-blue-800'}`}>{categoryLabels[typedCategory]}</h3>
+                        <h3 className={`font-medium text-lg ${isDarkMode ? 'text-gray-200' : 'text-foreground'}`}>{categoryLabels[typedCategory]}</h3>
                         <div className="flex flex-wrap gap-2">
                           {suggestions.map((keyword, idx) => (
                             <Badge
                               key={idx}
                               variant="outline"
-                              className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'}`}
+                              className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-info/10 text-info hover:bg-info/90'}`}
                               onClick={() => handleAddSuggestedKeyword(typedCategory, keyword)}
                             >
                               + {keyword}
@@ -987,7 +1052,7 @@ const allFiles = [
                       variant="default"
                       size="sm"
                       onClick={handleAddAllSuggestions}
-                      className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'}`}
+                      className={`cursor-pointer ${isDarkMode ? 'bg-primary/20 text-primary-foreground hover:bg-primary/30' : 'bg-info/10 text-info hover:bg-info/90'}`}
                     >
                       Add All Suggestions
                     </Button>
@@ -1005,18 +1070,18 @@ const allFiles = [
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-gray-100"}`}>
+            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-border"}`}>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2.5 text-base font-semibold text-foreground">
-                  <span className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <Upload className="h-4 w-4 text-primary" />
+                  <span className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                    <Upload className="h-4 w-4 text-muted-foreground" />
                   </span>
                   Upload Resumes
                   <span className="ml-auto text-xs font-normal text-muted-foreground px-2 py-0.5 rounded-full bg-muted">PDF only</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">
-                {!canUploadResumes() && (
+                {!subscriptionLoading && !canUploadResumes() && (
                   <div className="mb-5 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20 flex items-start gap-3">
                     <Crown className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <div>
@@ -1049,10 +1114,10 @@ const allFiles = [
                   className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 group ${
                     canUploadResumes()
                       ? isDragOver
-                        ? "border-primary bg-primary/5 scale-[1.02] animate-pulse-ring shadow-lg"
+                        ? "border-primary bg-muted scale-[1.02] animate-pulse-ring shadow-lg"
                         : isDarkMode
-                          ? "border-border bg-gradient-to-br from-muted/50 to-card hover:border-primary/60 hover:shadow-md"
-                          : "border-gray-200 bg-gradient-to-br from-gray-50 to-white hover:border-primary/50 hover:shadow-md"
+                          ? "border-border bg-muted/40 hover:border-border hover:shadow-md"
+                          : "border-border bg-muted/40 hover:border-border hover:shadow-md"
                       : "border-border bg-muted cursor-not-allowed opacity-50"
                   } ${isUploading ? "pointer-events-none opacity-70" : ""}`}
                 >
@@ -1065,14 +1130,14 @@ const allFiles = [
                   )}
 
                   <div className={`mx-auto h-14 w-14 mb-4 rounded-2xl flex items-center justify-center ${
-                    isDragOver ? "bg-primary/20" : "bg-primary/10"
+                    isDragOver ? "bg-primary/20" : "bg-muted"
                   }`}>
                     <Upload className={`h-7 w-7 animate-float ${
-                      isDragOver ? "text-primary" : "text-primary/70"
+                      isDragOver ? "text-foreground" : "text-foreground"
                     }`} />
                   </div>
                   <p className={`text-base font-semibold ${
-                    isDragOver ? "text-primary" : "text-foreground"
+                    isDragOver ? "text-foreground" : "text-foreground"
                   }`}>
                     {isUploading
                       ? "Processing..."
@@ -1107,12 +1172,12 @@ const allFiles = [
                         className={`flex items-center justify-between p-3 rounded-xl transition-colors group/item ${
                           isDarkMode
                             ? "bg-muted/50 hover:bg-muted"
-                            : "bg-gray-50 hover:bg-gray-100"
+                            : "bg-muted hover:bg-muted"
                         }`}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                            <FileText className="h-4 w-4 text-primary" />
+                          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{file.fileName ?? file.name}</p>
@@ -1144,15 +1209,15 @@ const allFiles = [
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-gray-100"}`}>
+            <Card className={`shadow-lg h-full ${isDarkMode ? "border border-border" : "border border-border"}`}>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2.5 text-base font-semibold text-foreground">
-                  <span className="h-8 w-8 rounded-lg bg-violet-500/15 flex items-center justify-center">
-                    <Tag className="h-4 w-4 text-violet-500" />
+                  <span className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
                   </span>
                   Keywords
                   {Object.values(keywords).flat().length > 0 && (
-                    <span className="ml-auto text-xs font-semibold text-violet-500 px-2 py-0.5 rounded-full bg-violet-500/10">
+                    <span className="ml-auto text-xs font-semibold text-muted-foreground px-2 py-0.5 rounded-full bg-muted">
                       {Object.values(keywords).flat().length} added
                     </span>
                   )}
@@ -1163,8 +1228,8 @@ const allFiles = [
                   {Object.keys(categoryLabels).map((category, catIdx) => {
                     const categoryIcons = {
                       skills: <Zap className="h-4 w-4 text-amber-500" />,
-                      experience: <Clock className="h-4 w-4 text-blue-500" />,
-                      location: <MapPin className="h-4 w-4 text-rose-500" />,
+                      experience: <Clock className="h-4 w-4 text-muted-foreground" />,
+                      location: <MapPin className="h-4 w-4 text-muted-foreground" />,
                       certification: <Award className="h-4 w-4 text-emerald-500" />,
                     }
                     const catKey = category as keyof KeywordCategory
@@ -1182,7 +1247,7 @@ const allFiles = [
                               className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all ${
                                 isDarkMode
                                   ? "border-border bg-input text-foreground"
-                                  : "border-gray-200 bg-gray-50 text-gray-800"
+                                  : "border-border bg-muted text-foreground"
                               }`}
                             >
                               <option value="">Select Experience Level</option>
@@ -1205,7 +1270,7 @@ const allFiles = [
                               className={`w-full h-10 border rounded-xl text-sm focus:ring-2 focus:ring-primary/40 transition-all ${
                                 isDarkMode
                                   ? "border-border bg-input text-foreground"
-                                  : "border-gray-200 bg-gray-50 text-gray-800"
+                                  : "border-border bg-muted text-foreground"
                               }`}
                             />
                             <KeywordDisplay category={catKey} />
@@ -1232,8 +1297,8 @@ const allFiles = [
             disabled={isLoading}
             className={`btn-shimmer relative w-full overflow-hidden rounded-2xl py-5 text-lg font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
               isDarkMode
-                ? "bg-gradient-to-r text-white from-primary via-primary/80 to-primary/90 "
-                : "bg-gradient-to-r text-black from-indigo-600 via-blue-600 to-violet-600  hover:from-indigo-500 hover:via-blue-500 hover:to-violet-500"
+                ? "bg-primary hover:bg-primary/90"
+                : "bg-primary hover:bg-primary/90"
             }`}
           >
             <span className="relative z-10 flex items-center justify-center gap-3">
@@ -1255,29 +1320,33 @@ const allFiles = [
 
 
         {/* ── Previous Uploads: Styled Data Card ── */}
-        {allFiles.length > 0 && (
+        {(historyLoading || historyError || (historyTotal ?? 0) > 0 || allFiles.length > 0) && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
             className={`mt-8 rounded-2xl shadow-lg overflow-hidden border ${
-              isDarkMode ? "bg-card border-border" : "bg-white border-gray-100"
+              isDarkMode ? "bg-card border-border" : "bg-card border-border"
             }`}
           >
             {/* Section header */}
             <div className={`px-6 py-4 border-b ${
               isDarkMode
                 ? "border-border bg-muted/30"
-                : "border-gray-100 bg-gray-50"
+                : "border-border bg-muted"
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <FileText className="h-4 w-4 text-primary" />
+                  <span className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                   </span>
                   <div>
                     <h2 className="text-sm font-semibold text-foreground">Previous Uploads</h2>
-                    <p className="text-xs text-muted-foreground">{previousFiles.length} resume{previousFiles.length !== 1 ? "s" : ""} stored</p>
+                    {historyTotal === null ? (
+                      <Skeleton className="h-3 w-24 mt-1" />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{historyTotal} resume{historyTotal !== 1 ? "s" : ""} stored</p>
+                    )}
                   </div>
                 </div>
                 <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-full bg-muted">
@@ -1287,7 +1356,33 @@ const allFiles = [
             </div>
 
             {/* File rows */}
-            {previousFiles.length === 0 ? (
+            {historyLoading ? (
+              <ul className="divide-y divide-border" role="status" aria-label="Loading previous uploads">
+                {Array.from({ length: HISTORY_PAGE_SIZE }).map((_, index) => (
+                  <li key={index} className="flex items-center justify-between px-6 py-3.5">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Skeleton className="h-9 w-9 rounded-lg flex-shrink-0" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-3.5 w-2/5" />
+                        <Skeleton className="h-3 w-1/4" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : historyError ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center" role="alert">
+                <p className="text-sm font-medium text-foreground">Couldn&apos;t load your uploads</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Check your connection and try again.</p>
+                <Button variant="outline" size="sm" className="mt-3" onClick={() => loadHistory(historyPage, true)}>
+                  Retry
+                </Button>
+              </div>
+            ) : previousFiles.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
                   <FileText className="h-7 w-7 text-muted-foreground/50" />
@@ -1301,19 +1396,19 @@ const allFiles = [
                   <li
                     key={file.id}
                     className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-3.5 transition-colors table-row-stripe ${
-                      isDarkMode ? "hover:bg-muted/40" : "hover:bg-gray-50"
+                      isDarkMode ? "hover:bg-muted/40" : "hover:bg-muted"
                     }`}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="h-4 w-4 text-primary" />
+                      <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="min-w-0">
                         <a
                           href={`/api/proxy-pdf?url=${encodeURIComponent(file.url || "")}#view=FitH`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-medium text-foreground hover:text-primary underline underline-offset-2 decoration-transparent hover:decoration-primary transition-all truncate block"
+                          className="text-sm font-medium text-foreground hover:text-foreground underline underline-offset-2 decoration-transparent hover:decoration-primary transition-all truncate block"
                         >
                           {file.name}
                         </a>
@@ -1351,7 +1446,7 @@ const allFiles = [
                         }}
                         disabled={!file.url}
                         title="Download"
-                        className="p-2 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Download className="h-4 w-4" />
                       </button>
@@ -1367,6 +1462,40 @@ const allFiles = [
                   </li>
                 ))}
               </ul>
+            )}
+
+            {/* Pagination: 5 rows per page, one Firestore page read per click */}
+            {historyTotal !== null && historyTotal > HISTORY_PAGE_SIZE && !historyError && (
+              <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-muted/30">
+                <p className="text-xs text-muted-foreground" aria-live="polite">
+                  Showing {historyPage * HISTORY_PAGE_SIZE + 1}–{Math.min((historyPage + 1) * HISTORY_PAGE_SIZE, historyTotal)} of {historyTotal}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1"
+                    disabled={historyLoading || historyPage === 0}
+                    onClick={() => loadHistory(historyPage - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Prev
+                  </Button>
+                  <span className="text-xs text-muted-foreground tabular-nums px-1">
+                    {historyPage + 1} / {Math.ceil(historyTotal / HISTORY_PAGE_SIZE)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1"
+                    disabled={historyLoading || (historyPage + 1) * HISTORY_PAGE_SIZE >= historyTotal}
+                    onClick={() => loadHistory(historyPage + 1)}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
           </motion.section>
         )}

@@ -332,17 +332,17 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading settings...</p>
+          <p className="mt-4 text-muted-foreground">Loading settings...</p>
         </div>
       </div>
     )
   }
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4 sm:p-6">
+  <div className="min-h-screen bg-background p-4 sm:p-6">
       <Toaster position="top-right" />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -354,9 +354,9 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 space-y-4 sm:space-y-0 mb-6">
             <div className="relative mb-2 sm:mb-0">
-              <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-lg">
+              <Avatar className="h-24 w-24 border-4 border-border shadow-lg">
                 <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                <AvatarFallback className="bg-secondary text-foreground text-2xl font-bold">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
@@ -375,10 +375,10 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </div>
             <div className="text-center sm:text-left w-full">
-              <h1 className="text-2xl sm:text-4xl font-bold text-primary break-words">
+              <h1 className="text-2xl sm:text-4xl font-bold text-foreground break-words">
                 {userProfile?.displayName || user?.displayName || "User"}
               </h1>
-              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mt-1 break-words">{user?.email}</p>
+              <p className="text-base sm:text-lg text-muted-foreground mt-1 break-words">{user?.email}</p>
               <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mt-3">
                 <Badge variant="outline">
                   <Shield className="h-3 w-3 mr-1" />
@@ -396,8 +396,8 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
         </div>
 
         {/* Settings Tabs */}
-        <Card className="border-2 border-primary/10 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-blue-500/5 border-b">
+        <Card className="border-2 border-border shadow-lg">
+          <CardHeader className="bg-muted/40 border-b">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="profile" className="flex items-center space-x-2">
@@ -426,23 +426,23 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                 >
                   <div className="space-y-8">
                     <div>
-                      <h3 className="text-xl font-semibold text-[#130F4D] dark:text-white mb-6 flex items-center">
+                      <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center">
                         <User className="h-6 w-6 mr-2" />
                         Profile Information
                       </h3>
                     </div>
 
                     {/* Profile Image Section */}
-                    <div className="flex flex-col sm:flex-row items-center sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-xl">
-                      <Avatar className="h-20 w-20 border-4 border-primary/20">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 sm:p-6 bg-muted/40 rounded-xl">
+                      <Avatar className="h-20 w-20 border-4 border-border">
                         <AvatarImage src={profileImagePreview || "/placeholder.svg"} alt="Profile" />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+                        <AvatarFallback className="bg-secondary text-foreground text-xl font-bold">
                           {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-primary mb-2">Profile Picture</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Profile Picture</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
                           Upload a new profile picture. Recommended size: 400x400px, max 5MB.
                         </p>
                         <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -468,7 +468,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                               onClick={handleRemoveImage}
                               disabled={isUploadingImage}
                               variant="outline"
-                              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 bg-transparent"
+                              className="border-border text-red-600 hover:bg-red-50 hover:border-red-400 bg-transparent"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Remove
@@ -489,7 +489,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                           placeholder="Enter your display name"
-                          className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600"
+                          className="h-12 border-2 border-border focus:border-ring "
                         />
                       </div>
                       <div className="space-y-2">
@@ -497,36 +497,36 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                           Email Address
                         </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                           <Input
                             id="email"
                             value={email}
                             disabled
-                            className="h-12 pl-10 bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600"
+                            className="h-12 pl-10 bg-muted  border-2 border-border "
                           />
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">Email cannot be changed from settings</p>
+                        <p className="text-sm text-muted-foreground mt-1">Email cannot be changed from settings</p>
                       </div>
                     </div>
 
                     {/* Account Information */}
-                    <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
-                      <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
+                    <div className="p-4 sm:p-6 bg-muted/40 rounded-xl">
+                      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                         <Calendar className="h-5 w-5 mr-2" />
                         Account Information
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="font-medium text-gray-600 dark:text-gray-400">Account Created:</span>
-                          <p className="text-[#130F4D] dark:text-white font-semibold">
+                          <span className="font-medium text-muted-foreground">Account Created:</span>
+                          <p className="text-foreground font-semibold">
                             {user?.metadata?.creationTime
                               ? new Date(user.metadata.creationTime).toLocaleDateString()
                               : "N/A"}
                           </p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-600 dark:text-gray-400">Last Sign In:</span>
-                          <p className="text-[#130F4D] dark:text-white font-semibold">
+                          <span className="font-medium text-muted-foreground">Last Sign In:</span>
+                          <p className="text-foreground font-semibold">
                             {user?.metadata?.lastSignInTime
                               ? new Date(user.metadata.lastSignInTime).toLocaleDateString()
                               : "N/A"}
@@ -539,7 +539,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                     <Button
                       onClick={handleProfileUpdate}
                       disabled={isUpdating}
-                      className="w-full sm:w-auto bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-8 py-3 h-12 text-base font-semibold shadow-lg"
                     >
                       <Save className="h-5 w-5 mr-2" />
                       {isUpdating ? "Updating..." : "Save Changes"}
@@ -557,13 +557,13 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                 >
                   <div className="space-y-8">
                     <div>
-                      <h3 className="text-xl font-semibold text-[#130F4D] dark:text-white mb-6 flex items-center">
+                      <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center">
                         <Lock className="h-6 w-6 mr-2" />
                         Security Settings
                       </h3>
                     </div>
 
-                    <div className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <div className="p-6 bg-muted/40 rounded-xl border border-amber-200 dark:border-amber-800">
                       <div className="flex items-center space-x-3 mb-3">
                         <Shield className="h-6 w-6 text-amber-600" />
                         <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300">Password Security</h3>
@@ -584,7 +584,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
                           placeholder="Enter current password"
-                          className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600"
+                          className="h-12 border-2 border-border focus:border-ring "
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -598,7 +598,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             placeholder="Enter new password"
-                            className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600"
+                            className="h-12 border-2 border-border focus:border-ring "
                           />
                         </div>
                         <div className="space-y-2">
@@ -611,7 +611,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="Confirm new password"
-                            className="h-12 border-2 border-gray-200 focus:border-[#130F4D] dark:border-gray-600"
+                            className="h-12 border-2 border-border focus:border-ring "
                           />
                         </div>
                       </div>
@@ -638,7 +638,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                 >
                   <div className="space-y-8">
                     <div>
-                      <h3 className="text-xl font-semibold text-[#130F4D] dark:text-white mb-6 flex items-center">
+                      <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center">
                         <CreditCard className="h-6 w-6 mr-2" />
                         Subscription Details
                       </h3>
@@ -647,7 +647,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                     {subscriptionData ? (
                       <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                          <div className="p-6 bg-muted/40 rounded-xl border border-border ">
                             <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center">
                               <CreditCard className="h-5 w-5 mr-2" />
                               Current Plan
@@ -656,7 +656,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                               {subscriptionData.activePlan ? (
                                 <Badge
                                   variant="default"
-                                  className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 text-base"
+                                  className="bg-primary text-white px-4 py-2 text-base"
                                 >
                                   {subscriptionData.activePlan}
                                 </Badge>
@@ -667,12 +667,12 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                               )}
                             </div>
                           </div>
-                          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                            <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Resume Credits</h3>
-                            <p className="text-3xl font-bold text-[#130F4D] dark:text-white mt-3">
+                          <div className="p-6 bg-muted/40 rounded-xl border border-border ">
+                            <h3 className="font-semibold text-foreground mb-2">Resume Credits</h3>
+                            <p className="text-3xl font-bold text-foreground mt-3">
                               {subscriptionData.resumeLimit === 999999 ? "∞" : subscriptionData.resumeLimit}
                             </p>
-                            <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">analyses remaining</p>
+                            <p className="text-sm text-foreground mt-1">analyses remaining</p>
                           </div>
                         </div>
 
@@ -681,13 +681,13 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                             <h3 className="font-semibold text-muted-foreground mb-2">
                               Subscription Date
                             </h3>
-                            <p className="text-lg font-semibold text-primary mt-3">
+                            <p className="text-lg font-semibold text-foreground mt-3">
                               {formatDate(subscriptionData.subscriptionDate)}
                             </p>
                           </div>
                           <div className="p-6 bg-background rounded-xl border border-muted-foreground">
                             <h3 className="font-semibold text-muted-foreground mb-2">Days Remaining</h3>
-                            <p className="text-3xl font-bold text-primary mt-3">
+                            <p className="text-3xl font-bold text-foreground mt-3">
                               {subscriptionData.expirationDate
                                 ? getDaysRemaining(subscriptionData.expirationDate)
                                 : "∞"}
@@ -706,7 +706,7 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                               className={`w-4 h-4 rounded-full ${subscriptionData.isActive ? "bg-green-500" : "bg-red-500"
                                 }`}
                             ></div>
-                            <span className="text-lg font-semibold text-primary">
+                            <span className="text-lg font-semibold text-foreground">
                               {subscriptionData.isActive ? "Active" : "Inactive"}
                             </span>
                           </div>

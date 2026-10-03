@@ -89,49 +89,49 @@ export function Sidebar({ children }: SidebarProps) {
       label: "Dashboard",
       icon: LayoutDashboard,
       href: "/dashboard",
-      color: "text-orange-500",
+      color: "text-foreground",
     },
     {
       label: "Results",
       icon: BarChart,
       href: "/dashboard/result",
-      color: "text-orange-600",
+      color: "text-foreground",
     },
     {
       label: "Compare",
       icon: BarChart2,
       href: "/dashboard/compare",
-      color: "text-orange-700",
+      color: "text-foreground",
     },
     {
       label: "Visualization",
       icon: FileDigit,
       href: "/dashboard/visualization",
-      color: "text-yellow-500",
+      color: "text-foreground",
     },
     {
       label: "PDF Viewer",
       icon: Eye,
       href: "/dashboard/pdf-viewer",
-      color: "text-yellow-600",
+      color: "text-foreground",
     },
     {
       label: "AI Suggestions",
       icon: Sparkles,
       href: "/dashboard/ai-suggestions",
-      color: "text-yellow-700",
+      color: "text-foreground",
     },
     {
       label: "Subscription",
       icon: Users,
       href: "/dashboard/subscription",
-      color: "text-orange-800",
+      color: "text-foreground",
     },
     {
       label: "Settings",
       icon: Settings,
       href: "/dashboard/settings",
-      color: "text-gray-500",
+      color: "text-muted-foreground",
     },
   ]
 
@@ -159,30 +159,30 @@ export function Sidebar({ children }: SidebarProps) {
         {/* Brand Header with gradient accent */}
         <div className={cn(
           "flex items-center justify-between p-4 border-b border-border",
-          isOpen ? "bg-gradient-to-r from-orange-500/10 to-transparent" : ""
+          isOpen ? "bg-muted/40" : ""
         )}>
           <div className="flex items-center space-x-2">
             <div className="relative">
-              <FileText className="h-8 w-8 text-orange-500" />
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+              <FileText className="h-8 w-8 text-muted-foreground" />
+              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-pulse" />
             </div>
             {isOpen && (
               <div>
-                <span className="block max-w-[132px] text-sm leading-tight font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Leaders CV Checker</span>
+                <span className="block max-w-[132px] text-sm leading-tight font-bold bg-primary bg-clip-text text-transparent">Leaders CV Checker</span>
                 <p className="text-[10px] text-muted-foreground -mt-0.5 tracking-widest uppercase">Dashboard</p>
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="rounded-full h-8 w-8 hover:bg-orange-500/10">
+          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="rounded-full h-8 w-8 hover:bg-primary/10">
             {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
           </Button>
         </div>
 
         {/* User Profile Section */}
         {user && isOpen && (
-          <div className="px-4 py-3 mx-3 my-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-orange-400/5 border border-orange-500/20">
+          <div className="px-4 py-3 mx-3 my-2 rounded-xl bg-muted/40 border border-border">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-full ring-2 ring-orange-400/40 overflow-hidden flex-shrink-0">
+              <div className="w-9 h-9 rounded-full ring-2 ring-primary/40 overflow-hidden flex-shrink-0">
                 {userProfile?.profileImage || userProfile?.photoURL || user.photoURL ? (
                   <Image
                     src={userProfile?.profileImage || userProfile?.photoURL || user.photoURL || "/placeholder.svg"}
@@ -192,8 +192,8 @@ export function Sidebar({ children }: SidebarProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                    <User className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <div className="w-full h-full bg-primary flex items-center justify-center">
+                    <User className="w-4 h-4 text-muted-foreground " />
                   </div>
                 )}
               </div>
@@ -218,14 +218,14 @@ export function Sidebar({ children }: SidebarProps) {
                     "w-full font-medium justify-start items-center py-2.5 text-sm mb-0.5 rounded-lg transition-all duration-200 relative overflow-hidden",
                     !isOpen && "justify-center px-0",
                     isActive
-                      ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 sidebar-active-item font-semibold"
+                      ? "bg-primary/15 text-primary sidebar-active-item font-semibold"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <route.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? route.color : "")} />
                   {isOpen && <span className="ml-3">{route.label}</span>}
                   {isActive && isOpen && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-orange-500" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                   )}
                 </Button>
               </Link>
@@ -241,7 +241,7 @@ export function Sidebar({ children }: SidebarProps) {
           >
             {isDarkMode
               ? <Sun className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-              : <Moon className="h-4 w-4 text-slate-500 flex-shrink-0" />}
+              : <Moon className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
             {isOpen && <span className={`ml-3 ${isDarkMode ? "text-yellow-500" : "text-muted-foreground"}`}>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>}
           </Button>
           <Button

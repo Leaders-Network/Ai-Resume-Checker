@@ -45,10 +45,10 @@
 //   }, []);
 
 //   return (
-//     // <div className="w-full h-screen flex items-center justify-center bg-gray-50">
-//            <div className="w-full max-w-[100%]  h-[100vh] flex flex-col md:flex-row bg-white rounded-lg shadow-lg overflow-hidden">
+//     // <div className="w-full h-screen flex items-center justify-center bg-muted">
+//            <div className="w-full max-w-[100%]  h-[100vh] flex flex-col md:flex-row bg-card rounded-lg shadow-lg overflow-hidden">
 //         {/* Left Section */}
-//         <div className="md:w-1/2 bg-[#130F4D] p-8 flex flex-col justify-center text-white">
+//         <div className="md:w-1/2 bg-primary p-8 flex flex-col justify-center text-white">
 //           <h1 className="text-4xl font-bold mb-4">Let’s Get You Started</h1>
 //           <p className="mb-8">
 //             Quickly upload your resume to uncover insights and get detailed feedback. Let’s help you make it stand out!
@@ -61,12 +61,12 @@
 //           <div>
 //             <form className="space-y-6">
 //               <Link href="/signup">
-//                 <button className="w-full px-4 py-2 text-white bg-[#130F4D] rounded-lg hover:bg-[#0F0B3E] transition">
+//                 <button className="w-full px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition">
 //                   Log in with Email
 //                 </button>
 //               </Link>
 
-//               <p className="text-gray-500 text-center">Or log in with</p>
+//               <p className="text-muted-foreground text-center">Or log in with</p>
 
 //               <button
 //                 onClick={handleGoogle}
@@ -95,12 +95,12 @@
 //           {/* Buttons Section */}
 //           <div className="mt-8 space-y-4">
 //             <Link href="/signup">
-//               <button className="w-full mt-10 bg-white text-[#130F4D] px-6 py-2 rounded-lg font-semibold hover:bg-gray-200">
+//               <button className="w-full mt-10 bg-card text-foreground px-6 py-2 rounded-lg font-semibold hover:bg-muted">
 //                 Don’t have an account?
 //               </button>
 //             </Link>
 //             <Link href="/">
-//               <button className="w-full bg-transparent border border-[#130F4D] px-6 py-2 rounded-lg font-semibold hover:bg-gray-200 text-[#130F4D]">
+//               <button className="w-full bg-transparent border border-border px-6 py-2 rounded-lg font-semibold hover:bg-muted text-foreground">
 //                 Back to Homepage
 //               </button>
 //             </Link>

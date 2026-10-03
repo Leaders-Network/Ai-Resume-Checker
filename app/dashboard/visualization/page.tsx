@@ -225,12 +225,12 @@ export default function VisualizationPage() {
   }))
 
   const chartColors = {
-    primary: theme === 'dark' ? '#FFFFFF' : '#130F4D',
+    primary: theme === 'dark' ? '#F4EFE8' : '#14284B',
     green: '#10B981',
-    blue: '#3B82F6',
+    blue: theme === 'dark' ? '#6A9CFF' : '#2668E8',
     yellow: '#F59E0B',
     red: '#EF4444',
-    purple: '#8B5CF6',
+    purple: '#E0622B', // brand orange (was purple)
     teal: '#14B8A6'
   }
 
@@ -251,9 +251,9 @@ export default function VisualizationPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <div className="flex justify-center items-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin h-12 w-12 border-4 border-[#130F4D] border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
           <p className="text-muted-foreground">Loading visualizations...</p>
         </div>
       </div>
@@ -262,20 +262,20 @@ export default function VisualizationPage() {
 
   if (resumes.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 p-4">
-        <Card className="w-full max-w-md border-2 border-[#130F4D]/10 shadow-lg">
+      <div className="flex flex-col justify-center items-center h-screen bg-background p-4">
+        <Card className="w-full max-w-md border-2 border-border shadow-lg">
           <CardHeader className="text-center">
-            <div className="p-4 bg-gradient-to-br from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900/20 rounded-full w-16 h-16 mx-auto mb-4">
-              <BarChart3 className="h-8 w-8 text-gray-400 mx-auto mt-2" />
+            <div className="p-4 bg-muted/40 rounded-full w-16 h-16 mx-auto mb-4">
+              <BarChart3 className="h-8 w-8 text-muted-foreground mx-auto mt-2" />
             </div>
             <CardTitle className="text-xl">No Data to Visualize</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Upload and analyze resumes to see beautiful data visualizations.
             </p>
             <Link href="/dashboard">
-              <Button className="w-full bg-gradient-to-r from-[#130F4D] to-blue-600 hover:from-[#0F0B3E] hover:to-blue-700 text-white">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Go to Dashboard
               </Button>
@@ -300,31 +300,31 @@ export default function VisualizationPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Avatar className="h-16 w-16 border-4 border-[#130F4D]/20 shadow-lg">
+                <Avatar className="h-16 w-16 border-4 border-border shadow-lg">
                   <AvatarImage src={userProfile?.photoURL || user?.photoURL || ""} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-[#130F4D] to-blue-600 text-white text-lg font-bold">
+                  <AvatarFallback className="bg-secondary text-foreground text-lg font-bold">
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 {subscriptionData?.isActive && (
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-1">
+                  <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
                     <Crown className="h-3 w-3 text-white" />
                   </div>
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#130F4D] dark:text-white">Data Visualization</h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">Visual insights from your resume analysis</p>
+                <h1 className="text-3xl font-bold text-foreground">Data Visualization</h1>
+                <p className="text-muted-foreground mt-1">Visual insights from your resume analysis</p>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge
                     variant="secondary"
-                    className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                    className="bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground"
                   >
                     <BarChart3 className="h-3 w-3 mr-1" />
                     {resumes.length} Resumes
                   </Badge>
                   {subscriptionData?.isActive && (
-                    <Badge variant="secondary" className="bg-[#130F4D] text-white">
+                    <Badge variant="secondary" className="bg-primary text-white">
                       <Crown className="h-3 w-3 mr-1" />
                       {subscriptionData.activePlan}
                     </Badge>
@@ -339,7 +339,7 @@ export default function VisualizationPage() {
               </Button>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Credits Remaining</p>
-                <p className="text-2xl font-bold text-primary">
+                <p className="text-2xl font-bold text-foreground">
                   {subscriptionData?.resumeLimit || 0}
                 </p>
               </div>
@@ -354,16 +354,16 @@ export default function VisualizationPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
         >
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-800/30 border-blue-200 dark:border-blue-700 shadow-lg">
+          <Card className="bg-muted/40 border-border shadow-lg">
             <CardContent className="p-6 text-center">
-              <BarChart3 className="h-12 w-12 text-blue-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <div className="text-3xl font-bold text-blue-700 ">
                 {Math.round(resumes.reduce((sum, r) => sum + r.score, 0) / resumes.length)}%
               </div>
-              <div className="text-sm text-blue-600/80 dark:text-blue-300/80">Average Score</div>
+              <div className="text-sm text-foreground /80">Average Score</div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 border-green-200 dark:border-green-700 shadow-lg">
+          <Card className="bg-muted/40 border-border shadow-lg">
             <CardContent className="p-6 text-center">
               <TrendingUp className="h-12 w-12 text-green-600 mx-auto mb-3" />
               <div className="text-3xl font-bold text-green-700 dark:text-green-300">
@@ -372,20 +372,20 @@ export default function VisualizationPage() {
               <div className="text-sm text-green-600/80 dark:text-green-300/80">High Performers</div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/30 dark:to-pink-800/30 border-purple-200 dark:border-purple-700 shadow-lg">
+          <Card className="bg-muted/40 border-border shadow-lg">
             <CardContent className="p-6 text-center">
-              <Target className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+              <Target className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <div className="text-3xl font-bold text-muted-foreground dark:text-muted-foreground">
                 {Math.round(resumes.reduce((sum, r) => sum + r.matches.length, 0) / resumes.length)}
               </div>
-              <div className="text-sm text-purple-600/80 dark:text-purple-300/80">Avg Keywords</div>
+              <div className="text-sm text-muted-foreground dark:text-muted-foreground">Avg Keywords</div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-orange-50 to-red-100 dark:from-orange-900/30 dark:to-red-800/30 border-orange-200 dark:border-orange-700 shadow-lg">
+          <Card className="bg-muted/40 border-border shadow-lg">
             <CardContent className="p-6 text-center">
-              <Eye className="h-12 w-12 text-orange-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-orange-700 dark:text-orange-300">{resumes.length}</div>
-              <div className="text-sm text-orange-600/80 dark:text-orange-300/80">Total Analyzed</div>
+              <Eye className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <div className="text-3xl font-bold text-foreground ">{resumes.length}</div>
+              <div className="text-sm text-foreground /80">Total Analyzed</div>
             </CardContent>
           </Card>
         </motion.div>
@@ -396,41 +396,41 @@ export default function VisualizationPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border-2 border-[#130F4D]/10 shadow-lg">
-            <CardHeader className="pb-2 bg-gradient-to-r from-[#130F4D]/5 to-blue-500/5">
+          <Card className="border-2 border-border shadow-lg">
+            <CardHeader className="pb-2 bg-muted/40">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full flex flex-wrap sm:grid sm:grid-cols-5 bg-white dark:bg-gray-800 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <TabsList className="w-full flex flex-wrap sm:grid sm:grid-cols-5 bg-card overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <TabsTrigger
                     value="overview"
-                    className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
                     Overview
                   </TabsTrigger>
                   <TabsTrigger
                     value="distribution"
-                    className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                   >
                     <PieChartIcon className="mr-2 h-4 w-4" />
                     Distribution
                   </TabsTrigger>
                   <TabsTrigger
                     value="categories"
-                    className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                   >
                     <Award className="mr-2 h-4 w-4" />
                     Categories
                   </TabsTrigger>
                   <TabsTrigger
                     value="comparison"
-                    className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                   >
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Comparison
                   </TabsTrigger>
                   <TabsTrigger
                     value="keywords"
-                    className="data-[state=active]:bg-[#130F4D] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                   >
                     <Target className="mr-2 h-4 w-4" />
                     Keywords
@@ -443,7 +443,7 @@ export default function VisualizationPage() {
                 <TabsContent value="overview" className="mt-0">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Resume Score Overview
                       </h3>
                       <div className="h-80">
@@ -467,7 +467,7 @@ export default function VisualizationPage() {
                 <TabsContent value="distribution" className="mt-0">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Score Range Distribution
                       </h3>
                       <div className="h-80">
@@ -496,19 +496,19 @@ export default function VisualizationPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">Performance Metrics</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Performance Metrics</h3>
                       <div className="space-y-4">
                         {scoreRangeData.map((item, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-lg"
+                            className="flex items-center justify-between p-4 bg-muted/40 rounded-lg"
                           >
                             <div className="flex items-center space-x-3">
                               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
-                              <span className="font-medium text-[#130F4D] dark:text-white">{item.range}</span>
+                              <span className="font-medium text-foreground">{item.range}</span>
                             </div>
                             <div className="text-right">
-                              <div className="text-2xl font-bold text-[#130F4D] dark:text-white">{item.count}</div>
+                              <div className="text-2xl font-bold text-foreground">{item.count}</div>
                               <p className="text-sm text-muted-foreground">An overview of your resume scores</p>
                             </div>
                           </div>
@@ -521,7 +521,7 @@ export default function VisualizationPage() {
                 <TabsContent value="categories" className="mt-0">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Category Performance Averages
                       </h3>
                       <div className="h-80">
@@ -542,13 +542,13 @@ export default function VisualizationPage() {
                         return (
                           <div
                             key={index}
-                            className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg text-center"
+                            className="p-4 bg-muted/40 rounded-lg text-center"
                           >
-                            <IconComponent className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            <IconComponent className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                            <div className="text-2xl font-bold text-foreground ">
                               {category.average}%
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">{category.category}</div>
+                            <div className="text-sm text-muted-foreground">{category.category}</div>
                           </div>
                         )
                       })}
@@ -559,7 +559,7 @@ export default function VisualizationPage() {
                 <TabsContent value="comparison" className="mt-0">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Multi-Category Radar Comparison (Top 3 Resumes)
                       </h3>
                       <div className="h-80">
@@ -578,7 +578,7 @@ export default function VisualizationPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Score Trend Analysis
                       </h3>
                       <div className="h-80">
@@ -605,7 +605,7 @@ export default function VisualizationPage() {
                 <TabsContent value="keywords" className="mt-0">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Keyword Coverage Analysis
                       </h3>
                       <div className="h-80">
@@ -638,7 +638,7 @@ labelFormatter={(
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#130F4D] dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
                         Keyword Coverage Percentage
                       </h3>
                       <div className="h-80">
