@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/Sidebar";
 import { DarkModeProvider } from '@/app/context/DarkModeContext';
+import LegalConsent from "@/components/LegalConsent";
 import { Provider } from "react-redux";
 import { store } from "@/lib/store";
 
@@ -13,6 +14,7 @@ export default function DashboardLayout({
   return (
     <Provider store={store}>
       <DarkModeProvider>
+        <LegalConsent />
         <div className="flex min-h-screen bg-background text-foreground">
           <Sidebar>
             <main className="w-full">{children}</main>

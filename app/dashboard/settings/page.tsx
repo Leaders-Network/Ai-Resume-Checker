@@ -17,6 +17,7 @@ import toast, { Toaster } from "react-hot-toast"
 import { motion } from "framer-motion"
 import { User, Lock, CreditCard, Save, Camera, Upload, Mail, Calendar, Shield, Trash2 } from "lucide-react"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+import DeleteAccount from "@/components/DeleteAccount"
 
 
 
@@ -585,6 +586,9 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
                       <Lock className="h-5 w-5 mr-2" />
                       {isUpdating ? "Updating..." : "Update Password"}
                     </Button>
+
+                    <Separator />
+                    <DeleteAccount />
                   </div>
                 </motion.div>
               </TabsContent>

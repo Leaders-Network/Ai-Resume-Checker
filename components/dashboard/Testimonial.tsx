@@ -1,9 +1,9 @@
 import Image from "next/image";
 export default function Testimonial() {
-  return <section className="testimonial" id="stories" aria-label="Customer story">
-    <figure className="testimonial-photo"><Image src="/landing/testimonial-workspace.jpg" alt="A job seeker reviewing their resume on a laptop" fill sizes="(min-width: 900px) 50vw, 100vw" /><figcaption><strong>84 → 97</strong><span>resume score</span></figcaption></figure>
+  return <section className="testimonial" id="stories" aria-label="Why recruiters use it">
+    <figure className="testimonial-photo"><Image src="/landing/testimonial-workspace.jpg" alt="A recruiter reviewing applicant CVs on a laptop" fill sizes="(min-width: 900px) 50vw, 100vw" /><figcaption><strong>50 CVs</strong><span>per month on Professional</span></figcaption></figure>
     <div className="testimonial-body"><span className="quote-mark" aria-hidden="true">“</span>
-      <blockquote><p>I stopped trying to sound impressive and finally sounded like myself—just clearer, stronger, and impossible to overlook.</p></blockquote>
-      <p className="testimonial-author"><strong>Maya Chen</strong><span>Product designer · Hired in 3 weeks</span></p></div>
+      <blockquote><p>Every applicant is held to the same criteria, so your shortlist reflects the role, not how much time you had to read.</p></blockquote>
+      <p className="testimonial-author"><strong>Consistent screening</strong><span>Same requirements · every CV · every time</span></p></div>
   </section>;
 }

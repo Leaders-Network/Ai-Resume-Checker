@@ -6,7 +6,7 @@ export type PlanId = "basic" | "pro" | "enterprise";
 export interface Plan { id: PlanId; name: string; description: string; monthlyPrice: number; monthlyAllowance: number; features: readonly string[]; }
 const common = ["Keyword matching and score overview", "PDF viewer", "CV comparison"];
 export const PLANS: readonly Plan[] = [
-  { id: "basic", name: "Basic", description: "Check your CV against the requirements of your next role.", monthlyPrice: 3500, monthlyAllowance: 10, features: ["10 CV uploads per month", ...common] },
+  { id: "basic", name: "Basic", description: "Screen applicant CVs against the requirements of a role.", monthlyPrice: 3500, monthlyAllowance: 10, features: ["10 CV uploads per month", ...common] },
   { id: "pro", name: "Professional", description: "Compare more CVs and review detailed feedback.", monthlyPrice: 7500, monthlyAllowance: 50, features: ["50 CV uploads per month", ...common, "Content and formatting feedback", "Data visualization", "Export reports"] },
   { id: "enterprise", name: "Enterprise", description: "Discuss CV checking for your team or organization.", monthlyPrice: 39500, monthlyAllowance: 999999, features: ["Unlimited CV uploads", ...common, "Content and formatting feedback", "Data visualization"] },
 ];

@@ -47,7 +47,7 @@ export default function SubscriptionPage() {
   const paid = subscription ? hasPaidAccess(subscription, new Date()) : false;
   return <div className="landing subscription-checkout"><div className="landing-container" style={{ paddingBlock: 40 }}>
     <Link href="/dashboard" className="sample-link">Back to dashboard</Link>
-    <h1 style={{ fontSize: 32, marginBlock: "20px 28px" }}>Your CV checking plan</h1>
+    <h1 style={{ fontSize: 32, marginBlock: "20px 28px" }}>Your CV screening plan</h1>
     {loading ? <p role="status">Loading your subscription…</p> : !user ? <p><Link href={`/signin${selection}`} className="landing-button">Sign in to choose a plan</Link></p> : <>
       {error && <div role="alert" style={{ padding: 20, border: "1px solid currentColor", marginBottom: 28 }}><p>{error}</p><button type="button" className="plan-button" onClick={() => setRetry(value => value + 1)}>Retry subscription check</button></div>}
       {subscription && <div style={{ marginBottom: 36, lineHeight: 1.8 }}><p>Current plan: <strong>{subscription.activePlan || "Free"}</strong></p><p>CV upload credits remaining: {subscription.resumeLimit === 999999 ? "Unlimited" : subscription.resumeLimit}</p>{subscription.expirationDate && <p>Access {subscription.isActive ? "expires" : "expired"}: {new Date(subscription.expirationDate).toLocaleDateString("en-NG")}</p>}{subscription.creditPeriodEnd && paid && <p>Next credit refresh: {new Date(subscription.creditPeriodEnd).toLocaleDateString("en-NG")}</p>}{paid && <p>New checkout is available after your current paid access expires.</p>}</div>}

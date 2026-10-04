@@ -217,7 +217,7 @@ const Signup = () => {
           <div className="hidden md:flex md:w-1/2 bg-background p-8 flex-col justify-center text-foreground relative">
             <div className="relative z-10">
               <h1 className="text-3xl font-bold mb-2">Leaders CV Checker</h1>
-              <p className="text-muted-foreground mb-8">Check your CV against job requirements</p>
+              <p className="text-muted-foreground mb-8">Screen applicant CVs against job requirements</p>
 
               <h2 className="text-2xl font-semibold mb-4">Create your account</h2>
               <p className="text-muted-foreground mb-8">

@@ -6,9 +6,9 @@ export const FAQ_ITEMS = [
   ["Is there a free trial for paid plans?", "New accounts receive a 7-day free trial. No payment card is required to start. Paid plans begin only when you choose a plan and complete checkout."],
 ];
 export const LANDING_FAQ_ITEMS = [
-  ["Will my CV be stored?", "Uploaded PDFs are saved to your account so you can reopen them in the PDF viewer and compare them later. You can delete any CV from your history whenever you like."],
-  ["Does it work with every industry?", "Yes. You enter the skills, experience, location and certifications from the job description, so the check follows the role you are applying for."],
-  ["What does the checker actually check?", "It compares your CV text with the keywords you choose, then gives feedback on content, such as action verbs and measurable achievements, and on formatting, such as bullet points, section headers and contact details."],
+  ["Will applicant CVs be stored?", "Uploaded PDFs are saved to your account so you can reopen them in the PDF viewer and compare them later. You can delete any CV from your history whenever you like."],
+  ["Does it work with every industry?", "Yes. You enter the skills, experience, location and certifications the role requires, so the screening follows the position you are hiring for."],
+  ["What does the checker actually check?", "It compares each applicant's CV text with the requirements you set and scores the match, showing what is matched and missing. Paid plans add feedback on content, such as action verbs and measurable achievements, and on formatting, such as bullet points, section headers and contact details."],
   ["Can I cancel a paid plan anytime?", "Paid plans are bought for the period you choose, monthly or annual, and do not renew automatically, so there is nothing to cancel. When your access expires you can choose a new plan."],
 ];
 export default function FAQ({ variant }: { variant?: "landing" }) {

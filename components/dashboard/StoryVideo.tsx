@@ -37,7 +37,7 @@ export default function StoryVideo() {
   return <section ref={section} className={`story ${watching ? "story-playing" : ""}`} id="story" aria-labelledby="story-title">
     <video ref={video} className="story-video" src="/landing/career-story-video.mp4" poster="/landing/testimonial-workspace.jpg" preload="metadata" muted loop={!watching} playsInline controls={watching} onPause={() => watchingRef.current && leaveWatching()} onEnded={leaveWatching} />
     <div className="story-shade" aria-hidden="true" />
-    <div className="landing-container story-content"><p className="section-label">01 — The shift</p><h2 id="story-title">Your next chapter is already in motion.</h2><p>Watch how one honest review can change the way you show up.</p>
+    <div className="landing-container story-content"><p className="section-label">01 — The shift</p><h2 id="story-title">Hiring decisions start with a better first look.</h2><p>Watch how requirement-based screening changes the way you review applicants.</p>
       <button type="button" className="story-play" onClick={watch} aria-label="Watch the career story video with sound"><Play size={20} fill="currentColor" aria-hidden="true" /></button></div>
   </section>;
 }

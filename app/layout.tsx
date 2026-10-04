@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = "Leaders CV Checker | Check your CV against job requirements";
-const description = "Compare your CV with job keywords, find missing requirements, and review content and formatting feedback. CV checking for job seekers in Nigeria and across Africa.";
+const title = "Leaders CV Checker | Screen applicant CVs against job requirements";
+const description = "Upload applicant CVs in bulk, score them against the skills, experience, location and certifications a role needs, and compare candidates. CV screening for recruiters and hiring teams in Nigeria and across Africa.";
 export const metadata: Metadata = {
   metadataBase: new URL("https://leaderscvchecker.com"),
   title, description,
