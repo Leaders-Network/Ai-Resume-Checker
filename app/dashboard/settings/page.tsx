@@ -30,46 +30,6 @@ interface UserProfile {
   lastLoginAt: string
 }
 
-// Add proper types for Paystack
-interface PaystackResponse {
-  reference: string
-  status: string
-  trans: string
-  transaction: string
-  message: string
-  redirecturl: string
-}
-
-interface PaystackHandler {
-  openIframe: () => void
-}
-
-interface PaystackPop {
-  setup: (config: {
-    key: string
-    email: string | null
-    amount: number
-    currency: string
-    ref: string
-    metadata: {
-      custom_fields: Array<{
-        display_name: string
-        variable_name: string
-        value: string
-      }>
-    }
-    callback: (response: PaystackResponse) => void
-    onClose: () => void
-  }) => PaystackHandler
-}
-
-// Update global declaration with proper types
-declare global {
-  interface Window {
-    PaystackPop: PaystackPop
-  }
-}
-
 const SettingsPage = () => {
   const [user, loading] = useAuthState(auth)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
