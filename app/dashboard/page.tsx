@@ -21,6 +21,7 @@ import {
   query, orderBy, limit, startAfter, getCountFromServer, type QueryDocumentSnapshot,
 } from "firebase/firestore"
 import { getUserSubscription, checkFeatureAccess, type SubscriptionData } from "@/lib/auth"
+import { formatPdfTextItems } from "@/lib/pdf-text"
 // import { signOut } from "firebase/auth"
 import { useDarkMode } from "@/app/context/DarkModeContext";
 // import { TextItem } from "pdfjs-dist/types/src/display/api"
@@ -162,7 +163,8 @@ const extractTextFromPDF = async (file: File) => {
         for (let i = 0; i < pdf.numPages; i++) {
           const page = await pdf.getPage(i + 1)
           const text = await page.getTextContent()
-          textContent += text.items.map((item: Record<string, unknown>) => item.str).join(" ")
+          const pageText = formatPdfTextItems(text.items)
+          textContent += `${textContent ? "\n\n" : ""}${pageText}`
         }
         resolve(textContent)
       } catch (error) {
@@ -175,7 +177,7 @@ const extractTextFromPDF = async (file: File) => {
 
 // Function to extract keywords from resume text
 const extractKeywords = (text: string) => {
-  const lowerText = text.toLowerCase()
+  const lowerText = text.toLowerCase().replace(/\s+/g, " ")
   const extractedKeywords = {
     skills: [] as string[],
     experience: [] as string[],

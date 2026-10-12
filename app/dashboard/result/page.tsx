@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, FileText, Filter, Search, Eye } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Download, FileText, Filter, Search, Eye } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,9 @@ import { useAuthState } from "react-firebase-hooks/auth"
 import { auth, db } from "@/config/firebase"
 import { doc, getDoc } from "firebase/firestore"
 import { getUserSubscription, type SubscriptionData } from "@/lib/auth"
+import { createCandidateCsv } from "@/lib/candidate-csv"
+
+const PAGE_SIZE = 10
 
 interface Resume {
   fileName: string
@@ -40,6 +43,12 @@ interface UserProfile {
   lastLoginAt: string
 }
 
+interface KeywordCategories {
+  experience: string[]
+  location: string[]
+  certification: string[]
+}
+
 export default function ResultPage() {
   const router = useRouter()
   const [user] = useAuthState(auth)
@@ -49,6 +58,12 @@ export default function ResultPage() {
   const [sortConfig, setSortConfig] = useState({ key: "score", direction: "desc" })
   const [searchTerm, setSearchTerm] = useState("")
   const [filterScore, setFilterScore] = useState("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [keywordCategories, setKeywordCategories] = useState<KeywordCategories>({
+    experience: [],
+    location: [],
+    certification: [],
+  })
 
   void userProfile
   void subscriptionData
@@ -81,6 +96,15 @@ export default function ResultPage() {
     const storedResumes = sessionStorage.getItem("resumes")
     if (storedResumes) {
       setResumes(JSON.parse(storedResumes))
+    }
+    const storedKeywordCategories = sessionStorage.getItem("keywordCategories")
+    if (storedKeywordCategories) {
+      const parsed = JSON.parse(storedKeywordCategories) as Partial<KeywordCategories>
+      setKeywordCategories({
+        experience: parsed.experience ?? [],
+        location: parsed.location ?? [],
+        certification: parsed.certification ?? [],
+      })
     }
     if (user) {
       loadUserProfile()
@@ -153,6 +177,32 @@ export default function ResultPage() {
   }
 
   const sortedResumes = getSortedResumes()
+  const totalPages = Math.max(1, Math.ceil(sortedResumes.length / PAGE_SIZE))
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const paginatedResumes = sortedResumes.slice(pageStart, pageStart + PAGE_SIZE)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filterScore])
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, totalPages])
+
+  const handleExportCsv = () => {
+    if (sortedResumes.length === 0) return
+
+    const csv = createCandidateCsv(sortedResumes, keywordCategories)
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = `analysis-results-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
 
   
 
@@ -259,8 +309,18 @@ export default function ResultPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card className="overflow-hidden border-2 border-border/10 shadow-lg bg-card">
-            <CardHeader className="bg-muted/40 border-b border-border">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 bg-muted/40 border-b border-border">
               <CardTitle className="text-xl">Analysis Results</CardTitle>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleExportCsv}
+                disabled={sortedResumes.length === 0}
+                className="shrink-0"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -296,9 +356,9 @@ export default function ResultPage() {
                 </thead>
                 <tbody>
                   {sortedResumes.length > 0 ? (
-                    sortedResumes.map((resume, index) => (
+                    paginatedResumes.map((resume, index) => (
                       <tr
-                        key={index}
+                        key={`${resume.fileName}-${pageStart + index}`}
                         className="border-t border-border hover:bg-secondary/20 transition-all duration-200"
                       >
                         <td className="px-6 py-4 text-foreground">
@@ -395,6 +455,40 @@ export default function ResultPage() {
                 </tbody>
               </table>
             </div>
+            {sortedResumes.length > 0 && (
+              <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, sortedResumes.length)} of {sortedResumes.length} results
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                    aria-label="Go to previous page"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <span className="min-w-20 text-center text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={currentPage === totalPages}
+                    aria-label="Go to next page"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </motion.div>
       </div>

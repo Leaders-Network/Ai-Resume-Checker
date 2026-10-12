@@ -6,8 +6,9 @@ const experiencePatterns: Record<string, RegExp> = {
   "0-1 years": /\b(0|1|zero|one)[\s-]*(year|yr)s?\b|\b(0|zero)[\s-]*to[\s-]*(1|one)[\s-]*(year|yr)s?\b|\bless than (1|one)[\s-]*(year|yr)s?\b/i,
 };
 export function scoreCV(content: string, keywords: KeywordCategory) {
-  const contains = (keyword: string) => content.toLowerCase().includes(keyword.toLowerCase());
-  const experienceMatch = (keyword: string) => experiencePatterns[keyword]?.test(content) ?? contains(keyword);
+  const normalizedContent = content.toLowerCase().replace(/\s+/g, " ");
+  const contains = (keyword: string) => normalizedContent.includes(keyword.toLowerCase().replace(/\s+/g, " "));
+  const experienceMatch = (keyword: string) => experiencePatterns[keyword]?.test(normalizedContent) ?? contains(keyword);
   const all = [...keywords.skills, ...keywords.experience, ...keywords.location, ...keywords.certification];
   // Preserve experience-category precedence for duplicate keywords.
   const matches = all.filter(keyword => keywords.experience.includes(keyword) ? experienceMatch(keyword) : contains(keyword));

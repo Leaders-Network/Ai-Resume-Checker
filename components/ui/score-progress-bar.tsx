@@ -11,8 +11,10 @@ const ScoreProgressBar = React.forwardRef<
   HTMLDivElement,
   ScoreProgressBarProps
 >(({ className, score, ...props }, ref) => {
+  const normalizedScore = Number.isFinite(score) ? Math.min(100, Math.max(0, score)) : 0
+
   const getScoreColor = (s: number) => {
-    if (s >= 70) return "bg-muted/40"
+    if (s >= 70) return "bg-green-500"
     if (s >= 40) return "bg-yellow-500"
     return "bg-destructive"
   }
@@ -21,11 +23,15 @@ const ScoreProgressBar = React.forwardRef<
     <div
       ref={ref}
       className={cn("h-2 w-full overflow-hidden rounded-full bg-muted", className)}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(normalizedScore)}
       {...props}
     >
       <div
-        className={`h-full w-full flex-1 transition-all ${getScoreColor(score)}`}
-        style={{ transform: `translateX(-${100 - (score || 0)}%)` }}
+        className={`h-full rounded-full transition-[width] duration-300 ${getScoreColor(normalizedScore)}`}
+        style={{ width: `${normalizedScore}%` }}
       />
     </div>
   )

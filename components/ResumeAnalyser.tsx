@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import { FileText, Search, Download, AlertCircle, Upload } from "lucide-react";
 import { PDFDocumentProxy, getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import { formatPdfTextItems } from "@/lib/pdf-text";
 
 GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
 
@@ -63,10 +64,8 @@ function ResumeAnalyzer() {
           for (let i = 0; i < pdfDoc.numPages; i++) {
             const page = await pdfDoc.getPage(i + 1);
             const textContent = await page.getTextContent();
-            const strings = textContent.items
-              .map((item) => ("str" in item ? item.str : null))
-              .filter((str): str is string => str !== null);
-            pdfText += strings.join(" ") + " ";
+            const pageText = formatPdfTextItems(textContent.items);
+            pdfText += `${pdfText ? "\n\n" : ""}${pageText}`;
           }
           resolve(pdfText);
         } catch (error) {
@@ -93,7 +92,7 @@ function ResumeAnalyzer() {
 
       for (const file of files) {
         const fileContent = await readFileContent(file);
-        const contentLower = fileContent.toLowerCase();
+        const contentLower = fileContent.toLowerCase().replace(/\s+/g, " ");
 
         const matches = keywordList.filter((keyword) =>
           contentLower.includes(keyword)
